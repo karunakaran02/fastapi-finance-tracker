@@ -1,7 +1,3 @@
-from datetime import datetime, timezone
-import pytest
-
-
 def get_default_category_id(client, headers, name: str) -> int:
     resp = client.get("/api/v1/categories", headers=headers)
     for cat in resp.json():
@@ -46,10 +42,10 @@ def test_create_expense_transaction(client, auth_headers):
 
 
 def test_category_type_mismatch_validation(client, auth_headers):
-    food_cat_id = get_default_category_id(client, auth_headers, "Food")  # Food is expense
+    food_cat_id = get_default_category_id(client, auth_headers, "Food")
     payload = {
         "category_id": food_cat_id,
-        "type": "income",  # Mismatched type!
+        "type": "income",
         "amount": "100.00",
         "description": "Invalid income in expense category",
         "transaction_date": "2026-10-02T14:30:00Z",
@@ -156,7 +152,6 @@ def test_transaction_search_and_filtering(client, auth_headers):
     food_cat_id = get_default_category_id(client, auth_headers, "Food")
     transport_cat_id = get_default_category_id(client, auth_headers, "Transport")
 
-    # Add distinct transactions
     client.post(
         "/api/v1/transactions",
         json={
@@ -180,28 +175,23 @@ def test_transaction_search_and_filtering(client, auth_headers):
         headers=auth_headers,
     )
 
-    # Search for "Sushi"
     search_resp = client.get("/api/v1/transactions?search=sushi", headers=auth_headers)
     assert search_resp.status_code == 200
     assert any("Sushi" in t["description"] for t in search_resp.json()["items"])
 
-    # Search by category name
     search_cat_resp = client.get("/api/v1/transactions?search=Transport", headers=auth_headers)
     assert search_cat_resp.status_code == 200
     assert any(t["category_name"] == "Transport" for t in search_cat_resp.json()["items"])
 
-    # Search by amount
     search_amt_resp = client.get("/api/v1/transactions?search=55.00", headers=auth_headers)
     assert search_amt_resp.status_code == 200
     assert any("55.00" in str(t["amount"]) for t in search_amt_resp.json()["items"])
 
-    # Filter by category
     cat_resp = client.get(f"/api/v1/transactions?category_id={transport_cat_id}", headers=auth_headers)
     assert cat_resp.status_code == 200
     for item in cat_resp.json()["items"]:
         assert item["category_id"] == transport_cat_id
 
-    # Filter by date range
     date_resp = client.get(
         "/api/v1/transactions?start_date=2026-09-01T00:00:00Z&end_date=2026-09-30T23:59:59Z",
         headers=auth_headers,
@@ -209,7 +199,6 @@ def test_transaction_search_and_filtering(client, auth_headers):
     assert date_resp.status_code == 200
     assert date_resp.json()["total"] >= 2
 
-    # Filter by inverted date range (automatically normalized)
     inverted_resp = client.get(
         "/api/v1/transactions?start_date=2026-09-30T23:59:59Z&end_date=2026-09-01T00:00:00Z",
         headers=auth_headers,
@@ -217,7 +206,6 @@ def test_transaction_search_and_filtering(client, auth_headers):
     assert inverted_resp.status_code == 200
     assert inverted_resp.json()["total"] >= 2
 
-    # Filter single-day where end_date is at midnight (automatically covers full day)
     single_day_resp = client.get(
         "/api/v1/transactions?start_date=2026-09-20T00:00:00Z&end_date=2026-09-20T00:00:00Z",
         headers=auth_headers,
@@ -241,14 +229,12 @@ def test_transaction_pagination_and_sorting(client, auth_headers):
             headers=auth_headers,
         )
 
-    # Page 1 with page_size=5
     page1 = client.get("/api/v1/transactions?page=1&page_size=5&sort=amount_desc", headers=auth_headers).json()
     assert len(page1["items"]) == 5
     assert page1["page"] == 1
     assert page1["page_size"] == 5
     assert page1["total"] >= 14
 
-    # Verify amount_desc sorting
     amounts = [float(item["amount"]) for item in page1["items"]]
     assert amounts == sorted(amounts, reverse=True)
 
@@ -256,7 +242,6 @@ def test_transaction_pagination_and_sorting(client, auth_headers):
 def test_transaction_user_data_isolation(client, auth_headers, other_user_headers):
     salary_cat_id = get_default_category_id(client, auth_headers, "Salary")
 
-    # User A creates a transaction
     tx_resp = client.post(
         "/api/v1/transactions",
         json={
@@ -270,11 +255,9 @@ def test_transaction_user_data_isolation(client, auth_headers, other_user_header
     )
     user_a_tx_id = tx_resp.json()["id"]
 
-    # User B should NOT be able to view User A's transaction
     get_resp = client.get(f"/api/v1/transactions/{user_a_tx_id}", headers=other_user_headers)
     assert get_resp.status_code == 404
 
-    # User B should NOT be able to update User A's transaction
     patch_resp = client.patch(
         f"/api/v1/transactions/{user_a_tx_id}",
         json={"amount": "1.00"},
@@ -282,11 +265,8 @@ def test_transaction_user_data_isolation(client, auth_headers, other_user_header
     )
     assert patch_resp.status_code == 404
 
-    # User B should NOT be able to delete User A's transaction
     del_resp = client.delete(f"/api/v1/transactions/{user_a_tx_id}", headers=other_user_headers)
     assert del_resp.status_code == 404
 
-    # User B listing should NOT contain User A's transaction
     user_b_list = client.get("/api/v1/transactions", headers=other_user_headers).json()
     assert not any(t["id"] == user_a_tx_id for t in user_b_list["items"])
-

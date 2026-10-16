@@ -82,7 +82,6 @@ export const ReportsPage = () => {
 
       {error && <div className="alert-banner error">{error}</div>}
 
-      {/* Summary KPI Cards for the Analyzed Period */}
       <div className="grid-cols-4 reports-kpi-grid">
         <SummaryCard
           title="Period Total Income"
@@ -111,7 +110,6 @@ export const ReportsPage = () => {
         />
       </div>
 
-      {/* Monthly Trends Section */}
       <div className="card reports-section-card">
         <div className="card-header">
           <h3 className="card-title">Monthly Trend Breakdown</h3>
@@ -120,7 +118,6 @@ export const ReportsPage = () => {
           <IncomeExpenseChart data={monthlyData?.months || []} />
         </div>
 
-        {/* Table of Monthly Stats */}
         <div className="table-container">
           <table className="table">
             <thead>
@@ -158,7 +155,6 @@ export const ReportsPage = () => {
         </div>
       </div>
 
-      {/* Categorical Distribution Analysis */}
       <div className="card">
         <div className="card-header wrap">
           <div>

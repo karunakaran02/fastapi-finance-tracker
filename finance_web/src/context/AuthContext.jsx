@@ -42,7 +42,6 @@ export const AuthProvider = ({ children }) => {
     try {
       await api.logout();
     } catch {
-      // Ignored
     } finally {
       setUser(null);
     }
@@ -53,7 +52,6 @@ export const AuthProvider = ({ children }) => {
       const userData = await api.getMe();
       setUser(userData);
     } catch {
-      // Ignored
     }
   };
 

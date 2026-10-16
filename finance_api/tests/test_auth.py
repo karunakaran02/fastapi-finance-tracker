@@ -1,5 +1,3 @@
-import pytest
-
 
 def test_register_user_success(client):
     payload = {

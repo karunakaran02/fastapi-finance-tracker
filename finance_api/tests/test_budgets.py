@@ -1,4 +1,3 @@
-import pytest
 from decimal import Decimal
 
 
@@ -14,7 +13,6 @@ def get_category_id(client, headers, name: str) -> int:
 def test_create_and_read_budget(client, auth_headers):
     food_id = get_category_id(client, auth_headers, "Food")
 
-    # 1. Create monthly expense budget for Food category with limit 500.00
     payload = {
         "name": "Food & Dining Cap",
         "type": "expense",
@@ -33,7 +31,6 @@ def test_create_and_read_budget(client, auth_headers):
     assert created["is_exceeded"] is False
     budget_id = created["id"]
 
-    # 2. Add an expense of 450.00 (90% of 500 -> triggers warning state)
     tx_resp = client.post(
         "/api/v1/transactions",
         json={
@@ -47,7 +44,6 @@ def test_create_and_read_budget(client, auth_headers):
     )
     assert tx_resp.status_code == 201
 
-    # 3. Retrieve budgets list and check calculated analytics
     list_resp = client.get("/api/v1/budgets", headers=auth_headers)
     assert list_resp.status_code == 200
     items = list_resp.json()
@@ -58,7 +54,6 @@ def test_create_and_read_budget(client, auth_headers):
     assert budget_item["status"] == "warning"
     assert budget_item["is_exceeded"] is False
 
-    # 4. Add another expense of 100.00 (total 550.00, exceeding 500.00)
     tx2_resp = client.post(
         "/api/v1/transactions",
         json={
@@ -72,7 +67,6 @@ def test_create_and_read_budget(client, auth_headers):
     )
     assert tx2_resp.status_code == 201
 
-    # Check updated analytics
     list_resp2 = client.get("/api/v1/budgets", headers=auth_headers)
     budget_item2 = next(b for b in list_resp2.json() if b["id"] == budget_id)
     assert Decimal(str(budget_item2["current_amount"])) == Decimal("550.00")
@@ -96,7 +90,6 @@ def test_budget_overview_analytics(client, auth_headers):
 
 
 def test_budget_update_and_delete(client, auth_headers):
-    # Create budget
     create_resp = client.post(
         "/api/v1/budgets",
         json={
@@ -110,7 +103,6 @@ def test_budget_update_and_delete(client, auth_headers):
     assert create_resp.status_code == 201
     budget_id = create_resp.json()["id"]
 
-    # Update threshold_amount to 300.00
     update_resp = client.patch(
         f"/api/v1/budgets/{budget_id}",
         json={"threshold_amount": "300.00", "name": "Updated Limit"},
@@ -120,17 +112,14 @@ def test_budget_update_and_delete(client, auth_headers):
     assert Decimal(str(update_resp.json()["threshold_amount"])) == Decimal("300.00")
     assert update_resp.json()["name"] == "Updated Limit"
 
-    # Delete budget
     del_resp = client.delete(f"/api/v1/budgets/{budget_id}", headers=auth_headers)
     assert del_resp.status_code == 200
 
-    # Ensure it no longer appears in list
     list_resp = client.get("/api/v1/budgets", headers=auth_headers)
     assert not any(b["id"] == budget_id for b in list_resp.json())
 
 
 def test_budget_user_data_isolation(client, auth_headers, other_user_headers):
-    # User 1 creates budget
     resp = client.post(
         "/api/v1/budgets",
         json={"name": "User 1 Budget", "type": "expense", "threshold_amount": "1000.00"},
@@ -139,12 +128,10 @@ def test_budget_user_data_isolation(client, auth_headers, other_user_headers):
     assert resp.status_code == 201
     u1_budget_id = resp.json()["id"]
 
-    # User 2 lists budgets - should not see User 1's budget
     u2_list = client.get("/api/v1/budgets", headers=other_user_headers)
     assert u2_list.status_code == 200
     assert not any(b["id"] == u1_budget_id for b in u2_list.json())
 
-    # User 2 attempts to update User 1's budget - should 404
     u2_update = client.patch(
         f"/api/v1/budgets/{u1_budget_id}",
         json={"threshold_amount": "2000.00"},
@@ -154,7 +141,6 @@ def test_budget_user_data_isolation(client, auth_headers, other_user_headers):
 
 
 def test_test_alert_endpoint(client, auth_headers):
-    # Create budget
     b_resp = client.post(
         "/api/v1/budgets",
         json={"name": "Alert Test Budget", "type": "expense", "threshold_amount": "200.00"},
@@ -163,12 +149,10 @@ def test_test_alert_endpoint(client, auth_headers):
     assert b_resp.status_code == 201
     budget_id = b_resp.json()["id"]
 
-    # Trigger test alert
     alert_resp = client.post(f"/api/v1/budgets/{budget_id}/test-alert", headers=auth_headers)
     assert alert_resp.status_code == 200
     assert "Test alert" in alert_resp.json()["message"]
 
-    # Check alert notifications endpoint
     notif_resp = client.get("/api/v1/budgets/notifications", headers=auth_headers)
     assert notif_resp.status_code == 200
     notifications = notif_resp.json()

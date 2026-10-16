@@ -121,7 +121,7 @@ export const RegisterPage = () => {
               <User size={16} className="input-icon" />
               <input
                 type="text"
-                placeholder="Alex Morgan"
+                placeholder="Karuna karan"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 className="form-input"

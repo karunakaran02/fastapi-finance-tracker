@@ -161,7 +161,7 @@ export const TransactionForm = ({
               placeholder="0.00"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="w-full bg-obsidian-800 border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-brand-cobalt"
+              className="form-input w-full bg-obsidian-800 border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-white font-mono text-base sm:text-sm focus:outline-none focus:border-brand-cobalt"
             />
           </div>
 
@@ -186,7 +186,7 @@ export const TransactionForm = ({
               required
               value={transactionDate}
               onChange={(e) => setTransactionDate(e.target.value)}
-              className="w-full bg-obsidian-800 border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-white font-mono text-xs focus:outline-none focus:border-brand-cobalt"
+              className="form-input w-full bg-obsidian-800 border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-white font-mono text-base sm:text-xs focus:outline-none focus:border-brand-cobalt"
             />
           </div>
 
@@ -199,7 +199,7 @@ export const TransactionForm = ({
               placeholder="e.g. Monthly Payroll Credit, Retail Purchase"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-obsidian-800 border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-white text-xs focus:outline-none focus:border-brand-cobalt"
+              className="form-input w-full bg-obsidian-800 border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-white text-base sm:text-xs focus:outline-none focus:border-brand-cobalt"
             />
           </div>
 

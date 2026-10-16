@@ -78,7 +78,6 @@ export const SettingsPage = () => {
       </div>
 
       <div className="grid-cols-2">
-        {/* Profile Details */}
         <div className="card">
           <div className="card-header">
             <h3 className="card-title with-icon">
@@ -127,7 +126,6 @@ export const SettingsPage = () => {
           </form>
         </div>
 
-        {/* Change Password */}
         <div className="card">
           <div className="card-header">
             <h3 className="card-title with-icon">
@@ -221,7 +219,6 @@ export const SettingsPage = () => {
           </form>
         </div>
 
-        {/* Currency & Regional Preferences */}
         <div className="card" style={{ gridColumn: 'span 2' }}>
           <div className="card-header">
             <h3 className="card-title with-icon">

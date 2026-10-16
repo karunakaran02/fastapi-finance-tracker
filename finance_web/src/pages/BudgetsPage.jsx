@@ -35,7 +35,6 @@ export const BudgetsPage = () => {
   const [error, setError] = useState('');
   const [toastMessage, setToastMessage] = useState('');
 
-  // Modal / Form state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
   const [name, setName] = useState('');
@@ -168,7 +167,6 @@ export const BudgetsPage = () => {
     try {
       const resp = await api.testBudgetAlert(b.id);
       showToast(resp.message || `Test alert triggered in background for '${b.name}'.`);
-      // Re-fetch overview after short delay so new alert appears in audit history
       setTimeout(() => {
         fetchOverview();
       }, 1200);
@@ -179,7 +177,6 @@ export const BudgetsPage = () => {
     }
   };
 
-  // Filter category options based on selected type
   const categoryOptions = [
     { value: '', label: '🌐 Global Cashflow (All Categories)' },
     ...categories
@@ -213,7 +210,6 @@ export const BudgetsPage = () => {
 
   return (
     <div className="budgets-container">
-      {/* Toast Banner */}
       {toastMessage && (
         <div className="fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-900/95 text-white border border-brand-cobalt/40 shadow-2xl backdrop-blur-md animate-fade-in">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
@@ -228,7 +224,6 @@ export const BudgetsPage = () => {
         </div>
       )}
 
-      {/* Page Title & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
@@ -281,7 +276,6 @@ export const BudgetsPage = () => {
         </div>
       )}
 
-      {/* SMTP Failure Warning Notice */}
       {notifications.length > 0 && notifications[0]?.message?.includes('SMTP Delivery Failed') && (
         <div className="p-4 mb-6 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-200 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
           <div className="flex items-start sm:items-center gap-2.5 min-w-0">
@@ -293,7 +287,6 @@ export const BudgetsPage = () => {
         </div>
       )}
 
-      {/* SMTP Mode Notice */}
       {!overview?.smtp_configured && (
         <div className="p-4 mb-6 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -305,7 +298,6 @@ export const BudgetsPage = () => {
         </div>
       )}
 
-      {/* KPI Overview Grid - Direct Backend Figures */}
       <div className="budgets-kpi-grid">
         <div className="kpi-card">
           <div className="kpi-header">
@@ -354,7 +346,6 @@ export const BudgetsPage = () => {
         </div>
       </div>
 
-      {/* Main Threshold Cards Section */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-semibold text-white flex items-center gap-2">
@@ -389,7 +380,6 @@ export const BudgetsPage = () => {
               return (
                 <div key={b.id} className={`budget-card ${statusClass}`}>
                   <div>
-                    {/* Header */}
                     <div className="budget-card-top">
                       <div>
                         <h3 className="budget-card-title">{b.name}</h3>
@@ -406,7 +396,6 @@ export const BudgetsPage = () => {
                         </div>
                       </div>
 
-                      {/* Top Action Icons */}
                       <div className="flex items-center gap-1.5 shrink-0">
                         <button
                           type="button"
@@ -427,7 +416,6 @@ export const BudgetsPage = () => {
                       </div>
                     </div>
 
-                    {/* Progress Bar (Utilizing authoritative backend percentage_used) */}
                     <div className="budget-progress-section">
                       <div className="progress-labels">
                         <span className="text-slate-400">Utilization</span>
@@ -443,7 +431,6 @@ export const BudgetsPage = () => {
                       </div>
                     </div>
 
-                    {/* Metrics Breakdown (Render authoritative Python values) */}
                     <div className="budget-metrics-row">
                       <div className="metric-col">
                         <div className="metric-label">Actual</div>
@@ -465,7 +452,6 @@ export const BudgetsPage = () => {
                       </div>
                     </div>
 
-                    {/* Status Alert Banner */}
                     {b.is_exceeded ? (
                       <div className="budget-status-banner status-banner-exceeded">
                         <AlertTriangle size={15} className="shrink-0" />
@@ -484,7 +470,6 @@ export const BudgetsPage = () => {
                     )}
                   </div>
 
-                  {/* Footer & Background Test Alert Action */}
                   <div className="budget-card-footer">
                     <div className="alert-recipient-info" title={b.alert_email || user?.email}>
                       <Mail size={13} className="shrink-0 text-slate-400" />
@@ -515,7 +500,6 @@ export const BudgetsPage = () => {
         )}
       </div>
 
-      {/* Dispatched Alerts Audit Log (Transparency / Background Process Verification) */}
       <div className="notifications-panel">
         <div className="notifications-panel-header">
           <div>
@@ -614,7 +598,6 @@ export const BudgetsPage = () => {
         </div>
       </div>
 
-      {/* Create / Edit Threshold Modal */}
       {isModalOpen && (
         <div className="budget-modal-backdrop" onClick={() => setIsModalOpen(false)}>
           <div className="budget-modal-dialog" onClick={(e) => e.stopPropagation()}>
@@ -751,7 +734,6 @@ export const BudgetsPage = () => {
           </div>
         </div>
       )}
-      {/* SMTP Delivery Diagnostic Modal */}
       {selectedNotifForError && (
         <div className="budget-modal-backdrop" onClick={() => setSelectedNotifForError(null)}>
           <div className="budget-modal-dialog !max-w-xl" onClick={(e) => e.stopPropagation()}>

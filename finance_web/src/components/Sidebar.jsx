@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Layers } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
 import './Sidebar.css';
@@ -24,6 +24,19 @@ export const Sidebar = () => {
   const [txCount, setTxCount] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const [streamBooks, setStreamBooks] = useState([]);
+
+  const fetchStreamBooks = () => {
+    api
+      .getStreamBooks()
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setStreamBooks(data);
+        }
+      })
+      .catch(() => {});
+  };
+
   useEffect(() => {
     let mounted = true;
     api
@@ -34,8 +47,15 @@ export const Sidebar = () => {
         }
       })
       .catch(() => {});
+
+    fetchStreamBooks();
+
+    const handleUpdate = () => fetchStreamBooks();
+    window.addEventListener('streams-updated', handleUpdate);
+
     return () => {
       mounted = false;
+      window.removeEventListener('streams-updated', handleUpdate);
     };
   }, []);
 
@@ -99,7 +119,6 @@ export const Sidebar = () => {
         data-purpose="sidebar-navigation"
       >
         <div className="flex flex-col h-full">
-          {/* Brand Identity Section */}
           <div className="px-6 py-6 border-b border-white/[0.06] flex items-center gap-3.5">
             <div className="relative flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-tr from-brand-electric via-brand-cobalt to-brand-cyan shadow-glow-blue shrink-0">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,13 +150,11 @@ export const Sidebar = () => {
             </button>
           </div>
 
-          {/* Main Navigation Menu */}
           <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto" data-purpose="primary-navigation">
             <div className="px-3 pb-2 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
               Executive Suite
             </div>
 
-            {/* Nav Item: Dashboard */}
             <NavLink to="/dashboard" className={navClass}>
               {({ isActive }) => (
                 <>
@@ -160,7 +177,6 @@ export const Sidebar = () => {
               )}
             </NavLink>
 
-            {/* Nav Item: Transactions */}
             <NavLink to="/transactions" className={navClass}>
               {({ isActive }) => (
                 <>
@@ -189,7 +205,6 @@ export const Sidebar = () => {
               )}
             </NavLink>
 
-            {/* Nav Item: Analytics & Reports */}
             <NavLink to="/reports" className={navClass}>
               {({ isActive }) => (
                 <>
@@ -212,7 +227,6 @@ export const Sidebar = () => {
               )}
             </NavLink>
 
-            {/* Nav Item: Categories */}
             <NavLink to="/categories" className={navClass}>
               {({ isActive }) => (
                 <>
@@ -235,7 +249,6 @@ export const Sidebar = () => {
               )}
             </NavLink>
 
-            {/* Nav Item: Budgets & Alerts */}
             <NavLink to="/budgets" className={navClass}>
               {({ isActive }) => (
                 <>
@@ -260,11 +273,70 @@ export const Sidebar = () => {
               )}
             </NavLink>
 
+            <div className="pt-4 px-3 pb-2 text-[11px] font-semibold tracking-wider text-slate-400 uppercase flex items-center justify-between">
+              <span>Streams</span>
+              <button
+                type="button"
+                onClick={() => {
+                  if (location.pathname.startsWith('/streams')) {
+                    window.dispatchEvent(new CustomEvent('open-new-stream-modal'));
+                  } else {
+                    navigate('/streams');
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent('open-new-stream-modal'));
+                    }, 120);
+                  }
+                }}
+                className="text-[10px] text-brand-electric hover:text-white font-bold px-1.5 py-0.5 rounded bg-brand-electric/10 hover:bg-brand-electric/25 border border-brand-electric/30 transition-colors"
+                title="Create New Book"
+              >
+                + New Book
+              </button>
+            </div>
+
+            <NavLink to="/streams" end className={navClass}>
+              {({ isActive }) => (
+                <>
+                  <Layers
+                    className={`w-5 h-5 ${
+                      isActive ? 'text-white' : 'text-slate-400 group-hover:text-brand-electric transition-colors'
+                    }`}
+                  />
+                  <span className="flex-1">All Streams</span>
+                  {isActive ? (
+                    <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                  ) : (
+                    <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-obsidian-800 text-slate-300 border border-white/[0.08]">
+                      {streamBooks.length}
+                    </span>
+                  )}
+                </>
+              )}
+            </NavLink>
+
+            {streamBooks.length > 0 && (
+              <div className="space-y-1 pl-2">
+                {streamBooks.map((book) => (
+                  <NavLink
+                    key={book.id}
+                    to={`/streams/${book.id}`}
+                    className={({ isActive }) =>
+                      isActive
+                        ? 'flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-blue-600/30 border border-blue-500/40 transition-all'
+                        : 'flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/[0.04] transition-colors'
+                    }
+                  >
+                    <span className="text-sm shrink-0">{book.icon || '📁'}</span>
+                    <span className="truncate flex-1">{book.title}</span>
+                  </NavLink>
+                ))}
+              </div>
+            )}
+
             <div className="pt-4 px-3 pb-2 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
               Management
             </div>
 
-            {/* Nav Item: Admin / Entities */}
             {user?.is_admin ? (
               <NavLink to="/admin" className={navClass}>
                 {({ isActive }) => (
@@ -309,7 +381,6 @@ export const Sidebar = () => {
               </NavLink>
             )}
 
-            {/* Nav Item: Settings */}
             <NavLink to="/settings" className={navClass}>
               {({ isActive }) => (
                 <>
@@ -339,7 +410,6 @@ export const Sidebar = () => {
             </NavLink>
           </nav>
 
-          {/* Account / Workspace Switcher Widget */}
           <div className="p-4 border-t border-white/[0.06] bg-obsidian-950/40" data-purpose="workspace-switcher">
             <div className="p-3 rounded-xl bg-obsidian-850/80 border border-white/[0.06] flex items-center justify-between">
               <div className="flex items-center gap-3 overflow-hidden">
@@ -381,7 +451,6 @@ export const Sidebar = () => {
         </div>
       </aside>
 
-      {/* Mobile Bottom Navigation Bar */}
       <nav className="mobile-bottom-nav" data-purpose="mobile-bottom-nav">
         <NavLink to="/dashboard" className={mobileTabClass}>
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -407,6 +476,11 @@ export const Sidebar = () => {
           <span>Ledger</span>
         </NavLink>
 
+        <NavLink to="/streams" className={mobileTabClass}>
+          <Layers className="w-4 h-4" />
+          <span>Streams</span>
+        </NavLink>
+
         <NavLink to="/reports" className={mobileTabClass}>
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -417,18 +491,6 @@ export const Sidebar = () => {
             />
           </svg>
           <span>Reports</span>
-        </NavLink>
-
-        <NavLink to="/categories" className={mobileTabClass}>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-            />
-          </svg>
-          <span>Categories</span>
         </NavLink>
 
         {user?.is_admin ? (

@@ -8,7 +8,7 @@ from app.core.security import verify_password
 from app.models.user import User
 from app.schemas.auth import LoginRequest, MessageResponse, RefreshTokenRequest, Token
 from app.schemas.user import UserCreate
-from app.services.auth import authenticate_user, create_user_tokens, refresh_tokens
+from app.services.auth import create_user_tokens, refresh_tokens
 from app.services.category import seed_default_categories
 from app.services.user import create_user, get_user_by_email
 

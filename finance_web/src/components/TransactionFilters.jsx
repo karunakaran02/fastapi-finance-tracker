@@ -128,9 +128,8 @@ export const TransactionFilters = ({
 
   return (
     <div className="card tx-filters-card">
-      {/* Date Range Presets */}
-      <div className="tx-presets-row" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+      <div className="tx-presets-row">
+        <span className="tx-presets-label">
           Date Range:
         </span>
         {presetList.map((preset) => {
@@ -140,19 +139,7 @@ export const TransactionFilters = ({
               key={preset.id}
               type="button"
               onClick={() => handlePresetClick(preset.id)}
-              className="preset-pill-btn"
-              style={{
-                fontSize: '0.75rem',
-                fontWeight: isActive ? 600 : 500,
-                padding: '0.25rem 0.65rem',
-                borderRadius: '0.5rem',
-                border: '1px solid',
-                borderColor: isActive ? '#3b82f6' : 'var(--border-color)',
-                backgroundColor: isActive ? 'rgba(59, 130, 246, 0.15)' : 'var(--bg-elevated)',
-                color: isActive ? '#60a5fa' : 'var(--text-secondary)',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
+              className={`preset-pill-btn ${isActive ? 'active' : ''}`}
             >
               {preset.label}
             </button>
@@ -161,14 +148,13 @@ export const TransactionFilters = ({
       </div>
 
       <div className="tx-filters-grid">
-        {/* Search */}
-        <div className="tx-filters-search-col">
-          <label className="form-label">Search Description, Category, Amount</label>
+        <div className="tx-filter-col tx-filters-search-col">
+          <label className="form-label">Search</label>
           <div className="input-icon-wrap">
             <Search size={15} className="input-icon" />
             <input
               type="text"
-              placeholder="Search..."
+              placeholder="Search description, category, amount..."
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
               className="form-input"
@@ -176,8 +162,7 @@ export const TransactionFilters = ({
           </div>
         </div>
 
-        {/* Type Filter */}
-        <div>
+        <div className="tx-filter-col">
           <label className="form-label">Type</label>
           <CustomSelect
             value={filters.type || ''}
@@ -187,8 +172,7 @@ export const TransactionFilters = ({
           />
         </div>
 
-        {/* Category Filter */}
-        <div>
+        <div className="tx-filter-col">
           <label className="form-label">Category</label>
           <CustomSelect
             value={filters.category_id ? String(filters.category_id) : ''}
@@ -198,8 +182,7 @@ export const TransactionFilters = ({
           />
         </div>
 
-        {/* Start Date */}
-        <div>
+        <div className="tx-filter-col">
           <label className="form-label">Start Date</label>
           <input
             type="date"
@@ -209,8 +192,7 @@ export const TransactionFilters = ({
           />
         </div>
 
-        {/* End Date */}
-        <div>
+        <div className="tx-filter-col">
           <label className="form-label">End Date</label>
           <input
             type="date"
@@ -220,8 +202,7 @@ export const TransactionFilters = ({
           />
         </div>
 
-        {/* Sort */}
-        <div>
+        <div className="tx-filter-col">
           <label className="form-label">Sort By</label>
           <CustomSelect
             value={filters.sort || 'date_desc'}
@@ -231,12 +212,13 @@ export const TransactionFilters = ({
           />
         </div>
 
-        {/* Reset */}
-        <div>
+        <div className="tx-filter-col tx-filters-reset-col">
+          <label className="form-label tx-filters-reset-label" aria-hidden="true">&nbsp;</label>
           <button
             type="button"
             onClick={handleReset}
             className="btn btn-secondary tx-filters-reset-btn"
+            title="Reset all filters"
           >
             <RotateCcw size={14} />
             <span>Reset</span>

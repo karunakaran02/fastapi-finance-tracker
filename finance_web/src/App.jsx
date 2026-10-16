@@ -14,6 +14,7 @@ const ReportsPage = React.lazy(() => import('./pages/ReportsPage'));
 const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
 const AdminPage = React.lazy(() => import('./pages/AdminPage'));
 const BudgetsPage = React.lazy(() => import('./pages/BudgetsPage'));
+const StreamsPage = React.lazy(() => import('./pages/StreamsPage'));
 
 const PageLoader = () => (
   <div className="flex-1 flex flex-col items-center justify-center min-h-[50vh] p-8 text-slate-400">
@@ -55,9 +56,12 @@ const SecondaryTopBar = () => {
     '/categories': 'Category Governance',
     '/admin': 'Admin & Entities Control',
     '/settings': 'Security & Vault Settings',
+    '/streams': 'Streams & Financial Books',
   };
 
-  const title = pageTitles[location.pathname] || 'Finance Intel';
+  const title =
+    pageTitles[location.pathname] ||
+    (location.pathname.startsWith('/streams') ? 'Streams & Financial Books' : 'Finance Intel');
 
   return (
     <header
@@ -80,7 +84,6 @@ const SecondaryTopBar = () => {
   );
 };
 
-// Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
@@ -107,7 +110,6 @@ const ProtectedRoute = ({ children }) => {
   );
 };
 
-// Public Route wrapper (redirects authenticated users to dashboard)
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
@@ -130,7 +132,6 @@ export const App = () => {
           <BrowserRouter>
             <React.Suspense fallback={<PageLoader />}>
               <Routes>
-                {/* Public Routes */}
                 <Route
                   path="/login"
                   element={
@@ -148,7 +149,6 @@ export const App = () => {
                   }
                 />
 
-                {/* Protected Routes */}
                 <Route
                   path="/dashboard"
                   element={
@@ -190,6 +190,22 @@ export const App = () => {
                   }
                 />
                 <Route
+                  path="/streams"
+                  element={
+                    <ProtectedRoute>
+                      <StreamsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/streams/:bookId"
+                  element={
+                    <ProtectedRoute>
+                      <StreamsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/admin"
                   element={
                     <ProtectedRoute>
@@ -206,7 +222,6 @@ export const App = () => {
                   }
                 />
 
-                {/* Fallback */}
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>

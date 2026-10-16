@@ -1052,7 +1052,7 @@ def _extract_text_lines_from_pdf(content_bytes: bytes) -> List[str]:
     extracted_lines: List[str] = []
 
     try:
-        import pdfplumber  # type: ignore
+        import pdfplumber
 
         with pdfplumber.open(io.BytesIO(content_bytes)) as pdf:
             for page in pdf.pages:
@@ -1066,7 +1066,7 @@ def _extract_text_lines_from_pdf(content_bytes: bytes) -> List[str]:
         pass
 
     try:
-        import pypdf  # type: ignore
+        import pypdf
 
         reader = pypdf.PdfReader(io.BytesIO(content_bytes))
         for page in reader.pages:
@@ -1454,7 +1454,7 @@ def _parse_pdf_transaction_lines(lines: List[str]) -> List[Dict[str, Any]]:
 
 def _extract_rows_from_pdf(content_bytes: bytes) -> List[Dict[str, Any]]:
     try:
-        import pdfplumber  # type: ignore
+        import pdfplumber
 
         with pdfplumber.open(io.BytesIO(content_bytes)) as pdf:
             table_rows = _extract_rows_via_pdfplumber_tables(pdf)

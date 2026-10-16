@@ -41,7 +41,6 @@ export const TransactionsPage = () => {
       const data = await api.getCategories();
       setCategories(data || []);
     } catch {
-      // Ignored
     }
   };
 

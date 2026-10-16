@@ -44,7 +44,6 @@
   flex-shrink: 0;
 }
 
-/* Modal */
 .cat-modal-header {
   display: flex;
   justify-content: space-between;

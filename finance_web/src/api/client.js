@@ -112,11 +112,9 @@ class ApiClient {
 
     let response = await fetch(url, config);
 
-    // If 401 and we have a refresh token, attempt to refresh
     if (response.status === 401 && this.refreshToken && !endpoint.includes('/auth/')) {
       const refreshed = await this.refreshAccessToken();
       if (refreshed) {
-        // Retry original request with new token
         headers['Authorization'] = `Bearer ${this.token}`;
         response = await fetch(url, { ...options, headers });
       } else {
@@ -126,7 +124,6 @@ class ApiClient {
       }
     }
 
-    // Parse JSON or text
     let data;
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
@@ -164,7 +161,6 @@ class ApiClient {
           return true;
         }
       } catch {
-        // Fall through to failure
       } finally {
         this.refreshPromise = null;
       }
@@ -173,7 +169,6 @@ class ApiClient {
     return this.refreshPromise;
   }
 
-  // HTTP Helpers
   get(endpoint, params = {}) {
     const query = new URLSearchParams();
     Object.entries(params).forEach(([key, val]) => {
@@ -204,7 +199,6 @@ class ApiClient {
     return this.request(endpoint, { method: 'DELETE' });
   }
 
-  // Auth Endpoints
   async register(email, password, full_name) {
     const data = await this.post('/auth/register', { email, password, full_name });
     this.setTokens(data.access_token, data.refresh_token);
@@ -237,7 +231,6 @@ class ApiClient {
     return this.post('/users/me/change-password', data);
   }
 
-  // Categories
   getCategories(type) {
     return this.get('/categories', { type });
   }
@@ -254,7 +247,6 @@ class ApiClient {
     return this.delete(`/categories/${id}`);
   }
 
-  // Transactions
   getTransactions(params) {
     return this.get('/transactions', params);
   }
@@ -328,7 +320,6 @@ class ApiClient {
     URL.revokeObjectURL(url);
   }
 
-  // Analytics & Reports
   getDashboard(search = '') {
     return this.get('/reports/dashboard', { search });
   }
@@ -345,7 +336,6 @@ class ApiClient {
     });
   }
 
-  // Admin Management
   getAdminOverview() {
     return this.get('/admin/overview');
   }
@@ -358,7 +348,6 @@ class ApiClient {
     return this.delete(`/admin/users/${userId}`);
   }
 
-  // Budgets & Threshold Alerts
   getBudgetOverview() {
     return this.get('/budgets/overview');
   }
@@ -385,6 +374,56 @@ class ApiClient {
 
   getAlertNotifications() {
     return this.get('/budgets/notifications');
+  }
+
+  getStreamBooks() {
+    return this.get('/streams/books');
+  }
+
+  createStreamBook(data) {
+    return this.post('/streams/books', data);
+  }
+
+  getStreamBook(bookId) {
+    return this.get(`/streams/books/${bookId}`);
+  }
+
+  updateStreamBook(bookId, data) {
+    return this.patch(`/streams/books/${bookId}`, data);
+  }
+
+  deleteStreamBook(bookId) {
+    return this.delete(`/streams/books/${bookId}`);
+  }
+
+  getStreamEntries(bookId, params = {}) {
+    return this.get(`/streams/books/${bookId}/entries`, params);
+  }
+
+  createStreamEntry(bookId, data) {
+    return this.post(`/streams/books/${bookId}/entries`, data);
+  }
+
+  updateStreamEntry(bookId, entryId, data) {
+    return this.patch(`/streams/books/${bookId}/entries/${entryId}`, data);
+  }
+
+  deleteStreamEntry(bookId, entryId) {
+    return this.delete(`/streams/books/${bookId}/entries/${entryId}`);
+  }
+
+  async downloadStreamExport(bookId, bookTitle = 'stream') {
+    const csvText = await this.get(`/streams/books/${bookId}/export`);
+    const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const cleanTitle = (bookTitle || 'stream').toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+    link.setAttribute('download', `${cleanTitle}_ledger_statement.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
 }
 

@@ -202,7 +202,6 @@ export const DashboardPage = () => {
   const expParts = splitCurrency(totalExpenses, activeCurrency.locale);
   const netParts = splitCurrency(netBalance, activeCurrency.locale);
 
-  // Python-computed KPI percentages & status metrics
   const inflowSharePct = Number(dashboardData?.inflow_share_percentage ?? 0).toFixed(1);
   const outflowSharePct = Number(dashboardData?.outflow_share_percentage ?? 0).toFixed(1);
   const retainedIncome = Number(dashboardData?.retained_income ?? 0);
@@ -218,12 +217,10 @@ export const DashboardPage = () => {
     dashboardData?.trend_footnote || 'No monthly cashflow recorded in current fiscal cycle';
   const hasActivity = Boolean(dashboardData?.has_activity);
 
-  // Python-computed SVG geometry
   const gaugeCircumference = Number(dashboardData?.gauge_circumference ?? 283);
   const gaugeOffset = Number(dashboardData?.gauge_offset ?? 283);
   const doughnutCircumference = Number(dashboardData?.doughnut_circumference ?? 389.5);
 
-  // Python-computed trend bars & Y-axis steps
   const displayMonths = monthlyReport?.months || [];
   const yAxisSteps = monthlyReport?.y_axis_steps || [70000, 60000, 50000, 40000, 30000, 20000, 10000, 0];
 
@@ -236,13 +233,11 @@ export const DashboardPage = () => {
 
   return (
     <>
-      {/* BEGIN: TopBar */}
       <header
         className="sticky top-0 z-30 bg-obsidian-900/80 backdrop-blur-xl border-b border-white/[0.06] px-3 sm:px-6 lg:px-8 py-2.5 sm:py-4 flex flex-wrap items-center justify-between gap-2.5 sm:gap-3"
         style={{ paddingTop: 'max(0.625rem, env(safe-area-inset-top, 0px))' }}
         data-purpose="top-navigation-bar"
       >
-        {/* Page Title & Micro Status */}
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <MobileMenuButton />
           <div className="min-w-0">
@@ -260,12 +255,10 @@ export const DashboardPage = () => {
           </div>
         </div>
 
-        {/* Action Toolbar */}
         <div
           className="flex items-center flex-wrap gap-1.5 sm:gap-2.5 w-full sm:w-auto justify-between sm:justify-end sm:ml-auto"
           data-purpose="dashboard-action-toolbar"
         >
-          {/* Search bar */}
           <div className="relative hidden md:block">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -286,7 +279,6 @@ export const DashboardPage = () => {
             />
           </div>
 
-          {/* Date Range Filter Pill */}
           <div className="flex items-center bg-obsidian-800/80 border border-white/[0.08] rounded-xl p-0.5 sm:p-1 text-[11px] sm:text-xs font-medium">
             <button
               type="button"
@@ -324,7 +316,6 @@ export const DashboardPage = () => {
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2">
-            {/* Refresh Button */}
             <button
               onClick={() => fetchDashboardData(getPeriodMonths(), searchQuery)}
               className="inline-flex items-center justify-center gap-1.5 p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl bg-obsidian-800 hover:bg-obsidian-750 text-slate-200 border border-white/[0.08] transition-colors shadow-sm"
@@ -342,7 +333,6 @@ export const DashboardPage = () => {
               <span className="hidden sm:inline">Refresh</span>
             </button>
 
-            {/* Import Files (Single or Multiple) */}
             <button
               onClick={() => setIsImportOpen(true)}
               className="inline-flex items-center justify-center gap-1.5 p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl bg-obsidian-800 hover:bg-obsidian-750 text-slate-200 border border-white/[0.08] transition-colors shadow-sm"
@@ -360,7 +350,6 @@ export const DashboardPage = () => {
               <span className="hidden sm:inline">Import</span>
             </button>
 
-            {/* Export Data */}
             <button
               onClick={handleExportCsv}
               className="inline-flex items-center justify-center gap-1.5 p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl bg-obsidian-800 hover:bg-obsidian-750 text-slate-200 border border-white/[0.08] transition-colors shadow-sm"
@@ -378,7 +367,6 @@ export const DashboardPage = () => {
               <span className="hidden sm:inline">Export</span>
             </button>
 
-            {/* Currency Switcher */}
             <button
               type="button"
               onClick={() => {
@@ -393,10 +381,8 @@ export const DashboardPage = () => {
               <span>{currency}</span>
             </button>
 
-            {/* Theme Toggle Switch */}
             <ThemeToggleButton />
 
-            {/* Primary CTA: Add Transaction Modal Trigger */}
             <button
               onClick={() => setIsFormOpen(true)}
               className="inline-flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs font-bold rounded-xl text-white bg-gradient-to-r from-brand-electric to-brand-cobalt hover:from-blue-600 hover:to-blue-500 shadow-glow-blue transition-all active:scale-95"
@@ -411,9 +397,7 @@ export const DashboardPage = () => {
           </div>
         </div>
       </header>
-      {/* END: TopBar */}
 
-      {/* BEGIN: MainDashboardBody */}
       <main
         className="flex-1 px-2.5 sm:px-6 lg:px-8 py-3.5 sm:py-8 space-y-4 sm:space-y-7 max-w-[1700px] w-full mx-auto"
         data-purpose="executive-metrics-grid"
@@ -424,12 +408,10 @@ export const DashboardPage = () => {
           </div>
         )}
 
-        {/* BEGIN: KeyMetricsSection */}
         <section
           aria-label="Key Financial Performance Indicators"
           className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-5"
         >
-          {/* KPI Card 1: Total Income */}
           <div
             className="glass-card glass-card-interactive rounded-xl sm:rounded-2xl p-3.5 sm:p-6 relative overflow-hidden flex flex-col justify-between"
             data-purpose="metric-total-income"
@@ -483,7 +465,6 @@ export const DashboardPage = () => {
             </div>
           </div>
 
-          {/* KPI Card 2: Total Expenses */}
           <div
             className="glass-card glass-card-interactive rounded-xl sm:rounded-2xl p-3.5 sm:p-6 relative overflow-hidden flex flex-col justify-between"
             data-purpose="metric-total-expenses"
@@ -532,7 +513,6 @@ export const DashboardPage = () => {
             </div>
           </div>
 
-          {/* KPI Card 3: Net Balance */}
           <div
             className="glass-card glass-card-interactive rounded-xl sm:rounded-2xl p-3.5 sm:p-6 relative overflow-hidden ring-1 ring-brand-cobalt/20 flex flex-col justify-between"
             data-purpose="metric-net-balance"
@@ -579,7 +559,6 @@ export const DashboardPage = () => {
             </div>
           </div>
 
-          {/* KPI Card 4: Savings Rate */}
           <div
             className="glass-card glass-card-interactive rounded-xl sm:rounded-2xl p-3.5 sm:p-6 relative overflow-hidden flex flex-col justify-between"
             data-purpose="metric-savings-rate"
@@ -648,19 +627,15 @@ export const DashboardPage = () => {
             </div>
           </div>
         </section>
-        {/* END: KeyMetricsSection */}
 
-        {/* BEGIN: AnalyticsChartsRow */}
         <section
           aria-label="Visual Analytics and Trendlines"
           className="grid grid-cols-1 lg:grid-cols-12 gap-6"
         >
-          {/* Chart 1: Income vs Expenses 6-Month Trend (7 cols on large screens) */}
           <div
             className="glass-card rounded-xl sm:rounded-2xl p-3.5 sm:p-6 lg:col-span-7 flex flex-col justify-between"
             data-purpose="trend-bar-chart-card"
           >
-            {/* Chart Header */}
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
               <div>
                 <div className="flex items-center gap-2">
@@ -675,7 +650,6 @@ export const DashboardPage = () => {
                   Historical cash velocity &amp; operational burn
                 </p>
               </div>
-              {/* Legend Indicators */}
               <div className="flex items-center gap-4 text-xs font-medium">
                 <div className="flex items-center gap-1.5">
                   <span className="w-3 h-3 rounded bg-brand-emerald shadow-glow-emerald"></span>
@@ -688,12 +662,10 @@ export const DashboardPage = () => {
               </div>
             </div>
 
-            {/* Chart Visual Canvas Area */}
             <div
               className="relative w-full h-72 flex flex-col justify-end pt-4"
               data-purpose="custom-trend-chart-visualization"
             >
-              {/* Horizontal Grid lines & Y-Axis values */}
               <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-[10px] sm:text-[11px] font-mono text-slate-500 pb-8">
                 {yAxisSteps.map((stepVal, idx) => (
                   <div key={idx} className="flex items-center w-full">
@@ -707,7 +679,6 @@ export const DashboardPage = () => {
                 ))}
               </div>
 
-              {/* Bar Columns Container */}
               <div className="relative z-10 grid grid-cols-6 pl-10 sm:pl-16 pr-1 sm:pr-2 h-56 items-end pb-8">
                 {displayMonths.map((m, idx) => {
                   const isLast = idx === displayMonths.length - 1;
@@ -723,7 +694,6 @@ export const DashboardPage = () => {
                         key={m.month || idx}
                         className="relative flex flex-col items-center h-full justify-end group"
                       >
-                        {/* Floating Info Card Tooltip */}
                         <div className="absolute -top-6 right-0 sm:right-auto bg-obsidian-900 border border-brand-cobalt/40 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg shadow-xl text-center pointer-events-none z-20 whitespace-nowrap">
                           <div className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                             {label.split(' ')[0]} Performance
@@ -784,7 +754,6 @@ export const DashboardPage = () => {
               </div>
             </div>
 
-            {/* Trend Footnote Summary */}
             <div className="pt-4 mt-2 border-t border-white/[0.06] flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
               <span className="flex items-center gap-1.5">
                 <svg
@@ -811,7 +780,6 @@ export const DashboardPage = () => {
             </div>
           </div>
 
-          {/* Chart 2: Spending by Category Doughnut (5 cols on large screens) */}
           <div
             className="glass-card rounded-xl sm:rounded-2xl p-3.5 sm:p-6 lg:col-span-5 flex flex-col justify-between"
             data-purpose="category-doughnut-card"
@@ -828,7 +796,6 @@ export const DashboardPage = () => {
               </span>
             </div>
 
-            {/* Doughnut Graphic with Center Metric */}
             <div className="relative flex items-center justify-center my-4 py-2">
               <svg className="w-56 h-56 transform -rotate-90 drop-shadow-2xl" viewBox="0 0 160 160">
                 <circle
@@ -859,7 +826,6 @@ export const DashboardPage = () => {
                   );
                 })}
               </svg>
-              {/* Center Content */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                   Expensed
@@ -873,7 +839,6 @@ export const DashboardPage = () => {
               </div>
             </div>
 
-            {/* Interactive Legend Pill Row */}
             <div className="space-y-2.5 pt-3 border-t border-white/[0.06]">
               {spendingCats.length === 0 ? (
                 <div className="text-xs text-slate-500 text-center py-3">
@@ -910,14 +875,11 @@ export const DashboardPage = () => {
             </div>
           </div>
         </section>
-        {/* END: AnalyticsChartsRow */}
 
-        {/* BEGIN: BottomDetailedSections */}
         <section
           aria-label="Granular Breakdowns and Transaction Ledger"
           className="grid grid-cols-1 lg:grid-cols-12 gap-6"
         >
-          {/* Left Sub-card: Top Spending Categories Meters (5 cols on large screens) */}
           <div
             className="glass-card rounded-xl sm:rounded-2xl p-3.5 sm:p-6 lg:col-span-5 flex flex-col justify-between"
             data-purpose="top-spending-categories-panel"
@@ -972,7 +934,6 @@ export const DashboardPage = () => {
                             </span>
                           </div>
                         </div>
-                        {/* Progress Bar */}
                         <div className="w-full h-2.5 bg-obsidian-800 rounded-full overflow-hidden p-0.5 border border-white/[0.04]">
                           <div
                             className={`h-full rounded-full ${vis.barGradient}`}
@@ -990,7 +951,6 @@ export const DashboardPage = () => {
               )}
             </div>
 
-            {/* AI Financial Health Brief Box */}
             <div
               className="mt-8 p-4 rounded-xl bg-gradient-to-br from-obsidian-800 to-obsidian-850 border border-brand-cobalt/20 relative overflow-hidden"
               data-purpose="ai-insights-callout"
@@ -1035,7 +995,6 @@ export const DashboardPage = () => {
             </div>
           </div>
 
-          {/* Right Sub-card: Recent Transactions Ledger (7 cols on large screens) */}
           <div
             className="glass-card rounded-xl sm:rounded-2xl p-3.5 sm:p-6 lg:col-span-7 flex flex-col justify-between"
             data-purpose="recent-transactions-ledger"
@@ -1056,7 +1015,6 @@ export const DashboardPage = () => {
                 </Link>
               </div>
 
-              {/* Ledger Table Container */}
               <div className="overflow-x-auto table-container">
                 <table className="w-full text-left text-xs whitespace-nowrap" id="transactions-ledger-table">
                   <thead>
@@ -1182,7 +1140,6 @@ export const DashboardPage = () => {
               </div>
             </div>
 
-            {/* Ledger Table Footer Quick Summary */}
             <div className="pt-4 mt-2 border-t border-white/[0.06] flex flex-wrap items-center justify-between gap-2 text-xs">
               <span className="text-slate-400">
                 Showing {recentTransactions.length} of {recentTransactions.length} settled records
@@ -1195,11 +1152,8 @@ export const DashboardPage = () => {
             </div>
           </div>
         </section>
-        {/* END: BottomDetailedSections */}
       </main>
-      {/* END: MainDashboardBody */}
 
-      {/* Modal Transaction Form */}
       <TransactionForm
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
@@ -1207,7 +1161,6 @@ export const DashboardPage = () => {
         categories={categories}
       />
 
-      {/* Modal Multi-File Transaction Import */}
       <ImportTransactionsModal
         isOpen={isImportOpen}
         onClose={() => setIsImportOpen(false)}

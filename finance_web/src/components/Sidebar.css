@@ -1,4 +1,3 @@
-/* Mobile Hamburger Trigger Button */
 .mobile-menu-btn {
   display: none;
   align-items: center;
@@ -17,7 +16,6 @@
   border-color: #3b82f6;
 }
 
-/* Mobile Drawer Backdrop */
 .mobile-sidebar-backdrop {
   display: none;
 }
@@ -36,7 +34,6 @@
   color: var(--text-primary);
 }
 
-/* Mobile Bottom Navigation Tab Bar */
 .mobile-bottom-nav {
   display: none;
 }

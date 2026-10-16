@@ -1,11 +1,8 @@
-import pytest
-
-
 def test_list_default_categories(client, auth_headers):
     resp = client.get("/api/v1/categories", headers=auth_headers)
     assert resp.status_code == 200
     categories = resp.json()
-    assert len(categories) >= 14  # 9 expense + 5 income default categories
+    assert len(categories) >= 14
 
     cat_names = [c["name"] for c in categories]
     assert "Food" in cat_names
@@ -38,7 +35,6 @@ def test_create_custom_category(client, auth_headers):
 
 
 def test_update_custom_category(client, auth_headers):
-    # Create category first
     create_resp = client.post(
         "/api/v1/categories",
         json={"name": "Gaming", "type": "expense"},
@@ -46,7 +42,6 @@ def test_update_custom_category(client, auth_headers):
     )
     cat_id = create_resp.json()["id"]
 
-    # Update category
     patch_resp = client.patch(
         f"/api/v1/categories/{cat_id}",
         json={"name": "Video Games & Streaming"},
@@ -57,11 +52,9 @@ def test_update_custom_category(client, auth_headers):
 
 
 def test_prevent_modifying_system_category(client, auth_headers):
-    # Find a system category (e.g. Food)
     resp = client.get("/api/v1/categories", headers=auth_headers)
     food_cat = next(c for c in resp.json() if c["name"] == "Food")
 
-    # Attempt to update Food
     patch_resp = client.patch(
         f"/api/v1/categories/{food_cat['id']}",
         json={"name": "Fine Dining"},
@@ -94,7 +87,6 @@ def test_delete_custom_category(client, auth_headers):
 
 
 def test_category_user_isolation(client, auth_headers, other_user_headers):
-    # User A creates a category
     create_resp = client.post(
         "/api/v1/categories",
         json={"name": "User A Private Category", "type": "expense"},
@@ -102,11 +94,9 @@ def test_category_user_isolation(client, auth_headers, other_user_headers):
     )
     cat_id = create_resp.json()["id"]
 
-    # User B should NOT see User A's custom category
     user_b_categories = client.get("/api/v1/categories", headers=other_user_headers).json()
     assert not any(c["id"] == cat_id for c in user_b_categories)
 
-    # User B cannot update User A's category
     patch_resp = client.patch(
         f"/api/v1/categories/{cat_id}",
         json={"name": "Hacked Category"},
@@ -114,7 +104,5 @@ def test_category_user_isolation(client, auth_headers, other_user_headers):
     )
     assert patch_resp.status_code == 404
 
-    # User B cannot delete User A's category
     del_resp = client.delete(f"/api/v1/categories/{cat_id}", headers=other_user_headers)
     assert del_resp.status_code == 404
-
