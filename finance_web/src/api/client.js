@@ -1,5 +1,14 @@
-const RAW_BASE = import.meta?.env?.VITE_API_URL || '';
-const API_BASE = RAW_BASE ? `${RAW_BASE.replace(/\/$/, '')}/api/v1` : '/api/v1';
+export const getApiBase = () => {
+  if (import.meta?.env?.VITE_API_URL) {
+    return `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api/v1`;
+  }
+  if (typeof window !== 'undefined' && window.location.hostname.includes('onrender.com')) {
+    return 'https://fastapi-finance-tracker.onrender.com/api/v1';
+  }
+  return '/api/v1';
+};
+
+const API_BASE = getApiBase();
 
 export const extractErrorMessage = (data, fallback = 'API Request failed') => {
   if (!data) return fallback;
@@ -82,7 +91,8 @@ class ApiClient {
   }
 
   async request(endpoint, options = {}) {
-    const url = `${API_BASE}${endpoint}`;
+    const base = getApiBase();
+    const url = `${base}${endpoint}`;
     const isFormData = options.body instanceof FormData;
     const headers = isFormData
       ? { ...options.headers }
@@ -142,7 +152,8 @@ class ApiClient {
     }
     this.refreshPromise = (async () => {
       try {
-        const resp = await fetch(`${API_BASE}/auth/refresh`, {
+        const base = getApiBase();
+        const resp = await fetch(`${base}/auth/refresh`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refresh_token: this.refreshToken }),
@@ -298,7 +309,8 @@ class ApiClient {
     if (this.token) {
       headers['Authorization'] = `Bearer ${this.token}`;
     }
-    const resp = await fetch(`${API_BASE}/transactions/import-template?format=${fmt}`, {
+    const base = getApiBase();
+    const resp = await fetch(`${base}/transactions/import-template?format=${fmt}`, {
       method: 'GET',
       headers,
     });
