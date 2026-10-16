@@ -140,3 +140,22 @@
   }
 }
 
+html[data-theme="light"] .sidebar-drawer a:not(.from-brand-electric):hover {
+  background-color: rgba(15, 23, 42, 0.05) !important;
+  color: var(--text-primary) !important;
+}
+html[data-theme="light"] .sidebar-drawer a[href^="/streams/"].bg-blue-600\/30 {
+  background-color: #dbeafe !important;
+  color: #1d4ed8 !important;
+  border-color: #93c5fd !important;
+}
+html[data-theme="light"] .sidebar-drawer button[title="Create New Book"] {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  color: #2563eb !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+html[data-theme="light"] .sidebar-drawer button[title="Create New Book"]:hover {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
