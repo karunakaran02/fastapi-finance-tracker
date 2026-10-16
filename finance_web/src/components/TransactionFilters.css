@@ -21,6 +21,23 @@
 }
 
 @media (max-width: 640px) {
+  .card.tx-filters-card {
+    padding: 0.95rem 0.85rem;
+    margin-bottom: 1.15rem;
+  }
+  .tx-filters-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+  .tx-filters-grid .tx-filters-search-col {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 400px) {
+  .tx-filters-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .tx-filters-grid .tx-filters-search-col {
     grid-column: span 1;
   }

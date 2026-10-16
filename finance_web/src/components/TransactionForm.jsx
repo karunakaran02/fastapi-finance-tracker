@@ -91,8 +91,14 @@ export const TransactionForm = ({
   }));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-obsidian-950/80 backdrop-blur-sm">
-      <div className="glass-card rounded-2xl p-6 border border-white/10 shadow-2xl text-slate-100 max-w-lg w-full">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-obsidian-950/80 backdrop-blur-sm"
+      style={{
+        paddingTop: 'max(0.75rem, env(safe-area-inset-top, 0px))',
+        paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))',
+      }}
+    >
+      <div className="glass-card rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/10 shadow-2xl text-slate-100 max-w-lg w-full max-h-[calc(100vh-2rem)] max-h-[calc(100dvh-2rem)] overflow-y-auto">
         <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
           <h3 className="text-base font-bold text-white">
             {initialData ? 'Edit Transaction' : 'Add New Transaction'}

@@ -61,17 +61,18 @@ const SecondaryTopBar = () => {
 
   return (
     <header
-      className="sticky top-0 z-30 bg-obsidian-900/80 backdrop-blur-xl border-b border-white/[0.06] px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-3"
+      className="sticky top-0 z-30 bg-obsidian-900/80 backdrop-blur-xl border-b border-white/[0.06] px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-3"
+      style={{ paddingTop: 'max(0.625rem, env(safe-area-inset-top, 0px))' }}
       data-purpose="top-navigation-bar"
     >
-      <div className="flex items-center gap-2.5 min-w-0">
+      <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
         <MobileMenuButton />
-        <span className="text-sm font-bold text-white truncate">{title}</span>
+        <span className="text-xs sm:text-sm font-bold text-white truncate max-w-[150px] xs:max-w-[210px] sm:max-w-none">{title}</span>
         <span className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Live Sync
         </span>
       </div>
-      <div className="flex items-center gap-2.5 shrink-0">
+      <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
         <CurrencyPill />
         <ThemeToggleButton />
       </div>
@@ -98,7 +99,7 @@ const ProtectedRoute = ({ children }) => {
   return (
     <div className="min-h-screen flex bg-obsidian-950 text-slate-100 antialiased bg-grid-mesh selection:bg-brand-cobalt selection:text-white">
       <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0 pb-20 lg:pb-0">
+      <div className="flex-1 flex flex-col min-w-0 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0">
         <SecondaryTopBar />
         {children}
       </div>

@@ -91,9 +91,24 @@
 @media (max-width: 640px) {
   .card.summary-card {
     min-height: auto;
-    padding: 1.05rem 1.15rem;
+    padding: 1rem 0.95rem;
   }
   .summary-amount-int {
-    font-size: 1.55rem;
+    font-size: 1.45rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .card.summary-card {
+    padding: 0.85rem 0.8rem;
+  }
+  .summary-amount-int {
+    font-size: 1.3rem;
+  }
+  .summary-amount-row .summary-amount-prefix {
+    font-size: 0.95rem;
+  }
+  .summary-amount-row .summary-amount-dec {
+    font-size: 0.85rem;
   }
 }

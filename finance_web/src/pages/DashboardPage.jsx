@@ -238,18 +238,19 @@ export const DashboardPage = () => {
     <>
       {/* BEGIN: TopBar */}
       <header
-        className="sticky top-0 z-30 bg-obsidian-900/80 backdrop-blur-xl border-b border-white/[0.06] px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4 flex flex-wrap items-center justify-between gap-3"
+        className="sticky top-0 z-30 bg-obsidian-900/80 backdrop-blur-xl border-b border-white/[0.06] px-3 sm:px-6 lg:px-8 py-2.5 sm:py-4 flex flex-wrap items-center justify-between gap-2.5 sm:gap-3"
+        style={{ paddingTop: 'max(0.625rem, env(safe-area-inset-top, 0px))' }}
         data-purpose="top-navigation-bar"
       >
         {/* Page Title & Micro Status */}
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <MobileMenuButton />
           <div className="min-w-0">
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-              <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-white font-sans truncate">
+              <h2 className="text-base sm:text-2xl font-bold tracking-tight text-white font-sans truncate">
                 Financial Overview
               </h2>
-              <span className="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Live Sync
               </span>
             </div>
@@ -261,7 +262,7 @@ export const DashboardPage = () => {
 
         {/* Action Toolbar */}
         <div
-          className="flex items-center flex-wrap gap-2 sm:gap-2.5 w-full sm:w-auto justify-between sm:justify-end sm:ml-auto"
+          className="flex items-center flex-wrap gap-1.5 sm:gap-2.5 w-full sm:w-auto justify-between sm:justify-end sm:ml-auto"
           data-purpose="dashboard-action-toolbar"
         >
           {/* Search bar */}
@@ -286,11 +287,11 @@ export const DashboardPage = () => {
           </div>
 
           {/* Date Range Filter Pill */}
-          <div className="flex items-center bg-obsidian-800/80 border border-white/[0.08] rounded-xl p-1 text-xs font-medium">
+          <div className="flex items-center bg-obsidian-800/80 border border-white/[0.08] rounded-xl p-0.5 sm:p-1 text-[11px] sm:text-xs font-medium">
             <button
               type="button"
               onClick={() => setPeriodTab('oct')}
-              className={`px-2 sm:px-2.5 py-1 rounded-lg transition-colors ${
+              className={`px-1.5 sm:px-2.5 py-1 rounded-lg transition-colors ${
                 periodTab === 'oct'
                   ? 'bg-obsidian-700 text-white shadow-sm font-semibold'
                   : 'text-slate-400 hover:text-slate-200'
@@ -301,7 +302,7 @@ export const DashboardPage = () => {
             <button
               type="button"
               onClick={() => setPeriodTab('6m')}
-              className={`px-2 sm:px-2.5 py-1 rounded-lg transition-colors ${
+              className={`px-1.5 sm:px-2.5 py-1 rounded-lg transition-colors ${
                 periodTab === '6m'
                   ? 'bg-obsidian-700 text-white shadow-sm font-semibold'
                   : 'text-slate-400 hover:text-slate-200'
@@ -312,7 +313,7 @@ export const DashboardPage = () => {
             <button
               type="button"
               onClick={() => setPeriodTab('ytd')}
-              className={`px-2 sm:px-2.5 py-1 rounded-lg transition-colors ${
+              className={`px-1.5 sm:px-2.5 py-1 rounded-lg transition-colors ${
                 periodTab === 'ytd'
                   ? 'bg-obsidian-700 text-white shadow-sm font-semibold'
                   : 'text-slate-400 hover:text-slate-200'
@@ -322,11 +323,11 @@ export const DashboardPage = () => {
             </button>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             {/* Refresh Button */}
             <button
               onClick={() => fetchDashboardData(getPeriodMonths(), searchQuery)}
-              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-semibold rounded-xl bg-obsidian-800 hover:bg-obsidian-750 text-slate-200 border border-white/[0.08] transition-colors shadow-sm"
+              className="inline-flex items-center justify-center gap-1.5 p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl bg-obsidian-800 hover:bg-obsidian-750 text-slate-200 border border-white/[0.08] transition-colors shadow-sm"
               title="Refresh Telemetry"
               type="button"
             >
@@ -344,7 +345,7 @@ export const DashboardPage = () => {
             {/* Import Files (Single or Multiple) */}
             <button
               onClick={() => setIsImportOpen(true)}
-              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-semibold rounded-xl bg-obsidian-800 hover:bg-obsidian-750 text-slate-200 border border-white/[0.08] transition-colors shadow-sm"
+              className="inline-flex items-center justify-center gap-1.5 p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl bg-obsidian-800 hover:bg-obsidian-750 text-slate-200 border border-white/[0.08] transition-colors shadow-sm"
               title="Import Single or Multiple CSV/JSON Files"
               type="button"
             >
@@ -362,7 +363,7 @@ export const DashboardPage = () => {
             {/* Export Data */}
             <button
               onClick={handleExportCsv}
-              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-semibold rounded-xl bg-obsidian-800 hover:bg-obsidian-750 text-slate-200 border border-white/[0.08] transition-colors shadow-sm"
+              className="inline-flex items-center justify-center gap-1.5 p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl bg-obsidian-800 hover:bg-obsidian-750 text-slate-200 border border-white/[0.08] transition-colors shadow-sm"
               title="Export Ledger"
               type="button"
             >
@@ -386,7 +387,7 @@ export const DashboardPage = () => {
                 setCurrency(keys[nextIdx]);
               }}
               title={`Active Currency: ${currency} (${symbol}). Click to switch.`}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-obsidian-800 hover:bg-obsidian-700 text-slate-200 border border-white/[0.08] transition-colors"
+              className="inline-flex items-center gap-1 px-2 py-1.5 sm:px-2.5 rounded-xl text-xs font-semibold bg-obsidian-800 hover:bg-obsidian-700 text-slate-200 border border-white/[0.08] transition-colors"
             >
               <span className="text-blue-400 font-bold">{symbol}</span>
               <span>{currency}</span>
@@ -398,13 +399,13 @@ export const DashboardPage = () => {
             {/* Primary CTA: Add Transaction Modal Trigger */}
             <button
               onClick={() => setIsFormOpen(true)}
-              className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 text-xs font-bold rounded-xl text-white bg-gradient-to-r from-brand-electric to-brand-cobalt hover:from-blue-600 hover:to-blue-500 shadow-glow-blue transition-all active:scale-95"
+              className="inline-flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs font-bold rounded-xl text-white bg-gradient-to-r from-brand-electric to-brand-cobalt hover:from-blue-600 hover:to-blue-500 shadow-glow-blue transition-all active:scale-95"
               type="button"
             >
               <svg className="w-4 h-4 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path d="M12 4v16m8-8H4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span className="hidden xs:inline sm:inline">Add</span>
+              <span>Add</span>
               <span className="hidden sm:inline">Transaction</span>
             </button>
           </div>
@@ -414,7 +415,7 @@ export const DashboardPage = () => {
 
       {/* BEGIN: MainDashboardBody */}
       <main
-        className="flex-1 px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-5 sm:space-y-7 max-w-[1700px] w-full mx-auto"
+        className="flex-1 px-2.5 sm:px-6 lg:px-8 py-3.5 sm:py-8 space-y-4 sm:space-y-7 max-w-[1700px] w-full mx-auto"
         data-purpose="executive-metrics-grid"
       >
         {error && (
@@ -426,15 +427,15 @@ export const DashboardPage = () => {
         {/* BEGIN: KeyMetricsSection */}
         <section
           aria-label="Key Financial Performance Indicators"
-          className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5"
+          className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-5"
         >
           {/* KPI Card 1: Total Income */}
           <div
-            className="glass-card glass-card-interactive rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between"
+            className="glass-card glass-card-interactive rounded-xl sm:rounded-2xl p-3.5 sm:p-6 relative overflow-hidden flex flex-col justify-between"
             data-purpose="metric-total-income"
           >
             <div>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <span className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
                   Total Income
                 </span>
@@ -450,12 +451,12 @@ export const DashboardPage = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="text-3xl font-extrabold tracking-tight text-white font-mono flex items-baseline gap-1">
-                  <span className="text-xl font-normal text-slate-400">{symbol}</span>
+                <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-mono flex items-baseline gap-1">
+                  <span className="text-lg sm:text-xl font-normal text-slate-400">{symbol}</span>
                   {incParts.intFormatted}
-                  <span className="text-lg font-normal text-slate-400">.{incParts.decPart}</span>
+                  <span className="text-base sm:text-lg font-normal text-slate-400">.{incParts.decPart}</span>
                 </div>
-                <div className="flex items-center gap-2 pt-0.5 text-xs">
+                <div className="flex items-center gap-2 pt-0.5 text-xs flex-wrap">
                   <span className="inline-flex items-center gap-1 font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                       <path
@@ -472,7 +473,7 @@ export const DashboardPage = () => {
                 </div>
               </div>
             </div>
-            <div className="mt-5 pt-3.5 border-t border-white/[0.05] flex items-center justify-between text-xs text-slate-400">
+            <div className="mt-3.5 sm:mt-5 pt-3 sm:pt-3.5 border-t border-white/[0.05] flex items-center justify-between text-xs text-slate-400">
               <span className="truncate">
                 Retained: {symbol}{formatAmt(retainedIncome)}
               </span>
@@ -484,11 +485,11 @@ export const DashboardPage = () => {
 
           {/* KPI Card 2: Total Expenses */}
           <div
-            className="glass-card glass-card-interactive rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between"
+            className="glass-card glass-card-interactive rounded-xl sm:rounded-2xl p-3.5 sm:p-6 relative overflow-hidden flex flex-col justify-between"
             data-purpose="metric-total-expenses"
           >
             <div>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <span className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
                   Total Expenses
                 </span>
@@ -504,12 +505,12 @@ export const DashboardPage = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="text-3xl font-extrabold tracking-tight text-white font-mono flex items-baseline gap-1">
-                  <span className="text-xl font-normal text-slate-400">{symbol}</span>
+                <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-mono flex items-baseline gap-1">
+                  <span className="text-lg sm:text-xl font-normal text-slate-400">{symbol}</span>
                   {expParts.intFormatted}
-                  <span className="text-lg font-normal text-slate-400">.{expParts.decPart}</span>
+                  <span className="text-base sm:text-lg font-normal text-slate-400">.{expParts.decPart}</span>
                 </div>
-                <div className="flex items-center gap-2 pt-0.5 text-xs">
+                <div className="flex items-center gap-2 pt-0.5 text-xs flex-wrap">
                   <span className="inline-flex items-center font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/20">
                     {outflowSharePct}% of cashflow
                   </span>
@@ -517,7 +518,7 @@ export const DashboardPage = () => {
                 </div>
               </div>
             </div>
-            <div className="mt-5 pt-3.5 border-t border-white/[0.05]">
+            <div className="mt-3.5 sm:mt-5 pt-3 sm:pt-3.5 border-t border-white/[0.05]">
               <div className="flex justify-between text-xs mb-1.5 text-slate-400">
                 <span>Income Limit: {symbol}{formatAmt(totalIncome)}</span>
                 <span className="font-mono text-slate-300 font-medium">{capUtilized}% utilized</span>
@@ -533,11 +534,11 @@ export const DashboardPage = () => {
 
           {/* KPI Card 3: Net Balance */}
           <div
-            className="glass-card glass-card-interactive rounded-2xl p-6 relative overflow-hidden ring-1 ring-brand-cobalt/20 flex flex-col justify-between"
+            className="glass-card glass-card-interactive rounded-xl sm:rounded-2xl p-3.5 sm:p-6 relative overflow-hidden ring-1 ring-brand-cobalt/20 flex flex-col justify-between"
             data-purpose="metric-net-balance"
           >
             <div>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <span className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
                   Net Balance
                 </span>
@@ -553,12 +554,12 @@ export const DashboardPage = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="text-3xl font-extrabold tracking-tight text-white font-mono flex items-baseline gap-1">
-                  <span className="text-xl font-normal text-slate-400">{netParts.sign}{symbol}</span>
+                <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-mono flex items-baseline gap-1">
+                  <span className="text-lg sm:text-xl font-normal text-slate-400">{netParts.sign}{symbol}</span>
                   {netParts.intFormatted}
-                  <span className="text-lg font-normal text-slate-400">.{netParts.decPart}</span>
+                  <span className="text-base sm:text-lg font-normal text-slate-400">.{netParts.decPart}</span>
                 </div>
-                <div className="flex items-center gap-2 pt-0.5 text-xs">
+                <div className="flex items-center gap-2 pt-0.5 text-xs flex-wrap">
                   <span className="font-medium text-slate-400">Monthly Net:</span>
                   <span className="font-semibold text-brand-cobalt font-mono">
                     {symbol}{formatAmt(monthlySavings)}
@@ -566,7 +567,7 @@ export const DashboardPage = () => {
                 </div>
               </div>
             </div>
-            <div className="mt-5 pt-3.5 border-t border-white/[0.05] flex items-center justify-between">
+            <div className="mt-3.5 sm:mt-5 pt-3 sm:pt-3.5 border-t border-white/[0.05] flex items-center justify-between flex-wrap gap-1.5">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>{' '}
                 {balanceStatus}
@@ -580,11 +581,11 @@ export const DashboardPage = () => {
 
           {/* KPI Card 4: Savings Rate */}
           <div
-            className="glass-card glass-card-interactive rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between"
+            className="glass-card glass-card-interactive rounded-xl sm:rounded-2xl p-3.5 sm:p-6 relative overflow-hidden flex flex-col justify-between"
             data-purpose="metric-savings-rate"
           >
             <div>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <span className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
                   Savings Rate
                 </span>
@@ -601,9 +602,9 @@ export const DashboardPage = () => {
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-3xl font-extrabold tracking-tight text-white font-mono">
+                  <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-mono">
                     {savingsRate}
-                    <span className="text-xl text-brand-emerald">%</span>
+                    <span className="text-lg sm:text-xl text-brand-emerald">%</span>
                   </div>
                   <p className="text-xs font-medium text-slate-400 mt-1">
                     Monthly Rate: {monthlySavingsRate}%
@@ -639,7 +640,7 @@ export const DashboardPage = () => {
                 </div>
               </div>
             </div>
-            <div className="mt-5 pt-3.5 border-t border-white/[0.05] flex items-center justify-between text-xs">
+            <div className="mt-3.5 sm:mt-5 pt-3 sm:pt-3.5 border-t border-white/[0.05] flex items-center justify-between text-xs">
               <span className="text-slate-400">Benchmark Tier</span>
               <span className="inline-flex items-center gap-1 text-brand-mint font-semibold">
                 <span className="text-xs">★</span> {benchmarkTier}
@@ -656,7 +657,7 @@ export const DashboardPage = () => {
         >
           {/* Chart 1: Income vs Expenses 6-Month Trend (7 cols on large screens) */}
           <div
-            className="glass-card rounded-2xl p-6 lg:col-span-7 flex flex-col justify-between"
+            className="glass-card rounded-xl sm:rounded-2xl p-3.5 sm:p-6 lg:col-span-7 flex flex-col justify-between"
             data-purpose="trend-bar-chart-card"
           >
             {/* Chart Header */}
@@ -696,7 +697,7 @@ export const DashboardPage = () => {
               <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-[10px] sm:text-[11px] font-mono text-slate-500 pb-8">
                 {yAxisSteps.map((stepVal, idx) => (
                   <div key={idx} className="flex items-center w-full">
-                    <span className="w-12 sm:w-16 truncate">{symbol}{formatAmt(stepVal)}</span>
+                    <span className="w-10 sm:w-16 truncate">{symbol}{formatAmt(stepVal)}</span>
                     <div
                       className={`flex-1 border-b ${
                         idx === yAxisSteps.length - 1 ? 'border-white/[0.08]' : 'border-white/[0.05]'
@@ -707,7 +708,7 @@ export const DashboardPage = () => {
               </div>
 
               {/* Bar Columns Container */}
-              <div className="relative z-10 grid grid-cols-6 pl-12 sm:pl-16 pr-1 sm:pr-2 h-56 items-end pb-8">
+              <div className="relative z-10 grid grid-cols-6 pl-10 sm:pl-16 pr-1 sm:pr-2 h-56 items-end pb-8">
                 {displayMonths.map((m, idx) => {
                   const isLast = idx === displayMonths.length - 1;
                   const incVal = Number(m.income || 0);
@@ -812,7 +813,7 @@ export const DashboardPage = () => {
 
           {/* Chart 2: Spending by Category Doughnut (5 cols on large screens) */}
           <div
-            className="glass-card rounded-2xl p-6 lg:col-span-5 flex flex-col justify-between"
+            className="glass-card rounded-xl sm:rounded-2xl p-3.5 sm:p-6 lg:col-span-5 flex flex-col justify-between"
             data-purpose="category-doughnut-card"
           >
             <div className="flex items-center justify-between mb-4">
@@ -918,7 +919,7 @@ export const DashboardPage = () => {
         >
           {/* Left Sub-card: Top Spending Categories Meters (5 cols on large screens) */}
           <div
-            className="glass-card rounded-2xl p-6 lg:col-span-5 flex flex-col justify-between"
+            className="glass-card rounded-xl sm:rounded-2xl p-3.5 sm:p-6 lg:col-span-5 flex flex-col justify-between"
             data-purpose="top-spending-categories-panel"
           >
             <div>
@@ -1036,7 +1037,7 @@ export const DashboardPage = () => {
 
           {/* Right Sub-card: Recent Transactions Ledger (7 cols on large screens) */}
           <div
-            className="glass-card rounded-2xl p-6 lg:col-span-7 flex flex-col justify-between"
+            className="glass-card rounded-xl sm:rounded-2xl p-3.5 sm:p-6 lg:col-span-7 flex flex-col justify-between"
             data-purpose="recent-transactions-ledger"
           >
             <div>
@@ -1056,7 +1057,7 @@ export const DashboardPage = () => {
               </div>
 
               {/* Ledger Table Container */}
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto table-container">
                 <table className="w-full text-left text-xs whitespace-nowrap" id="transactions-ledger-table">
                   <thead>
                     <tr className="text-slate-400 font-semibold border-b border-white/[0.06] text-[11px] uppercase tracking-wider">

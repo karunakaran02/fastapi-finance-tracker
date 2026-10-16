@@ -71,4 +71,8 @@
     min-width: 100%;
     width: 100%;
   }
+  .admin-actions-wrap {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
 }

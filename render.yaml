@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: finance-tracker-web
+    runtime: static
+    buildCommand: cd finance_web && npm install && npm run build
+    staticPublishPath: finance_web/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+

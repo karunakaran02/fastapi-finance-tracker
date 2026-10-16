@@ -1,9 +1,12 @@
 .auth-page-wrapper {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: 1.25rem 1rem;
+  padding-top: max(1.25rem, env(safe-area-inset-top, 0px));
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
   background-color: var(--bg-page);
 }
 
@@ -12,6 +15,13 @@
   max-width: 420px;
   padding: 2rem;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.55);
+}
+
+@media (max-width: 480px) {
+  .card.auth-card {
+    padding: 1.25rem 1rem;
+    border-radius: 0.875rem;
+  }
 }
 
 .auth-brand-header {
