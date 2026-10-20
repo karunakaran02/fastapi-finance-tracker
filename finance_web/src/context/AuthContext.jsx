@@ -31,11 +31,15 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
-  const register = async (email, password, fullName) => {
-    await api.register(email, password, fullName);
+  const register = async (email, password, fullName, verificationCode) => {
+    await api.register(email, password, fullName, verificationCode);
     const userData = await api.getMe();
     setUser(userData);
     return userData;
+  };
+
+  const sendVerificationCode = async (email) => {
+    return api.sendVerificationCode(email);
   };
 
   const logout = async () => {
@@ -56,7 +60,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        register,
+        sendVerificationCode,
+        logout,
+        refreshUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

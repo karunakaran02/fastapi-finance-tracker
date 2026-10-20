@@ -202,3 +202,77 @@ def test_login_rate_limiting_refreshes_after_window(client):
     allowed_later, remaining, _ = login_rate_limiter.check_rate_limit(email, current_time=after_2_hours)
     assert allowed_later is True
     assert remaining == 9
+
+def test_register_invalid_email_format(client):
+    payload = {
+        "email": "invalid-email-format",
+        "password": "StrongPassword123!",
+        "full_name": "Invalid Email User",
+    }
+    response = client.post("/api/v1/auth/register", json=payload)
+    assert response.status_code in (400, 422)
+
+def test_send_verification_code_success(client):
+    response = client.post(
+        "/api/v1/auth/send-verification-code",
+        json={"email": "verify_test@example.com"},
+    )
+    assert response.status_code == 200
+    assert "Verification code sent" in response.json()["message"]
+
+def test_send_verification_code_invalid_regex_email(client):
+    invalid_emails = ["notanemail", "user@domain", "user@.com", "user@domain.c"]
+    for bad_email in invalid_emails:
+        resp = client.post(
+            "/api/v1/auth/send-verification-code",
+            json={"email": bad_email},
+        )
+        assert resp.status_code in (400, 422)
+
+def test_send_verification_code_existing_email(client):
+    init_payload = {
+        "email": "pre_existing@example.com",
+        "password": "StrongPassword123!",
+        "full_name": "Pre Existing",
+    }
+    client.post("/api/v1/auth/register", json=init_payload)
+
+    response = client.post(
+        "/api/v1/auth/send-verification-code",
+        json={"email": "pre_existing@example.com"},
+    )
+    assert response.status_code == 400
+    assert "already exists" in response.json()["detail"]
+
+def test_register_with_verification_code(client, db_session):
+    from app.models.verification import EmailVerification
+
+    email = "code_test_user@example.com"
+    client.post("/api/v1/auth/send-verification-code", json={"email": email})
+
+    rec = db_session.query(EmailVerification).filter(EmailVerification.email == email).first()
+    assert rec is not None
+
+    bad_resp = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": email,
+            "password": "StrongPassword123!",
+            "full_name": "Code Test",
+            "verification_code": "000000",
+        },
+    )
+    assert bad_resp.status_code == 400
+    assert "Invalid verification code" in bad_resp.json()["detail"]
+
+    good_resp = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": email,
+            "password": "StrongPassword123!",
+            "full_name": "Code Test",
+            "verification_code": rec.code,
+        },
+    )
+    assert good_resp.status_code == 201
+    assert "access_token" in good_resp.json()

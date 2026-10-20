@@ -6,6 +6,7 @@ from app.core.security import get_password_hash, verify_password
 from app.models.user import User
 from app.schemas.auth import MessageResponse
 from app.schemas.user import UserPasswordChange, UserResponse, UserUpdate
+from app.services.email_validator import validate_deliverable_email
 from app.services.user import get_user_by_email, update_user
 
 router = APIRouter()
@@ -23,6 +24,8 @@ def update_user_profile(
 ):
 
     if user_in.email and user_in.email != current_user.email:
+        validated_email = validate_deliverable_email(user_in.email)
+        user_in.email = validated_email
         existing = get_user_by_email(db, email=user_in.email)
         if existing:
             raise HTTPException(

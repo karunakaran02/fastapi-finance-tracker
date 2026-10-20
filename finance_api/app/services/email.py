@@ -218,3 +218,98 @@ def send_threshold_alert_email(
 
     logger.info("Mock SMTP mode: alert email recorded in audit log for %s (Budget: %s)", recipient_email, budget_name)
     return True, "Mock Mode (SMTP_HOST not set)"
+
+def generate_verification_code_html(code: str, recipient_email: str) -> str:
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification Code</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0b0e14; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #e2e8f0;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0b0e14; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%" style="max-width: 520px; background-color: #11141c; border: 1px solid #1e2433; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td style="padding: 28px 32px; border-bottom: 1px solid #1e2433; background: linear-gradient(180deg, #161b26 0%, #11141c 100%);">
+                            <div style="font-size: 18px; font-weight: 800; color: #ffffff; letter-spacing: -0.02em;">Finance Intel</div>
+                            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Identity Verification &amp; Account Security</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 32px;">
+                            <h2 style="margin: 0 0 12px 0; font-size: 20px; font-weight: 700; color: #ffffff;">Confirm Your Email Address</h2>
+                            <p style="margin: 0 0 24px 0; font-size: 14px; color: #94a3b8; line-height: 1.6;">
+                                Thank you for creating an account. Enter the single-use 6-digit security code below in your registration screen to activate your account:
+                            </p>
+                            <div style="text-align: center; margin: 28px 0; padding: 20px; background: #0c0f17; border: 1px solid #1e2538; border-radius: 12px;">
+                                <div style="font-family: 'JetBrains Mono', 'Courier New', Courier, monospace; font-size: 34px; font-weight: 800; letter-spacing: 0.35em; color: #00f5d4; text-shadow: 0 0 16px rgba(0, 245, 212, 0.4);">
+                                    {code}
+                                </div>
+                            </div>
+                            <p style="margin: 0 0 12px 0; font-size: 12px; color: #64748b; line-height: 1.5;">
+                                This verification code will expire in <strong>10 minutes</strong>. If you did not attempt to register on Finance Intel, you can safely disregard this message.
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 20px 32px; background-color: #0c0f17; border-top: 1px solid #1a202c; text-align: center; font-size: 11px; color: #475569;">
+                            Finance Intel Automated Identity System &bull; Dispatched to {recipient_email}
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>"""
+
+def send_verification_email(recipient_email: str, code: str) -> tuple[bool, str]:
+    subject = f"Your Finance Intel Verification Code: {code}"
+    html_content = generate_verification_code_html(code=code, recipient_email=recipient_email)
+    plain_text = (
+        f"Finance Intel Verification Code\n\n"
+        f"Your verification code is: {code}\n\n"
+        f"Enter this 6-digit code in the registration screen to confirm your email and activate your account.\n"
+        f"This code will expire in 10 minutes.\n\n"
+        f"If you did not request this, please disregard this email."
+    )
+
+    smtp_host = settings.clean_smtp_host
+    smtp_user = settings.clean_smtp_user
+    smtp_pass = settings.clean_smtp_password
+    from_email = settings.clean_emails_from_email
+
+    if smtp_host:
+        try:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"] = f"{settings.EMAILS_FROM_NAME} <{from_email}>"
+            msg["To"] = recipient_email
+
+            msg.attach(MIMEText(plain_text, "plain"))
+            msg.attach(MIMEText(html_content, "html"))
+
+            if settings.SMTP_PORT == 465:
+                server = smtplib.SMTP_SSL(smtp_host, settings.SMTP_PORT, timeout=12)
+            else:
+                server = smtplib.SMTP(smtp_host, settings.SMTP_PORT, timeout=12)
+                if settings.SMTP_TLS:
+                    server.starttls()
+
+            with server:
+                if smtp_user and smtp_pass:
+                    server.login(smtp_user, smtp_pass)
+                server.send_message(msg)
+
+            logger.info("Successfully sent verification email to %s via SMTP (%s)", recipient_email, smtp_host)
+            return True, f"Sent via SMTP ({smtp_host})"
+        except Exception as exc:
+            err_msg = str(exc)
+            logger.error("Failed to send verification email via SMTP to %s: %s", recipient_email, exc)
+            return False, f"SMTP Delivery Failed: {err_msg[:120]}"
+
+    logger.info("Mock SMTP mode: verification code %s generated for %s", code, recipient_email)
+    return True, "Mock Mode (SMTP_HOST not set)"

@@ -199,8 +199,12 @@ class ApiClient {
     return this.request(endpoint, { method: 'DELETE' });
   }
 
-  async register(email, password, full_name) {
-    const data = await this.post('/auth/register', { email, password, full_name });
+  sendVerificationCode(email) {
+    return this.post('/auth/send-verification-code', { email });
+  }
+
+  async register(email, password, full_name, verification_code) {
+    const data = await this.post('/auth/register', { email, password, full_name, verification_code });
     this.setTokens(data.access_token, data.refresh_token);
     return data;
   }

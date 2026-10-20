@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { extractErrorMessage } from '../api/client';
 import './AuthPages.css';
 
+const EMAIL_REGEX = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/;
+
 export const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,9 +42,16 @@ export const LoginPage = () => {
     e.preventDefault();
     setError('');
     setColdStartNotice(false);
+
+    const cleanEmail = (email || '').trim();
+    if (!cleanEmail || !EMAIL_REGEX.test(cleanEmail)) {
+      setError('Please enter a valid email address format (e.g. name@domain.com).');
+      return;
+    }
+
     setLoading(true);
     try {
-      await login(email, password);
+      await login(cleanEmail, password);
       navigate('/dashboard');
     } catch (err) {
       let msg = 'Login failed. Please verify credentials.';
@@ -112,7 +121,7 @@ export const LoginPage = () => {
               <input
                 type="email"
                 required
-                placeholder="name@example.com"
+                placeholder="name@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="form-input"

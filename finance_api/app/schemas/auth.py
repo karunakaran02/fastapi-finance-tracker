@@ -17,5 +17,8 @@ class LoginRequest(BaseModel):
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
+class SendVerificationCodeRequest(BaseModel):
+    email: EmailStr
+
 class MessageResponse(BaseModel):
     message: str

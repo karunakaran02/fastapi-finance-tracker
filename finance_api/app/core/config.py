@@ -47,6 +47,8 @@ class Settings(BaseSettings):
     EMAILS_FROM_EMAIL: str = "alerts@financeintel.com"
     EMAILS_FROM_NAME: str = "Finance Intel Alerts"
 
+    CHECK_EMAIL_DELIVERABILITY: bool = True
+
     @property
     def clean_smtp_host(self) -> str:
         return self.SMTP_HOST.strip() if self.SMTP_HOST else ""

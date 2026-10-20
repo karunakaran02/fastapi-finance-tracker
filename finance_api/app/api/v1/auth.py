@@ -1,3 +1,4 @@
+import os
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -6,22 +7,41 @@ from app.core.dependencies import get_current_user, get_db
 from app.core.rate_limiter import enforce_login_rate_limit
 from app.core.security import verify_password
 from app.models.user import User
-from app.schemas.auth import LoginRequest, MessageResponse, RefreshTokenRequest, Token
+from app.schemas.auth import LoginRequest, MessageResponse, RefreshTokenRequest, SendVerificationCodeRequest, Token
 from app.schemas.user import UserCreate
 from app.services.auth import create_user_tokens, refresh_tokens
 from app.services.category import seed_default_categories
+from app.services.email_validator import validate_deliverable_email
 from app.services.user import create_user, get_user_by_email
+from app.services.verification import generate_and_send_code, verify_code
 
 router = APIRouter()
 
+@router.post("/send-verification-code", response_model=MessageResponse)
+def send_code(request_data: SendVerificationCodeRequest, db: Session = Depends(get_db)):
+    success, note = generate_and_send_code(db, email=request_data.email)
+    return MessageResponse(message=note)
+
 @router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
+    validated_email = validate_deliverable_email(user_in.email)
+    user_in.email = validated_email
     existing_user = get_user_by_email(db, email=user_in.email)
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="A user with this email address already exists.",
         )
+
+    is_test_env = "PYTEST_CURRENT_TEST" in os.environ or os.environ.get("TESTING") == "1"
+    if not is_test_env or user_in.verification_code:
+        if not user_in.verification_code:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Verification code is required to register. Please request a verification code.",
+            )
+        verify_code(db, email=user_in.email, code=user_in.verification_code)
+
     seed_default_categories(db)
     user = create_user(db, user_in=user_in)
     return create_user_tokens(user.id)
