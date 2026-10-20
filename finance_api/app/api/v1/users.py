@@ -13,7 +13,6 @@ router = APIRouter()
 
 @router.get("/me", response_model=UserResponse)
 def get_user_profile(current_user: User = Depends(get_current_user)):
-
     return current_user
 
 @router.patch("/me", response_model=UserResponse)
@@ -22,7 +21,6 @@ def update_user_profile(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-
     if user_in.email and user_in.email != current_user.email:
         validated_email = validate_deliverable_email(user_in.email)
         user_in.email = validated_email
@@ -41,7 +39,6 @@ def change_password(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-
     if not verify_password(password_data.current_password, current_user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

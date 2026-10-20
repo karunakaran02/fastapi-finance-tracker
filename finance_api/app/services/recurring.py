@@ -15,9 +15,7 @@ from app.schemas.recurring import (
     RecurringCreate,
     RecurringFrequency,
     RecurringResponse,
-    RecurringStatus,
     RecurringSuggestion,
-    RecurringType,
     RecurringUpdate,
     UpcomingMilestone,
 )
