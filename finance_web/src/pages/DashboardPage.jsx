@@ -202,6 +202,17 @@ export const DashboardPage = () => {
     }
   };
 
+  const recentTransactions = dashboardData?.recent_transactions || [];
+  const displayedRecentTransactions = useMemo(() => {
+    if (!searchQuery || !searchQuery.trim()) return recentTransactions;
+    const q = searchQuery.toLowerCase().trim();
+    return recentTransactions.filter((tx) =>
+      (tx.description || '').toLowerCase().includes(q) ||
+      (tx.category_name || '').toLowerCase().includes(q) ||
+      String(tx.amount || '').includes(q)
+    );
+  }, [recentTransactions, searchQuery]);
+
   if (loading && !dashboardData) {
     return (
       <div className="flex-1 flex items-center justify-center p-12 text-slate-400 text-sm">
@@ -246,17 +257,6 @@ export const DashboardPage = () => {
 
   const spendingCats = dashboardData?.spending_by_category || [];
   const topCategories = dashboardData?.top_spending_categories || [];
-  const recentTransactions = dashboardData?.recent_transactions || [];
-
-  const displayedRecentTransactions = useMemo(() => {
-    if (!searchQuery || !searchQuery.trim()) return recentTransactions;
-    const q = searchQuery.toLowerCase().trim();
-    return recentTransactions.filter((tx) =>
-      (tx.description || '').toLowerCase().includes(q) ||
-      (tx.category_name || '').toLowerCase().includes(q) ||
-      String(tx.amount || '').includes(q)
-    );
-  }, [recentTransactions, searchQuery]);
 
   const currentMonthShort = dashboardData?.current_month_short || 'Current';
   const currentMonthLong = dashboardData?.current_month_long || 'Current Month';
