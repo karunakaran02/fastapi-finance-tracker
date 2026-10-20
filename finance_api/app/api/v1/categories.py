@@ -21,7 +21,6 @@ from app.services.category import (
 
 router = APIRouter()
 
-
 @router.get("", response_model=List[CategoryResponse])
 def list_categories(
     type: Optional[CategoryType] = Query(None, description="Filter categories by type (income or expense)"),
@@ -29,7 +28,6 @@ def list_categories(
     current_user: User = Depends(get_current_user),
 ):
     return get_categories(db, user_id=current_user.id, category_type=type)
-
 
 @router.post("", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
 def create_new_category(
@@ -43,7 +41,6 @@ def create_new_category(
         category_in=category_in,
         is_admin=current_user.is_admin,
     )
-
 
 @router.patch("/{category_id}", response_model=CategoryResponse)
 def update_existing_category(
@@ -70,7 +67,6 @@ def update_existing_category(
             detail="Not authorized to modify this category.",
         )
     return update_category(db, category=category, category_in=category_in)
-
 
 @router.delete("/{category_id}", response_model=MessageResponse)
 def delete_existing_category(

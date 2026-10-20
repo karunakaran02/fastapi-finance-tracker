@@ -1,13 +1,11 @@
 from decimal import Decimal
 
-
 def get_category_id(client, headers, name: str) -> int:
     resp = client.get("/api/v1/categories", headers=headers)
     for cat in resp.json():
         if cat["name"] == name:
             return cat["id"]
     raise ValueError(f"Category {name} not found")
-
 
 def test_dashboard_analytics_calculations(client, auth_headers):
     salary_cat_id = get_category_id(client, auth_headers, "Salary")
@@ -78,7 +76,6 @@ def test_dashboard_analytics_calculations(client, auth_headers):
     assert len(data["recent_transactions"]) <= 5
     assert len(data["recent_transactions"]) > 0
 
-
 def test_monthly_trends_report(client, auth_headers):
     resp = client.get("/api/v1/reports/monthly?months=6", headers=auth_headers)
     assert resp.status_code == 200
@@ -99,7 +96,6 @@ def test_monthly_trends_report(client, auth_headers):
         assert "net_savings" in m
         assert "savings_rate" in m
 
-
 def test_categories_distribution_report(client, auth_headers):
     resp = client.get("/api/v1/reports/categories?type=expense", headers=auth_headers)
     assert resp.status_code == 200
@@ -110,7 +106,6 @@ def test_categories_distribution_report(client, auth_headers):
     if len(data["categories"]) > 0:
         total_pct = sum(c["percentage"] for c in data["categories"])
         assert 99.0 <= total_pct <= 101.0
-
 
 def test_reports_user_isolation(client, other_user_headers):
     resp = client.get("/api/v1/reports/dashboard", headers=other_user_headers)

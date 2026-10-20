@@ -1,19 +1,10 @@
-"""initial schema
-
-Revision ID: 001_initial_schema
-Revises: 
-Create Date: 2026-10-08 12:00:00.000000
-
-"""
 from alembic import op
 import sqlalchemy as sa
-
 
 revision = '001_initial_schema'
 down_revision = None
 branch_labels = None
 depends_on = None
-
 
 def upgrade() -> None:
     op.create_table(
@@ -66,7 +57,6 @@ def upgrade() -> None:
     op.create_index(op.f('ix_transactions_type'), 'transactions', ['type'], unique=False)
     op.create_index(op.f('ix_transactions_transaction_date'), 'transactions', ['transaction_date'], unique=False)
 
-
 def downgrade() -> None:
     op.drop_index(op.f('ix_transactions_transaction_date'), table_name='transactions')
     op.drop_index(op.f('ix_transactions_type'), table_name='transactions')
@@ -82,4 +72,3 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_users_id'), table_name='users')
     op.drop_index(op.f('ix_users_email'), table_name='users')
     op.drop_table('users')
-

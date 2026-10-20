@@ -10,7 +10,6 @@ from app.database.session import SessionLocal, engine
 from app.services.category import seed_default_categories
 from app.services.user import seed_default_admin
 
-
 def ensure_schema_columns() -> None:
     inspector = inspect(engine)
     if "users" in inspector.get_table_names():
@@ -20,7 +19,6 @@ def ensure_schema_columns() -> None:
                 conn.execute(
                     text("ALTER TABLE users ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT FALSE")
                 )
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

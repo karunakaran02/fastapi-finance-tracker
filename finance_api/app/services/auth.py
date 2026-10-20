@@ -12,7 +12,6 @@ from app.models.user import User
 from app.schemas.auth import Token
 from app.services.user import get_user, get_user_by_email
 
-
 def authenticate_user(db: Session, email: str, password: str) -> Optional[User]:
     user = get_user_by_email(db, email=email)
     if not user:
@@ -20,7 +19,6 @@ def authenticate_user(db: Session, email: str, password: str) -> Optional[User]:
     if not verify_password(password, user.password_hash):
         return None
     return user
-
 
 def create_user_tokens(user_id: int) -> Token:
     access_token = create_access_token(subject=user_id)
@@ -30,7 +28,6 @@ def create_user_tokens(user_id: int) -> Token:
         refresh_token=refresh_token,
         token_type="bearer",
     )
-
 
 def refresh_tokens(db: Session, refresh_token_str: str) -> Optional[Token]:
     try:

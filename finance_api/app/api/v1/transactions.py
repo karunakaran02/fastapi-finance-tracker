@@ -32,11 +32,14 @@ from app.services.transaction import (
 
 router = APIRouter()
 
-
 def _format_transaction(tx) -> TransactionResponse:
     return TransactionResponse(
         id=tx.id,
         user_id=tx.user_id,
+        book_id=tx.book_id,
+        book_title=tx.book.title if tx.book else None,
+        book_color=tx.book.color if tx.book else None,
+        book_icon=tx.book.icon if tx.book else None,
         category_id=tx.category_id,
         category_name=tx.category.name if tx.category else None,
         type=tx.type,
@@ -47,11 +50,11 @@ def _format_transaction(tx) -> TransactionResponse:
         updated_at=tx.updated_at,
     )
 
-
 @router.get("", response_model=PaginatedTransactions)
 def list_transactions(
     type: Optional[TransactionType] = Query(None, description="Filter by transaction type: income or expense"),
     category_id: Optional[int] = Query(None, description="Filter by category ID"),
+    book_id: Optional[int] = Query(None, description="Filter by stream book ID"),
     start_date: Optional[datetime] = Query(None, description="Filter by starting date (inclusive)"),
     end_date: Optional[datetime] = Query(None, description="Filter by ending date (inclusive)"),
     search: Optional[str] = Query(None, description="Case-insensitive search query in description"),
@@ -67,6 +70,7 @@ def list_transactions(
         user_id=current_user.id,
         transaction_type=type,
         category_id=category_id,
+        book_id=book_id,
         start_date=start_date,
         end_date=end_date,
         search=search,
@@ -85,7 +89,6 @@ def list_transactions(
         page_size=page_size,
         total_pages=total_pages,
     )
-
 
 @router.post("", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
 def create_new_transaction(
@@ -110,7 +113,6 @@ def create_new_transaction(
     tx = create_transaction(db, user_id=current_user.id, transaction_in=transaction_in)
     background_tasks.add_task(evaluate_and_trigger_alerts_background, current_user.id, [tx.id])
     return _format_transaction(tx)
-
 
 @router.post("/import", response_model=TransactionImportResponse)
 async def import_transactions(
@@ -138,11 +140,11 @@ async def import_transactions(
     background_tasks.add_task(evaluate_and_trigger_alerts_background, current_user.id)
     return result
 
-
 @router.get("/export")
 def export_transactions(
     type: Optional[TransactionType] = Query(None, description="Filter by transaction type: income or expense"),
     category_id: Optional[int] = Query(None, description="Filter by category ID"),
+    book_id: Optional[int] = Query(None, description="Filter by stream book ID"),
     start_date: Optional[datetime] = Query(None, description="Filter by starting date (inclusive)"),
     end_date: Optional[datetime] = Query(None, description="Filter by ending date (inclusive)"),
     search: Optional[str] = Query(None, description="Case-insensitive search query in description"),
@@ -155,6 +157,7 @@ def export_transactions(
         user_id=current_user.id,
         transaction_type=type,
         category_id=category_id,
+        book_id=book_id,
         start_date=start_date,
         end_date=end_date,
         search=search,
@@ -165,7 +168,6 @@ def export_transactions(
         media_type="text/csv; charset=utf-8",
         headers={"Content-Disposition": 'attachment; filename="finance_intel_ledger.csv"'},
     )
-
 
 @router.get("/import-template")
 def download_import_template(
@@ -186,7 +188,6 @@ def download_import_template(
         headers={"Content-Disposition": 'attachment; filename="transactions_import_template.csv"'},
     )
 
-
 @router.get("/{transaction_id}", response_model=TransactionResponse)
 def get_single_transaction(
     transaction_id: int,
@@ -201,7 +202,6 @@ def get_single_transaction(
             detail="Transaction not found.",
         )
     return _format_transaction(tx)
-
 
 @router.patch("/{transaction_id}", response_model=TransactionResponse)
 def update_existing_transaction(
@@ -238,7 +238,6 @@ def update_existing_transaction(
     background_tasks.add_task(evaluate_and_trigger_alerts_background, current_user.id, [updated_tx.id])
     return _format_transaction(updated_tx)
 
-
 @router.delete("/clear-all", response_model=MessageResponse)
 def clear_all_transactions(
     db: Session = Depends(get_db),
@@ -248,7 +247,6 @@ def clear_all_transactions(
     return MessageResponse(
         message=f"Successfully cleared all {deleted_count} transaction(s)."
     )
-
 
 @router.delete("/{transaction_id}", response_model=MessageResponse)
 def delete_existing_transaction(

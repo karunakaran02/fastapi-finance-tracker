@@ -13,14 +13,12 @@ reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/auth/login"
 )
 
-
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-
 
 def get_current_user(
     db: Session = Depends(get_db),
@@ -49,7 +47,6 @@ def get_current_user(
             detail="Inactive user account",
         )
     return user
-
 
 def get_current_admin_user(
     current_user: User = Depends(get_current_user),

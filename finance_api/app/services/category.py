@@ -26,7 +26,6 @@ DEFAULT_INCOME_CATEGORIES = [
     "Other",
 ]
 
-
 def seed_default_categories(db: Session) -> None:
     for name in DEFAULT_EXPENSE_CATEGORIES:
         exists = (
@@ -48,7 +47,6 @@ def seed_default_categories(db: Session) -> None:
 
     db.commit()
 
-
 def get_categories(
     db: Session,
     user_id: int,
@@ -60,7 +58,6 @@ def get_categories(
     if category_type:
         query = query.filter(Category.type == category_type)
     return query.order_by(Category.is_system.desc(), Category.name.asc()).all()
-
 
 def get_category_by_id(
     db: Session,
@@ -75,7 +72,6 @@ def get_category_by_id(
         )
         .first()
     )
-
 
 def create_category(
     db: Session,
@@ -107,7 +103,6 @@ def create_category(
     db.refresh(category)
     return category
 
-
 def update_category(
     db: Session,
     category: Category,
@@ -121,7 +116,6 @@ def update_category(
     db.commit()
     db.refresh(category)
     return category
-
 
 def delete_category(db: Session, category: Category) -> bool:
     tx_count = db.query(Transaction).filter(Transaction.category_id == category.id).count()

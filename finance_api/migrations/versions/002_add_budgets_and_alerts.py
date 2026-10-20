@@ -1,19 +1,10 @@
-"""add budgets and alert notifications
-
-Revision ID: 002_add_budgets_and_alerts
-Revises: 001_initial_schema
-Create Date: 2026-10-14 18:50:00.000000
-
-"""
 from alembic import op
 import sqlalchemy as sa
-
 
 revision = '002_add_budgets_and_alerts'
 down_revision = '001_initial_schema'
 branch_labels = None
 depends_on = None
-
 
 def upgrade() -> None:
     op.create_table(
@@ -61,7 +52,6 @@ def upgrade() -> None:
     op.create_index(op.f('ix_alert_notifications_user_id'), 'alert_notifications', ['user_id'], unique=False)
     op.create_index(op.f('ix_alert_notifications_budget_id'), 'alert_notifications', ['budget_id'], unique=False)
 
-
 def downgrade() -> None:
     op.drop_index(op.f('ix_alert_notifications_budget_id'), table_name='alert_notifications')
     op.drop_index(op.f('ix_alert_notifications_user_id'), table_name='alert_notifications')
@@ -73,4 +63,3 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_budgets_user_id'), table_name='budgets')
     op.drop_index(op.f('ix_budgets_id'), table_name='budgets')
     op.drop_table('budgets')
-

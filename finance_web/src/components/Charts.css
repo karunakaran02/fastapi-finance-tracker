@@ -78,6 +78,15 @@
   border-radius: 9999px;
   flex-shrink: 0;
 }
+.doughnut-legend-dot.color-0 { background-color: #3b82f6; box-shadow: 0 0 8px #3b82f6; }
+.doughnut-legend-dot.color-1 { background-color: #10b981; box-shadow: 0 0 8px #10b981; }
+.doughnut-legend-dot.color-2 { background-color: #8b5cf6; box-shadow: 0 0 8px #8b5cf6; }
+.doughnut-legend-dot.color-3 { background-color: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
+.doughnut-legend-dot.color-4 { background-color: #ec4899; box-shadow: 0 0 8px #ec4899; }
+.doughnut-legend-dot.color-5 { background-color: #06b6d4; box-shadow: 0 0 8px #06b6d4; }
+.doughnut-legend-dot.color-6 { background-color: #f43f5e; box-shadow: 0 0 8px #f43f5e; }
+.doughnut-legend-dot.color-7 { background-color: #14b8a6; box-shadow: 0 0 8px #14b8a6; }
+.doughnut-legend-dot.color-8 { background-color: #6366f1; box-shadow: 0 0 8px #6366f1; }
 .doughnut-legend-item .doughnut-legend-name {
   font-size: 0.8125rem;
   font-weight: 600;

@@ -1,6 +1,5 @@
 from decimal import Decimal
 
-
 def get_category_id(client, headers, name: str) -> int:
     resp = client.get("/api/v1/categories", headers=headers)
     assert resp.status_code == 200
@@ -8,7 +7,6 @@ def get_category_id(client, headers, name: str) -> int:
         if cat["name"].lower() == name.lower():
             return cat["id"]
     return resp.json()[0]["id"]
-
 
 def test_create_and_read_budget(client, auth_headers):
     food_id = get_category_id(client, auth_headers, "Food")
@@ -75,7 +73,6 @@ def test_create_and_read_budget(client, auth_headers):
     assert budget_item2["is_exceeded"] is True
     assert Decimal(str(budget_item2["remaining_amount"])) == Decimal("0.00")
 
-
 def test_budget_overview_analytics(client, auth_headers):
     overview_resp = client.get("/api/v1/budgets/overview", headers=auth_headers)
     assert overview_resp.status_code == 200
@@ -87,7 +84,6 @@ def test_budget_overview_analytics(client, auth_headers):
     assert "exceeded_budgets" in data
     assert "warning_budgets" in data
     assert "budgets" in data
-
 
 def test_budget_update_and_delete(client, auth_headers):
     create_resp = client.post(
@@ -118,7 +114,6 @@ def test_budget_update_and_delete(client, auth_headers):
     list_resp = client.get("/api/v1/budgets", headers=auth_headers)
     assert not any(b["id"] == budget_id for b in list_resp.json())
 
-
 def test_budget_user_data_isolation(client, auth_headers, other_user_headers):
     resp = client.post(
         "/api/v1/budgets",
@@ -138,7 +133,6 @@ def test_budget_user_data_isolation(client, auth_headers, other_user_headers):
         headers=other_user_headers,
     )
     assert u2_update.status_code == 404
-
 
 def test_test_alert_endpoint(client, auth_headers):
     b_resp = client.post(

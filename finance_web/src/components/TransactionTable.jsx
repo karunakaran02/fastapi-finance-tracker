@@ -13,6 +13,7 @@ import {
   Plus,
 } from 'lucide-react';
 import { useCurrency } from '../context/CurrencyContext';
+import { getAppropriateBookIcon } from '../utils/bookIcons';
 import './TransactionTable.css';
 
 const getLedgerMeta = (tx) => {
@@ -22,47 +23,35 @@ const getLedgerMeta = (tx) => {
     return {
       icon: Briefcase,
       tone: 'amber',
-      defaultTitle: 'Monthly Payroll Credit',
-      subText: `Direct Deposit #TX-${9000 + Number(tx.id || 21)}`,
     };
   }
   if (cat.includes('shop')) {
     return {
       icon: ShoppingBag,
       tone: 'blue',
-      defaultTitle: 'Retail Purchase',
-      subText: 'POS • Visa Debit Card',
     };
   }
-  if (cat.includes('transport')) {
+  if (cat.includes('transport') || cat.includes('travel')) {
     return {
       icon: Car,
       tone: 'emerald',
-      defaultTitle: 'Metro / Transit Ride',
-      subText: 'Tap-and-Go NFC',
     };
   }
-  if (cat.includes('food')) {
+  if (cat.includes('food') || cat.includes('dining')) {
     return {
       icon: Utensils,
       tone: 'yellow',
-      defaultTitle: 'Dining & Groceries',
-      subText: 'UPI Verified Merchant',
     };
   }
-  if (cat.includes('bill')) {
+  if (cat.includes('bill') || cat.includes('util')) {
     return {
       icon: Receipt,
       tone: 'purple',
-      defaultTitle: 'Utility Bill Settlement',
-      subText: 'Auto-Pay Standing Instruction',
     };
   }
   return {
     icon: CreditCard,
     tone: 'slate',
-    defaultTitle: 'Ledger Entry',
-    subText: `UPI Ref #TX-${9000 + Number(tx.id || 10)}`,
   };
 };
 
@@ -79,26 +68,26 @@ export const TransactionTable = ({
 
   if (!transactions || transactions.length === 0) {
     return (
-      <div className="tx-empty-state-card" style={{ padding: '3.5rem 1.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ width: '3.5rem', height: '3.5rem', borderRadius: '1rem', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+      <div className="tx-empty-state-card">
+        <div className="tx-empty-state-icon-box">
           <Receipt size={28} />
         </div>
-        <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.4rem' }}>
+        <h3 className="tx-empty-state-title">
           {hasActiveFilters ? 'No matching transactions found' : 'No transactions recorded yet'}
         </h3>
-        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', maxWidth: '440px', margin: '0 auto 1.5rem auto', lineHeight: 1.5 }}>
+        <p className="tx-empty-state-desc">
           {hasActiveFilters
             ? 'No records match your selected filters. Try adjusting your search query, category, or date range.'
             : 'Start building your financial ledger by recording your income credits or daily expense purchases.'}
         </p>
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div className="tx-empty-state-actions">
           {hasActiveFilters && onResetFilters && (
             <button type="button" onClick={onResetFilters} className="btn btn-secondary">
               Reset Filters
             </button>
           )}
           {onAddTransaction && (
-            <button type="button" onClick={onAddTransaction} className="btn btn-primary">
+            <button type="button" onClick={onAddTransaction} className="btn btn-add-transaction">
               <Plus size={15} />
               <span>Add Transaction</span>
             </button>
@@ -128,6 +117,7 @@ export const TransactionTable = ({
           <tr>
             <th>TYPE</th>
             <th>DESCRIPTION</th>
+            <th>BOOK</th>
             <th>CATEGORY</th>
             <th>DATE</th>
             <th className="col-right">AMOUNT</th>
@@ -153,11 +143,16 @@ export const TransactionTable = ({
                     <div className={`tx-icon-box ${meta.tone}`}>
                       <IconComp size={15} />
                     </div>
-                    <div>
-                      <div className="tx-title">{tx.description || meta.defaultTitle}</div>
-                      <div className="tx-subtext">{meta.subText}</div>
-                    </div>
+                    <div className="tx-title">{tx.description || tx.category_name || 'Transaction'}</div>
                   </div>
+                </td>
+                <td>
+                  <span className="tx-book-pill">
+                    <span className="material-symbols-outlined text-[13px] text-secondary">
+                      {getAppropriateBookIcon(tx.book_title, tx.book_icon)}
+                    </span>
+                    <span>{tx.book_title || 'General'}</span>
+                  </span>
                 </td>
                 <td>
                   <span className="tx-category-pill">{tx.category_name || 'General'}</span>

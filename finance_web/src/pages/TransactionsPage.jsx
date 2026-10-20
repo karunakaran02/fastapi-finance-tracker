@@ -6,10 +6,12 @@ import TransactionFilters from '../components/TransactionFilters';
 import TransactionForm from '../components/TransactionForm';
 import ImportTransactionsModal from '../components/ImportTransactionsModal';
 import Pagination from '../components/Pagination';
+import './TransactionsPage.css';
 
 export const TransactionsPage = () => {
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [books, setBooks] = useState([]);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -25,6 +27,7 @@ export const TransactionsPage = () => {
     page: 1,
     page_size: 15,
     type: '',
+    book_id: '',
     category_id: '',
     search: '',
     start_date: '',
@@ -44,6 +47,14 @@ export const TransactionsPage = () => {
     }
   };
 
+  const fetchBooks = async () => {
+    try {
+      const data = await api.getStreamBooks();
+      setBooks(Array.isArray(data) ? data : (data?.items || []));
+    } catch {
+    }
+  };
+
   const buildFilterParams = () => {
     const params = {
       page: filters.page,
@@ -51,6 +62,7 @@ export const TransactionsPage = () => {
       sort: filters.sort,
     };
     if (filters.type) params.type = filters.type;
+    if (filters.book_id) params.book_id = filters.book_id;
     if (filters.category_id) params.category_id = filters.category_id;
     if (filters.search && filters.search.trim()) params.search = filters.search.trim();
 
@@ -93,6 +105,7 @@ export const TransactionsPage = () => {
 
   useEffect(() => {
     fetchCategories();
+    fetchBooks();
   }, []);
 
   useEffect(() => {
@@ -158,6 +171,7 @@ export const TransactionsPage = () => {
       page: 1,
       page_size: 15,
       type: '',
+      book_id: '',
       category_id: '',
       search: '',
       start_date: '',
@@ -211,7 +225,7 @@ export const TransactionsPage = () => {
               setSelectedTx(null);
               setIsFormOpen(true);
             }}
-            className="btn btn-primary"
+            className="btn btn-add-transaction"
           >
             <Plus size={16} />
             <span>Add Transaction</span>
@@ -221,14 +235,14 @@ export const TransactionsPage = () => {
 
       {error && <div className="alert-banner error">{error}</div>}
       {successMessage && (
-        <div className="alert-banner success" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div className="alert-banner success tx-alert-banner">
           <CheckCircle2 size={16} />
           <span>{successMessage}</span>
         </div>
       )}
 
       {coldStartNotice && loading && (
-        <div className="alert-banner info" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', background: 'rgba(59, 130, 246, 0.12)', color: '#93c5fd', border: '1px solid rgba(59, 130, 246, 0.25)' }}>
+        <div className="alert-banner info tx-coldstart-banner">
           <RefreshCw size={14} className="animate-spin" />
           <span>Render backend server is waking up (20-30s on free tier). Please wait...</span>
         </div>
@@ -239,6 +253,7 @@ export const TransactionsPage = () => {
         onChange={setFilters}
         onReset={handleResetFilters}
         categories={categories}
+        books={books}
       />
 
       <div className="card">
@@ -254,7 +269,7 @@ export const TransactionsPage = () => {
               onEdit={handleEdit}
               onDelete={handleDelete}
               showActions={true}
-              hasActiveFilters={Boolean(filters.type || filters.category_id || filters.search || filters.start_date || filters.end_date)}
+              hasActiveFilters={Boolean(filters.type || filters.book_id || filters.category_id || filters.search || filters.start_date || filters.end_date)}
               onResetFilters={handleResetFilters}
               onAddTransaction={() => {
                 setSelectedTx(null);
@@ -282,65 +297,43 @@ export const TransactionsPage = () => {
         onSubmit={handleCreateOrUpdate}
         initialData={selectedTx}
         categories={categories}
+        books={books}
       />
 
       <ImportTransactionsModal
         isOpen={isImportOpen}
         onClose={() => setIsImportOpen(false)}
         onImported={async () => {
-          await Promise.all([fetchCategories(), fetchTransactions()]);
+          await Promise.all([fetchCategories(), fetchBooks(), fetchTransactions()]);
         }}
       />
 
       {isClearModalOpen && (
         <div className="modal-overlay" onClick={() => !clearing && setIsClearModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '1.25rem' }}>
-              <div
-                style={{
-                  width: '2.75rem',
-                  height: '2.75rem',
-                  borderRadius: '50%',
-                  background: 'rgba(239, 68, 68, 0.15)',
-                  color: '#ef4444',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
+          <div className="modal-content tx-clear-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="tx-clear-modal-header">
+              <div className="tx-clear-modal-icon-badge">
                 <AlertTriangle size={22} />
               </div>
-              <div style={{ flex: 1 }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: '0 0 0.25rem 0', color: 'var(--text-primary)' }}>
+              <div className="tx-clear-modal-header-body">
+                <h3 className="tx-clear-modal-title">
                   Clear All Transactions?
                 </h3>
-                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                <p className="tx-clear-modal-subtitle">
                   This action is permanent and cannot be undone.
                 </p>
               </div>
             </div>
 
-            <p style={{ margin: '0 0 1rem 0', fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+            <p className="tx-clear-modal-desc">
               Are you sure you want to permanently delete all <strong>{total} transaction(s)</strong> recorded under your account?
             </p>
 
-            <div
-              style={{
-                padding: '0.875rem',
-                borderRadius: '0.75rem',
-                background: 'rgba(239, 68, 68, 0.08)',
-                border: '1px solid rgba(239, 68, 68, 0.25)',
-                fontSize: '0.8rem',
-                color: '#f87171',
-                lineHeight: 1.45,
-                marginBottom: '1.5rem',
-              }}
-            >
+            <div className="tx-clear-modal-warning-box">
               Warning: All income and expense entries will be erased. Your dashboard calculations, percentage indicators, and financial charts will be reset to initial zero state.
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+            <div className="tx-clear-modal-actions">
               <button
                 type="button"
                 onClick={() => setIsClearModalOpen(false)}

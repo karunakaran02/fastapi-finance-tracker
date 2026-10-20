@@ -178,7 +178,7 @@ export const BudgetsPage = () => {
   };
 
   const categoryOptions = [
-    { value: '', label: '🌐 Global Cashflow (All Categories)' },
+    { value: '', label: 'Global Cashflow (All Categories)' },
     ...categories
       .filter((cat) => cat.type === type)
       .map((cat) => ({ value: String(cat.id), label: cat.name })),
@@ -426,7 +426,7 @@ export const BudgetsPage = () => {
                       <div className="progress-track">
                         <div
                           className={`progress-fill ${fillClass}`}
-                          style={{ width: `${clampedPercent}%` }}
+                          style={{ '--progress-width': `${clampedPercent}%` }}
                         ></div>
                       </div>
                     </div>

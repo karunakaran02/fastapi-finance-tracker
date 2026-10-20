@@ -1,0 +1,80 @@
+.tx-alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tx-coldstart-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  background: rgba(59, 130, 246, 0.12);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.tx-clear-modal-content {
+  max-width: 440px;
+}
+
+.tx-clear-modal-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.tx-clear-modal-icon-badge {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tx-clear-modal-header-body {
+  flex: 1;
+}
+
+.tx-clear-modal-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
+  color: var(--text-primary);
+}
+
+.tx-clear-modal-subtitle {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.tx-clear-modal-desc {
+  margin: 0 0 1rem 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.tx-clear-modal-warning-box {
+  padding: 0.875rem;
+  border-radius: 0.75rem;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  font-size: 0.8rem;
+  color: #f87171;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.tx-clear-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+

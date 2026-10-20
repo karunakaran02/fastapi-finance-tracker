@@ -2,13 +2,17 @@
 <html class="dark" lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 3h12'/><path d='M6 8h12'/><path d='m6 13 8.5 8'/><path d='M6 13h3'/><path d='M9 13c6.667 0 6.667-10 0-10'/></svg>" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300f5d4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 3h12'/><path d='M6 8h12'/><path d='m6 13 8.5 8'/><path d='M6 13h3'/><path d='M9 13c6.667 0 6.667-10 0-10'/></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Finance Intel | Portfolio Intelligence &amp; Executive Cashflow</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
       rel="stylesheet"
     />
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,10 +22,34 @@
         theme: {
           extend: {
             fontFamily: {
-              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+              sans: ['Inter', '"Plus Jakarta Sans"', 'sans-serif'],
+              grotesk: ['"Space Grotesk"', 'sans-serif'],
+              headline: ['"Space Grotesk"', 'sans-serif'],
               mono: ['"JetBrains Mono"', 'monospace'],
             },
             colors: {
+              'primary-fixed-dim': '#00dfc1',
+              'primary-fixed': '#26fedc',
+              'primary-container': '#00f5d4',
+              primary: '#d7fff3',
+              'on-primary': '#00382f',
+              'on-primary-container': '#006c5c',
+              secondary: '#38bdf8',
+              'secondary-container': '#00bafd',
+              'on-secondary': '#00344b',
+              surface: '#0d111a',
+              'surface-dim': '#0a0d14',
+              'surface-container-lowest': '#0a0d16',
+              'surface-container-low': '#111520',
+              'surface-container': '#151a27',
+              'surface-container-high': '#1e2436',
+              'surface-container-highest': '#283142',
+              'surface-bright': '#222a3d',
+              'on-surface': '#dee2f6',
+              'on-surface-variant': '#94a3b8',
+              outline: '#6b7c85',
+              'outline-variant': '#2a3443',
+              error: '#ff4b72',
               obsidian: {
                 950: '#070a10',
                 900: '#0b0f19',
@@ -42,7 +70,7 @@
             },
             boxShadow: {
               'glow-blue': '0 0 25px -5px rgba(59, 130, 246, 0.35)',
-              'glow-emerald': '0 0 25px -5px rgba(16, 185, 129, 0.35)',
+              'glow-emerald': '0 0 25px -5px rgba(0, 245, 212, 0.35)',
               'card-glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
             },
           },
@@ -50,7 +78,7 @@
       };
     </script>
   </head>
-  <body class="min-h-screen bg-obsidian-950 text-slate-100 antialiased bg-grid-mesh selection:bg-brand-cobalt selection:text-white">
+  <body class="min-h-screen antialiased bg-grid-mesh selection:bg-primary-container selection:text-on-primary-fixed">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

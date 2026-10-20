@@ -19,7 +19,6 @@ from app.services.report import (
 
 router = APIRouter()
 
-
 @router.get("/dashboard", response_model=DashboardResponse)
 def get_dashboard(
     search: Optional[str] = Query(None, description="Optional search filter for recent transactions"),
@@ -29,7 +28,6 @@ def get_dashboard(
 
     return get_dashboard_analytics(db, user_id=current_user.id, search=search)
 
-
 @router.get("/monthly", response_model=MonthlyReportResponse)
 def get_monthly_report(
     months: int = Query(6, ge=1, le=24, description="Number of past consecutive months to analyze"),
@@ -38,7 +36,6 @@ def get_monthly_report(
 ):
 
     return get_monthly_trends(db, user_id=current_user.id, months_count=months)
-
 
 @router.get("/categories", response_model=CategoryReportResponse)
 def get_category_report(

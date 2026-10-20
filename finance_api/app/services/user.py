@@ -5,14 +5,11 @@ from app.core.security import get_password_hash
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
 
-
 def get_user(db: Session, user_id: int) -> Optional[User]:
     return db.query(User).filter(User.id == user_id).first()
 
-
 def get_user_by_email(db: Session, email: str) -> Optional[User]:
     return db.query(User).filter(User.email == email.lower().strip()).first()
-
 
 def create_user(db: Session, user_in: UserCreate) -> User:
     hashed_password = get_password_hash(user_in.password)
@@ -28,7 +25,6 @@ def create_user(db: Session, user_in: UserCreate) -> User:
     db.commit()
     db.refresh(db_user)
     return db_user
-
 
 def seed_default_admin(db: Session) -> None:
     admin_prefix_users = db.query(User).filter(User.email.like("admin@%")).all()
@@ -49,7 +45,6 @@ def seed_default_admin(db: Session) -> None:
         db.add(default_admin)
         db.commit()
 
-
 def update_user(db: Session, user: User, user_in: UserUpdate) -> User:
     update_data = user_in.model_dump(exclude_unset=True)
     if "email" in update_data and update_data["email"]:
@@ -59,7 +54,6 @@ def update_user(db: Session, user: User, user_in: UserUpdate) -> User:
     db.commit()
     db.refresh(user)
     return user
-
 
 def delete_user(db: Session, user: User) -> None:
     db.delete(user)

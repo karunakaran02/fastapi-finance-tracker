@@ -1,5 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  ShoppingBag,
+  Car,
+  Utensils,
+  Zap,
+  Briefcase,
+  Tag,
+  CreditCard,
+} from 'lucide-react';
 import api from '../api/client';
 import TransactionForm from '../components/TransactionForm';
 import ImportTransactionsModal from '../components/ImportTransactionsModal';
@@ -22,66 +31,68 @@ const getCategoryVisual = (name = '', index = 0) => {
   const lower = name.toLowerCase();
   if (lower.includes('shop')) {
     return {
-      emoji: '🛍️',
+      icon: ShoppingBag,
       boxBg: 'bg-blue-500/10 text-brand-cobalt',
       barGradient: 'bg-gradient-to-r from-blue-600 via-brand-cobalt to-brand-cyan shadow-glow-blue',
       dotClass: 'bg-brand-cobalt shadow-glow-blue',
       pillClass: 'bg-brand-cobalt/20 text-brand-cobalt',
       stroke: '#3b82f6',
-      ceiling: 15000,
     };
   }
   if (lower.includes('transport') || lower.includes('travel')) {
     return {
-      emoji: '🚗',
+      icon: Car,
       boxBg: 'bg-emerald-500/10 text-emerald-400',
       barGradient: 'bg-gradient-to-r from-emerald-500 to-brand-mint shadow-glow-emerald',
       dotClass: 'bg-brand-emerald shadow-glow-emerald',
       pillClass: 'bg-emerald-500/20 text-emerald-400',
       stroke: '#10b981',
-      ceiling: 5000,
     };
   }
   if (lower.includes('food') || lower.includes('dining')) {
     return {
-      emoji: '🍽️',
+      icon: Utensils,
       boxBg: 'bg-amber-500/10 text-amber-400',
       barGradient: 'bg-gradient-to-r from-amber-500 to-orange-400',
       dotClass: 'bg-amber-400',
       pillClass: 'bg-amber-500/20 text-amber-400',
       stroke: '#f59e0b',
-      ceiling: 12000,
     };
   }
-  if (lower.includes('bill')) {
+  if (lower.includes('bill') || lower.includes('util')) {
     return {
-      emoji: '⚡',
+      icon: Zap,
       boxBg: 'bg-violet-500/10 text-violet-400',
       barGradient: 'bg-gradient-to-r from-violet-600 to-purple-400',
       dotClass: 'bg-brand-violet',
       pillClass: 'bg-violet-500/20 text-violet-400',
       stroke: '#8b5cf6',
-      ceiling: 10000,
     };
   }
   const defaults = [
     {
-      emoji: '🛍️',
+      icon: ShoppingBag,
       boxBg: 'bg-blue-500/10 text-brand-cobalt',
       barGradient: 'bg-gradient-to-r from-blue-600 via-brand-cobalt to-brand-cyan shadow-glow-blue',
       dotClass: 'bg-brand-cobalt shadow-glow-blue',
       pillClass: 'bg-brand-cobalt/20 text-brand-cobalt',
       stroke: '#3b82f6',
-      ceiling: 15000,
     },
     {
-      emoji: '🚗',
+      icon: Car,
       boxBg: 'bg-emerald-500/10 text-emerald-400',
       barGradient: 'bg-gradient-to-r from-emerald-500 to-brand-mint shadow-glow-emerald',
       dotClass: 'bg-brand-emerald shadow-glow-emerald',
       pillClass: 'bg-emerald-500/20 text-emerald-400',
       stroke: '#10b981',
-      ceiling: 5000,
+    },
+    {
+      icon: Tag,
+      boxBg: 'bg-slate-500/10 text-slate-400',
+      barGradient: 'bg-gradient-to-r from-slate-600 to-slate-400',
+      dotClass: 'bg-slate-400',
+      pillClass: 'bg-slate-500/20 text-slate-300',
+      stroke: '#64748b',
     },
   ];
   return defaults[index % defaults.length];
@@ -92,86 +103,95 @@ const getLedgerRowVisual = (tx) => {
   const cat = (tx.category_name || '').toLowerCase();
   if (isIncome) {
     return {
-      emoji: '💼',
+      icon: Briefcase,
       iconBox: 'bg-emerald-500/20 text-emerald-300',
       hoverText: 'group-hover:text-brand-mint',
-      defaultTitle: 'Monthly Payroll Credit',
-      subText: `Direct Deposit #TX-${9000 + Number(tx.id || 21)}`,
     };
   }
   if (cat.includes('shop')) {
     return {
-      emoji: '🛍️',
+      icon: ShoppingBag,
       iconBox: 'bg-blue-500/20 text-blue-300',
       hoverText: 'group-hover:text-blue-300',
-      defaultTitle: 'Retail Purchase',
-      subText: 'POS • Visa Debit Card',
     };
   }
-  if (cat.includes('transport')) {
+  if (cat.includes('transport') || cat.includes('travel')) {
     return {
-      emoji: '🚖',
+      icon: Car,
       iconBox: 'bg-emerald-500/20 text-emerald-300',
       hoverText: 'group-hover:text-emerald-300',
-      defaultTitle: 'Metro / Transit Ride',
-      subText: 'Tap-and-Go NFC',
+    };
+  }
+  if (cat.includes('food') || cat.includes('dining')) {
+    return {
+      icon: Utensils,
+      iconBox: 'bg-amber-500/20 text-amber-300',
+      hoverText: 'group-hover:text-amber-300',
     };
   }
   return {
-    emoji: '💳',
+    icon: CreditCard,
     iconBox: 'bg-blue-500/20 text-blue-300',
     hoverText: 'group-hover:text-blue-300',
-    defaultTitle: 'Ledger Settlement',
-    subText: `UPI Ref #TX-${9000 + Number(tx.id || 15)}`,
   };
 };
 
 export const DashboardPage = () => {
+  const navigate = useNavigate();
   const { symbol, activeCurrency, currency, setCurrency, currencies } = useCurrency();
   const formatAmt = (val, opts = {}) => Number(val || 0).toLocaleString(activeCurrency.locale, opts);
 
   const [dashboardData, setDashboardData] = useState(null);
   const [monthlyReport, setMonthlyReport] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [forecastData, setForecastData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
-  const [periodTab, setPeriodTab] = useState('oct');
+  const [periodTab, setPeriodTab] = useState('1m');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const fetchDashboardData = async (months = 6, search = searchQuery) => {
+  const fetchDashboardData = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const [dash, trends, cats] = await Promise.all([
-        api.getDashboard(search),
+      const months = periodTab === 'ytd' ? 12 : periodTab === '6m' ? 6 : 1;
+      const [dash, trends, cats, fcData] = await Promise.all([
+        api.getDashboard(),
         api.getMonthlyReport(months),
-        api.getCategories(),
+        api.getCategories().catch(() => []),
+        api.getCashRunwayForecast({ days: 30 }).catch(() => null),
       ]);
       setDashboardData(dash);
       setMonthlyReport(trends);
       setCategories(cats || []);
+      setForecastData(fcData);
     } catch (err) {
       setError(err.message || 'Failed to load financial dashboard.');
     } finally {
       setLoading(false);
     }
-  };
-
-  const getPeriodMonths = () => {
-    if (periodTab === 'ytd') return 12;
-    if (periodTab === '6m') return 6;
-    return 1;
-  };
+  }, [periodTab]);
 
   useEffect(() => {
-    fetchDashboardData(getPeriodMonths(), searchQuery);
-  }, [periodTab, searchQuery]);
+    fetchDashboardData();
+  }, []);
+
+  const handlePeriodChange = async (tab) => {
+    setPeriodTab(tab);
+    try {
+      const months = tab === 'ytd' ? 12 : tab === '6m' ? 6 : 1;
+      const trends = await api.getMonthlyReport(months);
+      setMonthlyReport(trends);
+    } catch (err) {
+      setError(err.message || 'Failed to load monthly trends.');
+    }
+  };
 
   const handleCreateTransaction = async (data) => {
     await api.createTransaction(data);
-    await fetchDashboardData(getPeriodMonths(), searchQuery);
+    await fetchDashboardData();
   };
 
   const handleExportCsv = async () => {
@@ -228,15 +248,23 @@ export const DashboardPage = () => {
   const topCategories = dashboardData?.top_spending_categories || [];
   const recentTransactions = dashboardData?.recent_transactions || [];
 
+  const displayedRecentTransactions = useMemo(() => {
+    if (!searchQuery || !searchQuery.trim()) return recentTransactions;
+    const q = searchQuery.toLowerCase().trim();
+    return recentTransactions.filter((tx) =>
+      (tx.description || '').toLowerCase().includes(q) ||
+      (tx.category_name || '').toLowerCase().includes(q) ||
+      String(tx.amount || '').includes(q)
+    );
+  }, [recentTransactions, searchQuery]);
+
   const currentMonthShort = dashboardData?.current_month_short || 'Current';
   const currentMonthLong = dashboardData?.current_month_long || 'Current Month';
 
   return (
     <>
       <header
-        className="sticky top-0 z-30 bg-obsidian-900/80 backdrop-blur-xl border-b border-white/[0.06] px-3 sm:px-6 lg:px-8 py-2.5 sm:py-4 flex flex-wrap items-center justify-between gap-2.5 sm:gap-3"
-        style={{ paddingTop: 'max(0.625rem, env(safe-area-inset-top, 0px))' }}
-        data-purpose="top-navigation-bar"
+        className="top-navbar-safe sticky top-0 z-30 bg-obsidian-900/80 backdrop-blur-xl border-b border-white/[0.06] px-3 sm:px-6 lg:px-8 py-2.5 sm:py-4 flex flex-wrap items-center justify-between gap-2.5 sm:gap-3"
       >
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <MobileMenuButton />
@@ -255,10 +283,7 @@ export const DashboardPage = () => {
           </div>
         </div>
 
-        <div
-          className="flex items-center flex-wrap gap-1.5 sm:gap-2.5 w-full sm:w-auto justify-between sm:justify-end sm:ml-auto"
-          data-purpose="dashboard-action-toolbar"
-        >
+        <div className="flex items-center flex-wrap gap-1.5 sm:gap-2.5 w-full sm:w-auto justify-between sm:justify-end sm:ml-auto">
           <div className="relative hidden md:block">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -282,9 +307,9 @@ export const DashboardPage = () => {
           <div className="flex items-center bg-obsidian-800/80 border border-white/[0.08] rounded-xl p-0.5 sm:p-1 text-[11px] sm:text-xs font-medium">
             <button
               type="button"
-              onClick={() => setPeriodTab('oct')}
+              onClick={() => handlePeriodChange('1m')}
               className={`px-1.5 sm:px-2.5 py-1 rounded-lg transition-colors ${
-                periodTab === 'oct'
+                periodTab === '1m'
                   ? 'bg-obsidian-700 text-white shadow-sm font-semibold'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
@@ -293,7 +318,7 @@ export const DashboardPage = () => {
             </button>
             <button
               type="button"
-              onClick={() => setPeriodTab('6m')}
+              onClick={() => handlePeriodChange('6m')}
               className={`px-1.5 sm:px-2.5 py-1 rounded-lg transition-colors ${
                 periodTab === '6m'
                   ? 'bg-obsidian-700 text-white shadow-sm font-semibold'
@@ -304,7 +329,7 @@ export const DashboardPage = () => {
             </button>
             <button
               type="button"
-              onClick={() => setPeriodTab('ytd')}
+              onClick={() => handlePeriodChange('ytd')}
               className={`px-1.5 sm:px-2.5 py-1 rounded-lg transition-colors ${
                 periodTab === 'ytd'
                   ? 'bg-obsidian-700 text-white shadow-sm font-semibold'
@@ -317,7 +342,7 @@ export const DashboardPage = () => {
 
           <div className="flex items-center gap-1 sm:gap-2">
             <button
-              onClick={() => fetchDashboardData(getPeriodMonths(), searchQuery)}
+              onClick={fetchDashboardData}
               className="inline-flex items-center justify-center gap-1.5 p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl bg-obsidian-800 hover:bg-obsidian-750 text-slate-200 border border-white/[0.08] transition-colors shadow-sm"
               title="Refresh Telemetry"
               type="button"
@@ -506,8 +531,8 @@ export const DashboardPage = () => {
               </div>
               <div className="w-full h-1.5 bg-obsidian-750 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-brand-electric to-brand-emerald rounded-full"
-                  style={{ width: `${capBarWidth}%` }}
+                  className="h-full bg-gradient-to-r from-brand-electric to-brand-emerald rounded-full dash-progress-fill"
+                  style={{ '--dash-progress-width': `${capBarWidth}%` }}
                 ></div>
               </div>
             </div>
@@ -607,10 +632,8 @@ export const DashboardPage = () => {
                       r="45"
                       strokeLinecap="round"
                       strokeWidth="9"
-                      style={{
-                        strokeDasharray: gaugeCircumference,
-                        strokeDashoffset: gaugeOffset,
-                      }}
+                      strokeDasharray={gaugeCircumference}
+                      strokeDashoffset={gaugeOffset}
                     />
                   </svg>
                   <span className="absolute text-[11px] font-bold text-white font-mono">
@@ -628,6 +651,55 @@ export const DashboardPage = () => {
           </div>
         </section>
 
+        {forecastData && (
+          <section aria-label="30-Day Cash Runway Forecast">
+            <div className="glass-card rounded-xl sm:rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center shrink-0 border border-cyan-500/25">
+                  <span className="material-symbols-outlined text-[22px]">calendar_clock</span>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-white">30-Day Cash Runway Forecast</span>
+                    {forecastData.runway_status === 'infinite_growth' ? (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
+                        Positive Growth
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/15 text-cyan-400 border border-cyan-500/20">
+                        {forecastData.runway_days}d Runway
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Projected: <strong className="text-white font-mono">{symbol}{formatAmt(forecastData.projected_end_balance)}</strong> • Monthly fixed burn: <span className="text-rose-400 font-mono">{symbol}{formatAmt(forecastData.monthly_recurring_burn)}</span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+                {forecastData.upcoming_milestones && forecastData.upcoming_milestones[0] && (
+                  <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-850/80 border border-white/[0.08] text-xs">
+                    <span className="text-slate-400">Next:</span>
+                    <span className="font-semibold text-white truncate max-w-[130px]">{forecastData.upcoming_milestones[0].name}</span>
+                    <span className="font-mono text-rose-400">-{symbol}{formatAmt(forecastData.upcoming_milestones[0].amount)}</span>
+                    <span className="text-[10px] text-slate-400 font-mono">({forecastData.upcoming_milestones[0].days_until_due}d)</span>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => navigate('/recurring')}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold transition-all shrink-0 shadow-sm"
+                >
+                  <span>Runway Forecaster</span>
+                  <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
         <section
           aria-label="Visual Analytics and Trendlines"
           className="grid grid-cols-1 lg:grid-cols-12 gap-6"
@@ -643,7 +715,7 @@ export const DashboardPage = () => {
                     Income vs Expenses
                   </h3>
                   <span className="text-xs font-semibold px-2 py-0.5 rounded bg-brand-cobalt/10 text-brand-cobalt border border-brand-cobalt/20">
-                    6-Month Trend
+                    {periodTab === 'ytd' ? 'YTD Trend' : periodTab === '6m' ? '6-Month Trend' : 'Monthly Trend'}
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5">
@@ -707,12 +779,12 @@ export const DashboardPage = () => {
                         </div>
                         <div className="flex items-end gap-1 sm:gap-2 h-full">
                           <div
-                            className="w-3 sm:w-7 bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-t shadow-glow-emerald transition-transform group-hover:scale-y-105 origin-bottom relative"
-                            style={{ height: `${incHeight}%` }}
+                            className="w-3 sm:w-7 bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-t shadow-glow-emerald transition-transform group-hover:scale-y-105 origin-bottom relative dash-chart-bar"
+                            style={{ '--dash-bar-height': `${incHeight}%` }}
                           />
                           <div
-                            className="w-3 sm:w-7 bg-gradient-to-t from-rose-600 to-rose-400 rounded-t transition-transform group-hover:scale-y-125 origin-bottom relative"
-                            style={{ height: `${expHeight}%` }}
+                            className="w-3 sm:w-7 bg-gradient-to-t from-rose-600 to-rose-400 rounded-t transition-transform group-hover:scale-y-125 origin-bottom relative dash-chart-bar"
+                            style={{ '--dash-bar-height': `${expHeight}%` }}
                           />
                         </div>
                         <span className="mt-2 text-[9px] sm:text-[11px] font-bold text-white bg-brand-cobalt/20 px-1.5 sm:px-2 py-0.5 rounded border border-brand-cobalt/40 truncate max-w-full">
@@ -733,16 +805,16 @@ export const DashboardPage = () => {
                             incVal > 0
                               ? 'bg-brand-emerald/70 hover:bg-brand-emerald'
                               : 'bg-brand-emerald/20 hover:bg-brand-emerald/40'
-                          } rounded-t transition-all`}
-                          style={{ height: `${incHeight}%` }}
+                          } rounded-t transition-all dash-chart-bar`}
+                          style={{ '--dash-bar-height': `${incHeight}%` }}
                         />
                         <div
                           className={`w-2.5 sm:w-5 ${
                             expVal > 0
                               ? 'bg-brand-rose/70 hover:bg-brand-rose'
                               : 'bg-brand-rose/20 hover:bg-brand-rose/40'
-                          } rounded-t transition-all`}
-                          style={{ height: `${expHeight}%` }}
+                          } rounded-t transition-all dash-chart-bar`}
+                          style={{ '--dash-bar-height': `${expHeight}%` }}
                         />
                       </div>
                       <span className="mt-2 text-[9px] sm:text-[11px] font-medium text-slate-400 group-hover:text-white transition-colors truncate max-w-full">
@@ -921,7 +993,7 @@ export const DashboardPage = () => {
                             <div
                               className={`w-6 h-6 rounded-md ${vis.boxBg} flex items-center justify-center font-bold text-xs`}
                             >
-                              {vis.emoji}
+                              <vis.icon size={13} />
                             </div>
                             <span className="font-semibold text-white">{cat.category_name}</span>
                           </div>
@@ -936,8 +1008,8 @@ export const DashboardPage = () => {
                         </div>
                         <div className="w-full h-2.5 bg-obsidian-800 rounded-full overflow-hidden p-0.5 border border-white/[0.04]">
                           <div
-                            className={`h-full rounded-full ${vis.barGradient}`}
-                            style={{ width: `${barWidth}%` }}
+                            className={`h-full rounded-full ${vis.barGradient} dash-progress-fill`}
+                            style={{ '--dash-progress-width': `${barWidth}%` }}
                           ></div>
                         </div>
                         <div className="flex justify-between text-[11px] text-slate-400">
@@ -1037,14 +1109,14 @@ export const DashboardPage = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.04]">
-                    {recentTransactions.length === 0 ? (
+                    {displayedRecentTransactions.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="py-8 text-center text-slate-500">
                           No ledger entries recorded yet.
                         </td>
                       </tr>
                     ) : (
-                      recentTransactions.map((tx) => {
+                      displayedRecentTransactions.map((tx) => {
                         const isIncome = tx.type === 'income';
                         const vis = getLedgerRowVisual(tx);
                         const formattedDate = tx.transaction_date
@@ -1099,18 +1171,13 @@ export const DashboardPage = () => {
                                 <div
                                   className={`w-7 h-7 rounded-lg ${vis.iconBox} flex items-center justify-center font-bold text-xs shrink-0`}
                                 >
-                                  {vis.emoji}
+                                  <vis.icon size={14} />
                                 </div>
-                                <div>
-                                  <span
-                                    className={`font-semibold text-white ${vis.hoverText} transition-colors`}
-                                  >
-                                    {tx.description || vis.defaultTitle}
-                                  </span>
-                                  <span className="block text-[10px] text-slate-400">
-                                    {vis.subText}
-                                  </span>
-                                </div>
+                                <span
+                                  className={`font-semibold text-white ${vis.hoverText} transition-colors`}
+                                >
+                                  {tx.description || tx.category_name || 'Transaction'}
+                                </span>
                               </div>
                             </td>
                             <td className="py-3.5 px-3">
@@ -1142,8 +1209,7 @@ export const DashboardPage = () => {
 
             <div className="pt-4 mt-2 border-t border-white/[0.06] flex flex-wrap items-center justify-between gap-2 text-xs">
               <span className="text-slate-400">
-                Showing {recentTransactions.length} of {recentTransactions.length} settled records
-                for {currentMonthLong}
+                Showing {displayedRecentTransactions.length} settled records for {currentMonthLong}
               </span>
               <span className="font-mono text-xs text-brand-cobalt font-semibold">
                 Net Cleared: {netBalance >= 0 ? '+' : '-'}{symbol}

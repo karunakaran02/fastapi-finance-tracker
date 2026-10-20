@@ -12,7 +12,6 @@ def test_register_user_success(client):
     assert "refresh_token" in data
     assert data["token_type"] == "bearer"
 
-
 def test_register_duplicate_email(client):
     payload = {
         "email": "duplicate@example.com",
@@ -26,7 +25,6 @@ def test_register_duplicate_email(client):
     assert response2.status_code == 400
     assert "already exists" in response2.json()["detail"]
 
-
 def test_register_short_password(client):
     payload = {
         "email": "shortpass@example.com",
@@ -35,7 +33,6 @@ def test_register_short_password(client):
     }
     response = client.post("/api/v1/auth/register", json=payload)
     assert response.status_code == 422
-
 
 def test_login_json_success(client):
     payload = {
@@ -54,7 +51,6 @@ def test_login_json_success(client):
     assert "access_token" in data
     assert "refresh_token" in data
 
-
 def test_login_form_success(client):
     payload = {
         "email": "form_user@example.com",
@@ -72,7 +68,6 @@ def test_login_form_success(client):
     assert "access_token" in data
     assert "refresh_token" in data
 
-
 def test_login_invalid_credentials(client):
     login_resp = client.post(
         "/api/v1/auth/login",
@@ -80,7 +75,6 @@ def test_login_invalid_credentials(client):
     )
     assert login_resp.status_code == 401
     assert "No account found with this email. Please register first." in login_resp.json()["detail"]
-
 
 def test_login_incorrect_password(client):
     payload = {
@@ -95,7 +89,6 @@ def test_login_incorrect_password(client):
     )
     assert login_resp.status_code == 401
     assert "Incorrect password. Please try again." in login_resp.json()["detail"]
-
 
 def test_refresh_token_success(client):
     payload = {
@@ -115,14 +108,12 @@ def test_refresh_token_success(client):
     assert "access_token" in data
     assert "refresh_token" in data
 
-
 def test_refresh_token_invalid(client):
     resp = client.post(
         "/api/v1/auth/refresh",
         json={"refresh_token": "invalid_jwt_token_string"},
     )
     assert resp.status_code == 401
-
 
 def test_get_current_user_profile(client, auth_headers):
     resp = client.get("/api/v1/users/me", headers=auth_headers)
@@ -133,17 +124,14 @@ def test_get_current_user_profile(client, auth_headers):
     assert data["is_active"] is True
     assert "password_hash" not in data
 
-
 def test_unauthorized_request(client):
     resp = client.get("/api/v1/users/me")
     assert resp.status_code == 401
-
 
 def test_logout(client, auth_headers):
     resp = client.post("/api/v1/auth/logout", headers=auth_headers)
     assert resp.status_code == 200
     assert "Successfully logged out" in resp.json()["message"]
-
 
 def test_login_rate_limiting_exceeded(client):
     email = "ratelimit_target@example.com"
@@ -165,7 +153,6 @@ def test_login_rate_limiting_exceeded(client):
     assert "10 hits per 2 hours" in resp_11.json()["detail"]
     assert "Retry-After" in resp_11.headers
     assert int(resp_11.headers["Retry-After"]) > 0
-
 
 def test_login_rate_limiting_per_user_isolation(client):
     user_a = "user_blocked@example.com"
@@ -197,7 +184,6 @@ def test_login_rate_limiting_per_user_isolation(client):
     assert allowed_resp.status_code == 200
     assert "access_token" in allowed_resp.json()
 
-
 def test_login_rate_limiting_refreshes_after_window(client):
     from app.core.rate_limiter import login_rate_limiter
     import time
@@ -216,5 +202,3 @@ def test_login_rate_limiting_refreshes_after_window(client):
     allowed_later, remaining, _ = login_rate_limiter.check_rate_limit(email, current_time=after_2_hours)
     assert allowed_later is True
     assert remaining == 9
-
-

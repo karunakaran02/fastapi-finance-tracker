@@ -48,8 +48,13 @@ export const CustomSelect = ({
         onClick={() => !disabled && setIsOpen((prev) => !prev)}
         className={`custom-select-trigger ${isOpen ? 'is-open' : ''}`}
       >
-        <span className="custom-select-label">
-          {selectedOption ? selectedOption.label : placeholder}
+        <span className="custom-select-label flex items-center gap-2">
+          {selectedOption?.icon && (
+            <span className="material-symbols-outlined text-[16px] text-cyan-400 shrink-0">
+              {selectedOption.icon}
+            </span>
+          )}
+          <span className="truncate">{selectedOption ? selectedOption.label : placeholder}</span>
         </span>
         <ChevronDown size={15} className="custom-select-chevron" />
       </button>
@@ -65,7 +70,14 @@ export const CustomSelect = ({
                 onClick={() => handleSelect(opt.value)}
                 className={`custom-select-option ${isSelected ? 'is-selected' : ''}`}
               >
-                <span className="custom-select-label">{opt.label}</span>
+                <span className="custom-select-label flex items-center gap-2">
+                  {opt.icon && (
+                    <span className="material-symbols-outlined text-[16px] text-cyan-400 shrink-0">
+                      {opt.icon}
+                    </span>
+                  )}
+                  <span className="truncate">{opt.label}</span>
+                </span>
                 {isSelected && <Check size={14} className="custom-select-check" />}
               </button>
             );

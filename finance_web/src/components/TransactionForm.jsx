@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import CustomSelect from './CustomSelect';
 import { useCurrency } from '../context/CurrencyContext';
+import api from '../api/client';
+import { getAppropriateBookIcon } from '../utils/bookIcons';
 
 export const TransactionForm = ({
   isOpen,
@@ -8,10 +10,13 @@ export const TransactionForm = ({
   onSubmit,
   initialData = null,
   categories = [],
+  books = [],
 }) => {
   const { symbol } = useCurrency();
   const [type, setType] = useState('expense');
   const [categoryId, setCategoryId] = useState('');
+  const [bookId, setBookId] = useState('');
+  const [internalBooks, setInternalBooks] = useState(books || []);
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [transactionDate, setTransactionDate] = useState(
@@ -21,9 +26,23 @@ export const TransactionForm = ({
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (books && books.length > 0) {
+      setInternalBooks(books);
+    } else if (isOpen) {
+      api.getStreamBooks()
+        .then((res) => {
+          const list = Array.isArray(res) ? res : (res?.items || []);
+          setInternalBooks(list);
+        })
+        .catch(() => {});
+    }
+  }, [books, isOpen]);
+
+  useEffect(() => {
     if (initialData) {
       setType(initialData.type || 'expense');
       setCategoryId(initialData.category_id ? String(initialData.category_id) : '');
+      setBookId(initialData.book_id ? String(initialData.book_id) : '');
       setAmount(initialData.amount ? String(initialData.amount) : '');
       setDescription(initialData.description || '');
       setTransactionDate(
@@ -34,12 +53,19 @@ export const TransactionForm = ({
     } else {
       setType('expense');
       setCategoryId('');
+      setBookId(internalBooks.length > 0 ? String(internalBooks[0].id) : '');
       setAmount('');
       setDescription('');
       setTransactionDate(new Date().toISOString().split('T')[0]);
     }
     setError('');
   }, [initialData, isOpen]);
+
+  useEffect(() => {
+    if (internalBooks.length > 0 && !bookId) {
+      setBookId(String(internalBooks[0].id));
+    }
+  }, [internalBooks, bookId]);
 
   const availableCategories = categories.filter((c) => c.type === type);
 
@@ -66,11 +92,16 @@ export const TransactionForm = ({
       setError('Please select a category.');
       return;
     }
+    if (!bookId) {
+      setError('Please select a stream book.');
+      return;
+    }
 
     setLoading(true);
     try {
       const payload = {
         type,
+        book_id: Number(bookId),
         category_id: Number(categoryId),
         amount: Number(amount).toFixed(2),
         description: description.trim(),
@@ -90,13 +121,15 @@ export const TransactionForm = ({
     label: `${c.name} ${c.is_system ? '(Default)' : '(Custom)'}`,
   }));
 
+  const bookOptions = internalBooks.map((b) => ({
+    value: String(b.id),
+    label: b.title,
+    icon: getAppropriateBookIcon(b.title, b.icon),
+  }));
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-obsidian-950/80 backdrop-blur-sm"
-      style={{
-        paddingTop: 'max(0.75rem, env(safe-area-inset-top, 0px))',
-        paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))',
-      }}
+      className="modal-backdrop-safe fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-obsidian-950/80 backdrop-blur-sm"
     >
       <div className="glass-card rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/10 shadow-2xl text-slate-100 max-w-lg w-full max-h-[calc(100vh-2rem)] max-h-[calc(100dvh-2rem)] overflow-y-auto">
         <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
@@ -151,17 +184,13 @@ export const TransactionForm = ({
 
           <div>
             <label className="block font-semibold text-slate-300 mb-1.5">
-              Amount ({symbol})
+              Stream Book
             </label>
-            <input
-              type="number"
-              step="0.01"
-              min="0.01"
-              required
-              placeholder="0.00"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="form-input w-full bg-obsidian-800 border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-white font-mono text-base sm:text-sm focus:outline-none focus:border-brand-cobalt"
+            <CustomSelect
+              value={bookId}
+              onChange={(val) => setBookId(String(val))}
+              options={bookOptions}
+              placeholder="Select Stream Book"
             />
           </div>
 
@@ -174,6 +203,22 @@ export const TransactionForm = ({
               onChange={(val) => setCategoryId(String(val))}
               options={categoryOptions}
               placeholder="Select Category"
+            />
+          </div>
+
+          <div>
+            <label className="block font-semibold text-slate-300 mb-1.5">
+              Amount ({symbol})
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0.01"
+              required
+              placeholder="0.00"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="form-input w-full bg-obsidian-800 border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-white font-mono text-base sm:text-sm focus:outline-none focus:border-brand-cobalt"
             />
           </div>
 

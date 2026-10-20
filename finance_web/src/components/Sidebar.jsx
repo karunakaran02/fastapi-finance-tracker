@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Layers } from 'lucide-react';
+import { Menu, X, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
+import { getAppropriateBookIcon } from '../utils/bookIcons';
 import './Sidebar.css';
 
 export const MobileMenuButton = () => (
@@ -23,7 +24,6 @@ export const Sidebar = () => {
   const location = useLocation();
   const [txCount, setTxCount] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
-
   const [streamBooks, setStreamBooks] = useState([]);
 
   const fetchStreamBooks = () => {
@@ -92,15 +92,30 @@ export const Sidebar = () => {
     if (email) {
       return email.slice(0, 2).toUpperCase();
     }
-    return 'PI';
+    return 'KR';
   };
 
   const navClass = ({ isActive }) =>
     isActive
-      ? 'flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-white bg-gradient-to-r from-brand-electric to-brand-cobalt shadow-glow-blue transition-all group'
-      : 'flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-400 hover:text-white hover:bg-white/[0.04] transition-colors group';
+      ? 'group flex items-center justify-between px-3 py-2 rounded-lg bg-surface-container-high text-primary-fixed-dim font-bold border border-slate-800/80 shadow-[inset_2px_0_0_0_#00dfc1] transition-all'
+      : 'group flex items-center justify-between px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all border border-transparent hover:border-slate-800/50';
 
-  const mobileTabClass = ({ isActive }) => `mobile-tab-link ${isActive ? 'active' : ''}`;
+  const streamNavClass = ({ isActive }) =>
+    isActive
+      ? 'group flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-primary-fixed-dim font-semibold bg-surface-container-high/80 border border-slate-700/50 transition-all text-xs'
+      : 'group flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-xs';
+
+  const getNavIndicatorIndex = () => {
+    const p = location.pathname;
+    if (p === '/dashboard' || p === '/') return 0;
+    if (p.startsWith('/transactions')) return 1;
+    if (p.startsWith('/streams')) return 2;
+    if (p.startsWith('/reports')) return 3;
+    if (p.startsWith('/budgets')) return 4;
+    return -1;
+  };
+
+  const activeNavIdx = getNavIndicatorIndex();
 
   return (
     <>
@@ -115,64 +130,43 @@ export const Sidebar = () => {
       <aside
         className={`sidebar-drawer ${
           mobileOpen ? 'is-open' : ''
-        } w-72 shrink-0 border-r border-white/[0.06] bg-obsidian-900/90 backdrop-blur-xl flex flex-col justify-between hidden lg:flex sticky top-0 h-screen z-40`}
+        } w-64 shrink-0 border-r border-slate-800/70 bg-surface-container-lowest/95 backdrop-blur-xl flex flex-col justify-between hidden lg:flex sticky top-0 h-screen z-40 select-none`}
         data-purpose="sidebar-navigation"
       >
-        <div className="flex flex-col h-full">
-          <div className="px-6 py-6 border-b border-white/[0.06] flex items-center gap-3.5">
-            <div className="relative flex items-center justify-center w-11 h-11 rounded-xl bg-gradient-to-tr from-brand-electric via-brand-cobalt to-brand-cyan shadow-glow-blue shrink-0">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2.2"
-                />
-              </svg>
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-brand-emerald rounded-full border-2 border-obsidian-900"></div>
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg font-bold tracking-tight text-white truncate">Finance Intel</h1>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-brand-cobalt/20 text-brand-cobalt border border-brand-cobalt/30">
-                  Pro
+        <div className="flex flex-col h-full overflow-hidden">
+          <div className="h-16 px-4 flex items-center justify-between border-b border-slate-800/70 shrink-0">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="flex flex-col min-w-0">
+                <span className="font-headline-sm text-sm tracking-tight text-on-surface font-bold leading-none truncate">
+                  FINANCE INTEL
                 </span>
               </div>
-              <p className="text-xs font-medium text-slate-400 truncate">Portfolio Intelligence</p>
             </div>
-            <button
-              type="button"
-              onClick={() => setMobileOpen(false)}
-              className="mobile-drawer-close"
-              aria-label="Close navigation menu"
-            >
-              <X size={18} />
-            </button>
+            <div className="flex items-center gap-2">
+              <div className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-container opacity-60"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-container"></span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                className="mobile-drawer-close lg:hidden"
+                aria-label="Close navigation menu"
+              >
+                <X size={18} />
+              </button>
+            </div>
           </div>
 
-          <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto" data-purpose="primary-navigation">
-            <div className="px-3 pb-2 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
-              Executive Suite
-            </div>
-
+          <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto" data-purpose="primary-navigation">
             <NavLink to="/dashboard" className={navClass}>
               {({ isActive }) => (
                 <>
-                  <svg
-                    className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-brand-cobalt transition-colors'}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                    />
-                  </svg>
-                  <span className="flex-1">Dashboard</span>
-                  {isActive && <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>}
+                  <div className="flex items-center gap-2.5">
+                    <span className="material-symbols-outlined text-[19px]">grid_view</span>
+                    <span className="text-xs font-medium">Overview</span>
+                  </div>
+                  {isActive && <span className="h-1.5 w-1.5 rounded-full bg-primary-container"></span>}
                 </>
               )}
             </NavLink>
@@ -180,27 +174,13 @@ export const Sidebar = () => {
             <NavLink to="/transactions" className={navClass}>
               {({ isActive }) => (
                 <>
-                  <svg
-                    className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-brand-cobalt transition-colors'}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                    />
-                  </svg>
-                  <span className="flex-1">Transactions</span>
-                  {isActive ? (
-                    <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-                  ) : (
-                    <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-obsidian-800 text-slate-300 border border-white/[0.08]">
-                      {txCount}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2.5">
+                    <span className="material-symbols-outlined text-[19px]">receipt_long</span>
+                    <span className="text-xs font-medium">Transactions</span>
+                  </div>
+                  <span className="px-1.5 py-0.5 rounded-full bg-surface-container-high text-secondary font-mono text-[10px] font-bold">
+                    {txCount}
+                  </span>
                 </>
               )}
             </NavLink>
@@ -208,43 +188,11 @@ export const Sidebar = () => {
             <NavLink to="/reports" className={navClass}>
               {({ isActive }) => (
                 <>
-                  <svg
-                    className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-brand-cyan transition-colors'}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                    />
-                  </svg>
-                  <span className="flex-1">Reports &amp; P&amp;L</span>
-                  {isActive && <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>}
-                </>
-              )}
-            </NavLink>
-
-            <NavLink to="/categories" className={navClass}>
-              {({ isActive }) => (
-                <>
-                  <svg
-                    className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-brand-violet transition-colors'}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                    />
-                  </svg>
-                  <span className="flex-1">Categories</span>
-                  {isActive && <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>}
+                  <div className="flex items-center gap-2.5">
+                    <span className="material-symbols-outlined text-[19px]">query_stats</span>
+                    <span className="text-xs font-medium">Reports &amp; P&amp;L</span>
+                  </div>
+                  {isActive && <span className="h-1.5 w-1.5 rounded-full bg-primary-container"></span>}
                 </>
               )}
             </NavLink>
@@ -252,29 +200,43 @@ export const Sidebar = () => {
             <NavLink to="/budgets" className={navClass}>
               {({ isActive }) => (
                 <>
-                  <svg
-                    className={`w-5 h-5 transition-colors ${
-                      isActive ? 'text-white' : 'text-slate-400 group-hover:text-amber-400'
-                    }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                    />
-                  </svg>
-                  <span className="flex-1">Budgets & Alerts</span>
-                  {isActive && <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>}
+                  <div className="flex items-center gap-2.5">
+                    <span className="material-symbols-outlined text-[19px]">monitoring</span>
+                    <span className="text-xs font-medium">Budgets &amp; Alerts</span>
+                  </div>
+                  {isActive && <span className="h-1.5 w-1.5 rounded-full bg-primary-container"></span>}
                 </>
               )}
             </NavLink>
 
-            <div className="pt-4 px-3 pb-2 text-[11px] font-semibold tracking-wider text-slate-400 uppercase flex items-center justify-between">
-              <span>Streams</span>
+            <NavLink to="/recurring" className={navClass}>
+              {({ isActive }) => (
+                <>
+                  <div className="flex items-center gap-2.5">
+                    <span className="material-symbols-outlined text-[19px]">calendar_clock</span>
+                    <span className="text-xs font-medium">Subscriptions &amp; Runway</span>
+                  </div>
+                  {isActive && <span className="h-1.5 w-1.5 rounded-full bg-primary-container"></span>}
+                </>
+              )}
+            </NavLink>
+
+            <NavLink to="/categories" className={navClass}>
+              {({ isActive }) => (
+                <>
+                  <div className="flex items-center gap-2.5">
+                    <span className="material-symbols-outlined text-[19px]">category</span>
+                    <span className="text-xs font-medium">Categories</span>
+                  </div>
+                  {isActive && <span className="h-1.5 w-1.5 rounded-full bg-primary-container"></span>}
+                </>
+              )}
+            </NavLink>
+
+            <div className="pt-4 pb-1 px-2 flex items-center justify-between">
+              <span className="font-label-sm text-[10px] text-outline uppercase tracking-wider">
+                Active Streams
+              </span>
               <button
                 type="button"
                 onClick={() => {
@@ -287,237 +249,167 @@ export const Sidebar = () => {
                     }, 120);
                   }
                 }}
-                className="text-[10px] text-brand-electric hover:text-white font-bold px-1.5 py-0.5 rounded bg-brand-electric/10 hover:bg-brand-electric/25 border border-brand-electric/30 transition-colors"
+                className="text-[10px] text-primary-container hover:text-white font-bold px-1.5 py-0.5 rounded bg-primary-container/10 border border-primary-container/20 transition-colors"
                 title="Create New Book"
               >
-                + New Book
+                + New
               </button>
             </div>
 
-            <NavLink to="/streams" end className={navClass}>
-              {({ isActive }) => (
-                <>
-                  <Layers
-                    className={`w-5 h-5 ${
-                      isActive ? 'text-white' : 'text-slate-400 group-hover:text-brand-electric transition-colors'
-                    }`}
-                  />
-                  <span className="flex-1">All Streams</span>
-                  {isActive ? (
-                    <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-                  ) : (
-                    <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-obsidian-800 text-slate-300 border border-white/[0.08]">
-                      {streamBooks.length}
-                    </span>
-                  )}
-                </>
-              )}
+            <NavLink to="/streams" end className={streamNavClass}>
+              <span className="material-symbols-outlined text-[17px] text-outline">sync_alt</span>
+              <span className="truncate flex-1">All Stream Books</span>
+              <span className="px-1.5 py-0.2 rounded bg-surface-container-high text-secondary text-[10px] font-mono">
+                {streamBooks.length}
+              </span>
             </NavLink>
 
-            {streamBooks.length > 0 && (
-              <div className="space-y-1 pl-2">
-                {streamBooks.map((book) => (
-                  <NavLink
-                    key={book.id}
-                    to={`/streams/${book.id}`}
-                    className={({ isActive }) =>
-                      isActive
-                        ? 'flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-blue-600/30 border border-blue-500/40 transition-all'
-                        : 'flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/[0.04] transition-colors'
-                    }
-                  >
-                    <span className="text-sm shrink-0">{book.icon || '📁'}</span>
-                    <span className="truncate flex-1">{book.title}</span>
-                  </NavLink>
-                ))}
-              </div>
-            )}
+            {streamBooks.map((book) => (
+              <NavLink
+                key={book.id}
+                to={`/streams/${book.id}`}
+                className={streamNavClass}
+              >
+                <span className="material-symbols-outlined text-[16px] text-secondary shrink-0">
+                  {getAppropriateBookIcon(book.title, book.icon)}
+                </span>
+                <span className="truncate flex-1">{book.title}</span>
+              </NavLink>
+            ))}
 
-            <div className="pt-4 px-3 pb-2 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
-              Management
+            <div className="pt-4 pb-1 px-2">
+              <span className="font-label-sm text-[10px] text-outline uppercase tracking-wider">
+                System Config
+              </span>
             </div>
 
-            {user?.is_admin ? (
+            {user?.is_admin && (
               <NavLink to="/admin" className={navClass}>
                 {({ isActive }) => (
                   <>
-                    <svg
-                      className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-brand-cobalt transition-colors'}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                      />
-                    </svg>
-                    <span className="flex-1">Admin &amp; Entities</span>
-                    {isActive && <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>}
+                    <div className="flex items-center gap-2.5">
+                      <span className="material-symbols-outlined text-[19px]">admin_panel_settings</span>
+                      <span className="text-xs font-medium">Admin &amp; Entities</span>
+                    </div>
+                    {isActive && <span className="h-1.5 w-1.5 rounded-full bg-primary-container"></span>}
                   </>
                 )}
-              </NavLink>
-            ) : (
-              <NavLink
-                to="/transactions"
-                className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm text-slate-400 hover:text-white hover:bg-white/[0.04] transition-colors group"
-              >
-                <svg
-                  className="w-5 h-5 text-slate-400 group-hover:text-brand-cobalt transition-colors"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                  />
-                </svg>
-                <span className="flex-1">Invoices &amp; Entities</span>
               </NavLink>
             )}
 
             <NavLink to="/settings" className={navClass}>
               {({ isActive }) => (
                 <>
-                  <svg
-                    className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white transition-colors'}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                    />
-                    <path
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                    />
-                  </svg>
-                  <span className="flex-1">Settings</span>
-                  {isActive && <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>}
+                  <div className="flex items-center gap-2.5">
+                    <span className="material-symbols-outlined text-[19px]">tune</span>
+                    <span className="text-xs font-medium">Settings &amp; Entities</span>
+                  </div>
+                  {isActive && <span className="h-1.5 w-1.5 rounded-full bg-primary-container"></span>}
                 </>
               )}
             </NavLink>
           </nav>
 
-          <div className="p-4 border-t border-white/[0.06] bg-obsidian-950/40" data-purpose="workspace-switcher">
-            <div className="p-3 rounded-xl bg-obsidian-850/80 border border-white/[0.06] flex items-center justify-between">
-              <div className="flex items-center gap-3 overflow-hidden">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-brand-violet to-brand-cobalt flex items-center justify-center font-bold text-xs text-white uppercase shrink-0">
-                  {getInitials(user?.full_name, user?.email)}
+          <div className="p-3 border-t border-slate-800/70 bg-surface-container-lowest shrink-0" data-purpose="workspace-switcher">
+            <div className="p-2.5 rounded-xl bg-surface-container border border-slate-800/70 flex items-center justify-between hover:bg-surface-container-high transition-colors">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700/60 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-primary-container text-[18px]">person</span>
                 </div>
-                <div className="truncate">
+                <div className="flex flex-col min-w-0">
+                  <span className="font-label-md text-xs font-semibold text-on-surface truncate">
+                    {user?.full_name || 'Karunakaran R'}
+                  </span>
                   <div className="flex items-center gap-1.5">
-                    <p className="text-xs font-semibold text-white truncate">
-                      {user?.full_name || 'Personal Portfolio'}
-                    </p>
-                    {user?.is_admin && (
-                      <span className="text-[9px] font-bold px-1 py-0.2 rounded bg-brand-violet/20 text-brand-violet border border-brand-violet/30">
-                        ADMIN
-                      </span>
-                    )}
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary-container"></span>
+                    <span className="font-label-sm text-[10px] text-outline truncate">Active Vault</span>
                   </div>
-                  <p className="text-[11px] text-brand-emerald font-medium flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-brand-emerald animate-pulse"></span> Active Vault
-                  </p>
                 </div>
               </div>
               <button
                 onClick={handleLogout}
-                className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-white/[0.05] transition-colors"
+                className="text-outline hover:text-on-surface transition-colors p-1 rounded-lg hover:bg-white/[0.05]"
                 title="Sign Out"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    d="M8 9l4-4 4 4m0 6l-4 4-4-4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                  />
-                </svg>
+                <LogOut size={16} />
               </button>
             </div>
           </div>
         </div>
       </aside>
 
-      <nav className="mobile-bottom-nav" data-purpose="mobile-bottom-nav">
-        <NavLink to="/dashboard" className={mobileTabClass}>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-            />
-          </svg>
-          <span>Overview</span>
-        </NavLink>
+      <nav
+        className="fixed bottom-0 inset-x-0 z-50 pb-safe bg-[#090e1c]/95 backdrop-blur-2xl border-t border-white/5 lg:hidden"
+        id="bottomNav"
+        data-purpose="mobile-bottom-nav"
+      >
+        <div className="relative grid grid-cols-5 items-center h-16 max-w-lg mx-auto" id="navContainer">
+          <div
+            className={`morph-pill absolute bottom-1.5 h-1 w-8 rounded-full pointer-events-none transition-all duration-300 ease-out ${
+              activeNavIdx >= 0 ? `pos-${activeNavIdx}` : ''
+            }`}
+          />
 
-        <NavLink to="/transactions" className={mobileTabClass}>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-            />
-          </svg>
-          <span>Ledger</span>
-        </NavLink>
-
-        <NavLink to="/streams" className={mobileTabClass}>
-          <Layers className="w-4 h-4" />
-          <span>Streams</span>
-        </NavLink>
-
-        <NavLink to="/reports" className={mobileTabClass}>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-            />
-          </svg>
-          <span>Reports</span>
-        </NavLink>
-
-        {user?.is_admin ? (
-          <NavLink to="/admin" className={mobileTabClass}>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-              />
-            </svg>
-            <span>Admin</span>
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) =>
+              `nav-tab flex flex-col items-center justify-center relative w-full h-14 rounded-xl spring-tactile transition-colors ${
+                isActive ? 'text-primary-container font-bold' : 'text-on-surface-variant hover:text-on-surface'
+              }`
+            }
+          >
+            <span className="material-symbols-outlined text-[20px]">space_dashboard</span>
+            <span className="font-label-sm text-[10px] tracking-wider mt-0.5">Overview</span>
           </NavLink>
-        ) : (
-          <NavLink to="/settings" className={mobileTabClass}>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-              />
-            </svg>
-            <span>Settings</span>
+
+          <NavLink
+            to="/transactions"
+            className={({ isActive }) =>
+              `nav-tab flex flex-col items-center justify-center relative w-full h-14 rounded-xl spring-tactile transition-colors ${
+                isActive ? 'text-primary-container font-bold' : 'text-on-surface-variant hover:text-on-surface'
+              }`
+            }
+          >
+            <span className="material-symbols-outlined text-[20px]">receipt_long</span>
+            <span className="font-label-sm text-[10px] tracking-wider mt-0.5">Ledger</span>
           </NavLink>
-        )}
+
+          <NavLink
+            to="/streams"
+            className={({ isActive }) =>
+              `nav-tab flex flex-col items-center justify-center relative w-full h-14 rounded-xl spring-tactile transition-colors ${
+                isActive ? 'text-primary-container font-bold' : 'text-on-surface-variant hover:text-on-surface'
+              }`
+            }
+          >
+            <span className="material-symbols-outlined text-[20px]">sync_alt</span>
+            <span className="font-label-sm text-[10px] tracking-wider mt-0.5">Streams</span>
+          </NavLink>
+
+          <NavLink
+            to="/reports"
+            className={({ isActive }) =>
+              `nav-tab flex flex-col items-center justify-center relative w-full h-14 rounded-xl spring-tactile transition-colors ${
+                isActive ? 'text-primary-container font-bold' : 'text-on-surface-variant hover:text-on-surface'
+              }`
+            }
+          >
+            <span className="material-symbols-outlined text-[20px]">query_stats</span>
+            <span className="font-label-sm text-[10px] tracking-wider mt-0.5">Reports</span>
+          </NavLink>
+
+          <NavLink
+            to="/budgets"
+            className={({ isActive }) =>
+              `nav-tab flex flex-col items-center justify-center relative w-full h-14 rounded-xl spring-tactile transition-colors ${
+                isActive ? 'text-primary-container font-bold' : 'text-on-surface-variant hover:text-on-surface'
+              }`
+            }
+          >
+            <span className="material-symbols-outlined text-[20px]">pie_chart</span>
+            <span className="font-label-sm text-[10px] tracking-wider mt-0.5">Budgets</span>
+          </NavLink>
+        </div>
       </nav>
     </>
   );

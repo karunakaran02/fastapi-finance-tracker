@@ -1,19 +1,10 @@
-"""add streams module tables
-
-Revision ID: 003_add_streams_module
-Revises: 002_add_budgets_and_alerts
-Create Date: 2026-10-16 17:30:00.000000
-
-"""
 from alembic import op
 import sqlalchemy as sa
-
 
 revision = '003_add_streams_module'
 down_revision = '002_add_budgets_and_alerts'
 branch_labels = None
 depends_on = None
-
 
 def upgrade() -> None:
     op.create_table(
@@ -55,7 +46,6 @@ def upgrade() -> None:
     op.create_index(op.f('ix_stream_entries_category'), 'stream_entries', ['category'], unique=False)
     op.create_index(op.f('ix_stream_entries_entry_date'), 'stream_entries', ['entry_date'], unique=False)
 
-
 def downgrade() -> None:
     op.drop_index(op.f('ix_stream_entries_entry_date'), table_name='stream_entries')
     op.drop_index(op.f('ix_stream_entries_category'), table_name='stream_entries')
@@ -68,4 +58,3 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_stream_books_user_id'), table_name='stream_books')
     op.drop_index(op.f('ix_stream_books_id'), table_name='stream_books')
     op.drop_table('stream_books')
-

@@ -6,7 +6,6 @@ from typing import Deque, Dict, Optional, Tuple
 from fastapi import HTTPException, status
 from app.core.config import settings
 
-
 class SlidingWindowRateLimiter:
     def __init__(self, max_requests: int = 10, window_seconds: int = 7200):
         self.max_requests = max_requests
@@ -57,12 +56,10 @@ class SlidingWindowRateLimiter:
         for k in expired:
             del self._hits[k]
 
-
 login_rate_limiter = SlidingWindowRateLimiter(
     max_requests=settings.LOGIN_RATE_LIMIT_MAX_HITS,
     window_seconds=settings.LOGIN_RATE_LIMIT_WINDOW_SECONDS,
 )
-
 
 def enforce_login_rate_limit(key: str) -> Tuple[int, int]:
     allowed, remaining, retry_after = login_rate_limiter.check_rate_limit(key)
@@ -81,4 +78,3 @@ def enforce_login_rate_limit(key: str) -> Tuple[int, int]:
             },
         )
     return remaining, login_rate_limiter.max_requests
-

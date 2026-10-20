@@ -7,14 +7,11 @@ from app.core.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
-
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
-
 
 def create_access_token(subject: Union[str, int, Any], expires_delta: Optional[timedelta] = None) -> str:
     now = datetime.now(timezone.utc)
@@ -30,7 +27,6 @@ def create_access_token(subject: Union[str, int, Any], expires_delta: Optional[t
     }
     return jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.ALGORITHM)
 
-
 def create_refresh_token(subject: Union[str, int, Any], expires_delta: Optional[timedelta] = None) -> str:
     now = datetime.now(timezone.utc)
     if expires_delta:
@@ -45,10 +41,8 @@ def create_refresh_token(subject: Union[str, int, Any], expires_delta: Optional[
     }
     return jwt.encode(to_encode, settings.JWT_REFRESH_SECRET, algorithm=settings.ALGORITHM)
 
-
 def decode_access_token(token: str) -> Dict[str, Any]:
     return jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.ALGORITHM])
-
 
 def decode_refresh_token(token: str) -> Dict[str, Any]:
     return jwt.decode(token, settings.JWT_REFRESH_SECRET, algorithms=[settings.ALGORITHM])

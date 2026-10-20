@@ -18,14 +18,12 @@ from app.services import stream as stream_service
 
 router = APIRouter()
 
-
 @router.get("/books", response_model=List[StreamBookSummary])
 def get_stream_books(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     return stream_service.list_user_books(db, current_user.id)
-
 
 @router.post("/books", response_model=StreamBookSummary, status_code=status.HTTP_201_CREATED)
 def create_stream_book(
@@ -34,7 +32,6 @@ def create_stream_book(
     current_user: User = Depends(get_current_user),
 ):
     return stream_service.create_book(db, current_user.id, book_in)
-
 
 @router.get("/books/{book_id}", response_model=StreamBookSummary)
 def get_stream_book(
@@ -49,7 +46,6 @@ def get_stream_book(
             detail="Stream book not found",
         )
     return book
-
 
 @router.patch("/books/{book_id}", response_model=StreamBookSummary)
 def update_stream_book(
@@ -66,7 +62,6 @@ def update_stream_book(
         )
     return book
 
-
 @router.delete("/books/{book_id}", response_model=MessageResponse)
 def delete_stream_book(
     book_id: int,
@@ -80,7 +75,6 @@ def delete_stream_book(
             detail="Stream book not found",
         )
     return MessageResponse(message="Stream book deleted successfully")
-
 
 @router.get("/books/{book_id}/entries", response_model=PaginatedStreamEntries)
 def get_stream_entries(
@@ -114,7 +108,6 @@ def get_stream_entries(
         )
     return entries
 
-
 @router.post(
     "/books/{book_id}/entries",
     response_model=StreamEntryResponse,
@@ -134,7 +127,6 @@ def create_stream_entry(
         )
     return entry
 
-
 @router.patch("/books/{book_id}/entries/{entry_id}", response_model=StreamEntryResponse)
 def update_stream_entry(
     book_id: int,
@@ -151,7 +143,6 @@ def update_stream_entry(
         )
     return entry
 
-
 @router.delete("/books/{book_id}/entries/{entry_id}", response_model=MessageResponse)
 def delete_stream_entry(
     book_id: int,
@@ -167,13 +158,28 @@ def delete_stream_entry(
         )
     return MessageResponse(message="Stream entry deleted successfully")
 
-
 @router.get("/books/{book_id}/export")
-def export_stream_book_csv(
+def export_stream_book(
     book_id: int,
+    format: str = Query("csv", description="Export format: pdf or csv"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    fmt = format.strip().lower()
+    if fmt == "pdf":
+        pdf_bytes = stream_service.export_book_pdf(db, book_id, current_user.id)
+        if not pdf_bytes:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Stream book not found",
+            )
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename=stream_book_{book_id}_statement.pdf"
+            },
+        )
     csv_stream = stream_service.export_book_csv(db, book_id, current_user.id)
     if not csv_stream:
         raise HTTPException(
@@ -187,4 +193,3 @@ def export_stream_book_csv(
             "Content-Disposition": f"attachment; filename=stream_book_{book_id}_statement.csv"
         },
     )
-

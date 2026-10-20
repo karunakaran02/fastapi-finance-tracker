@@ -6,10 +6,12 @@ import zlib
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
+from fastapi import HTTPException, status
 from sqlalchemy import desc, asc, or_, cast, String
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.category import Category
+from app.models.stream import StreamBook, StreamEntry
 from app.models.transaction import Transaction
 from app.schemas.transaction import (
     FileImportSummary,
@@ -18,7 +20,6 @@ from app.schemas.transaction import (
     TransactionUpdate,
 )
 
-
 def get_transaction(
     db: Session,
     transaction_id: int,
@@ -26,7 +27,7 @@ def get_transaction(
 ) -> Optional[Transaction]:
     return (
         db.query(Transaction)
-        .options(joinedload(Transaction.category))
+        .options(joinedload(Transaction.category), joinedload(Transaction.book))
         .filter(
             Transaction.id == transaction_id,
             Transaction.user_id == user_id,
@@ -34,12 +35,12 @@ def get_transaction(
         .first()
     )
 
-
 def get_transactions(
     db: Session,
     user_id: int,
     transaction_type: Optional[str] = None,
     category_id: Optional[int] = None,
+    book_id: Optional[int] = None,
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
     search: Optional[str] = None,
@@ -49,7 +50,7 @@ def get_transactions(
 ) -> Tuple[List[Transaction], int]:
     query = (
         db.query(Transaction)
-        .options(joinedload(Transaction.category))
+        .options(joinedload(Transaction.category), joinedload(Transaction.book))
         .filter(Transaction.user_id == user_id)
     )
 
@@ -58,6 +59,9 @@ def get_transactions(
 
     if category_id:
         query = query.filter(Transaction.category_id == category_id)
+
+    if book_id:
+        query = query.filter(Transaction.book_id == book_id)
 
     if start_date and end_date and start_date > end_date:
         start_date, end_date = end_date, start_date
@@ -99,14 +103,49 @@ def get_transactions(
     items = query.offset(offset).limit(page_size).all()
     return items, total
 
+def get_or_create_default_user_book(db: Session, user_id: int) -> StreamBook:
+    book = (
+        db.query(StreamBook)
+        .filter(StreamBook.user_id == user_id)
+        .order_by(StreamBook.id.asc())
+        .first()
+    )
+    if not book:
+        book = StreamBook(
+            user_id=user_id,
+            title="Main Ledger",
+            description="Primary financial stream ledger",
+            color="#3b82f6",
+            icon="book",
+        )
+        db.add(book)
+        db.flush()
+    return book
 
 def create_transaction(
     db: Session,
     user_id: int,
     transaction_in: TransactionCreate,
 ) -> Transaction:
+    target_book_id = transaction_in.book_id
+    if target_book_id:
+        book = (
+            db.query(StreamBook)
+            .filter(StreamBook.id == target_book_id, StreamBook.user_id == user_id)
+            .first()
+        )
+        if not book:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Specified stream book does not exist or is not accessible.",
+            )
+    else:
+        book = get_or_create_default_user_book(db, user_id)
+        target_book_id = book.id
+
     db_transaction = Transaction(
         user_id=user_id,
+        book_id=target_book_id,
         category_id=transaction_in.category_id,
         type=transaction_in.type,
         amount=transaction_in.amount,
@@ -114,15 +153,35 @@ def create_transaction(
         transaction_date=transaction_in.transaction_date,
     )
     db.add(db_transaction)
+    db.flush()
+
+    category = (
+        db.query(Category)
+        .filter(Category.id == db_transaction.category_id)
+        .first()
+    )
+    category_name = category.name if category else "General"
+
+    stream_entry = StreamEntry(
+        book_id=target_book_id,
+        user_id=user_id,
+        transaction_id=db_transaction.id,
+        type="IN" if db_transaction.type == "income" else "OUT",
+        amount=db_transaction.amount,
+        remarks=db_transaction.description or category_name,
+        category=category_name,
+        entry_date=db_transaction.transaction_date,
+    )
+    db.add(stream_entry)
     db.commit()
     db.refresh(db_transaction)
+
     return (
         db.query(Transaction)
-        .options(joinedload(Transaction.category))
+        .options(joinedload(Transaction.category), joinedload(Transaction.book))
         .filter(Transaction.id == db_transaction.id)
         .first()
     )
-
 
 def update_transaction(
     db: Session,
@@ -130,24 +189,73 @@ def update_transaction(
     transaction_in: TransactionUpdate,
 ) -> Transaction:
     update_data = transaction_in.model_dump(exclude_unset=True)
+    if "book_id" in update_data and update_data["book_id"] is not None:
+        target_book_id = update_data["book_id"]
+        book = (
+            db.query(StreamBook)
+            .filter(StreamBook.id == target_book_id, StreamBook.user_id == transaction.user_id)
+            .first()
+        )
+        if not book:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Specified stream book does not exist or is not accessible.",
+            )
+
     for key, value in update_data.items():
         setattr(transaction, key, value)
+    db.flush()
+
+    category = (
+        db.query(Category)
+        .filter(Category.id == transaction.category_id)
+        .first()
+    )
+    category_name = category.name if category else "General"
+
+    linked_entry = (
+        db.query(StreamEntry)
+        .filter(StreamEntry.transaction_id == transaction.id)
+        .first()
+    )
+    if linked_entry:
+        linked_entry.book_id = transaction.book_id
+        linked_entry.type = "IN" if transaction.type == "income" else "OUT"
+        linked_entry.amount = transaction.amount
+        linked_entry.remarks = transaction.description or category_name
+        linked_entry.category = category_name
+        linked_entry.entry_date = transaction.transaction_date
+    else:
+        stream_entry = StreamEntry(
+            book_id=transaction.book_id,
+            user_id=transaction.user_id,
+            transaction_id=transaction.id,
+            type="IN" if transaction.type == "income" else "OUT",
+            amount=transaction.amount,
+            remarks=transaction.description or category_name,
+            category=category_name,
+            entry_date=transaction.transaction_date,
+        )
+        db.add(stream_entry)
+
     db.commit()
     db.refresh(transaction)
     return (
         db.query(Transaction)
-        .options(joinedload(Transaction.category))
+        .options(joinedload(Transaction.category), joinedload(Transaction.book))
         .filter(Transaction.id == transaction.id)
         .first()
     )
 
-
 def delete_transaction(db: Session, transaction: Transaction) -> None:
+    db.query(StreamEntry).filter(StreamEntry.transaction_id == transaction.id).delete(synchronize_session=False)
     db.delete(transaction)
     db.commit()
 
-
 def delete_all_user_transactions(db: Session, user_id: int) -> int:
+    user_tx_ids = [tx_id for (tx_id,) in db.query(Transaction.id).filter(Transaction.user_id == user_id).all()]
+    if user_tx_ids:
+        db.query(StreamEntry).filter(StreamEntry.transaction_id.in_(user_tx_ids)).delete(synchronize_session=False)
     deleted_count = (
         db.query(Transaction)
         .filter(Transaction.user_id == user_id)
@@ -155,8 +263,6 @@ def delete_all_user_transactions(db: Session, user_id: int) -> int:
     )
     db.commit()
     return deleted_count
-
-
 
 DATE_TOKEN_REGEX = re.compile(
     r"\b("
@@ -213,16 +319,10 @@ KNOWN_CATEGORIES = {
     "other": ("Other", None),
 }
 
-
 def _normalize_key(key: Any) -> str:
     return re.sub(r"[^a-z0-9]", "", str(key or "").strip().lower())
 
-
 def _classify_column_header(raw_header: Any) -> Optional[str]:
-    """
-    Classifies any PDF or CSV column header into a canonical field role:
-    'date', 'description', 'category', 'type', 'debit', 'credit', 'amount', 'balance', 'reference', or None.
-    """
     text = str(raw_header or "").strip().lower()
     if not text:
         return None
@@ -330,7 +430,6 @@ def _classify_column_header(raw_header: Any) -> Optional[str]:
 
     return None
 
-
 def _detect_direction_from_text(raw: Any) -> Optional[str]:
     if raw is None:
         return None
@@ -407,15 +506,7 @@ def _detect_direction_from_text(raw: Any) -> Optional[str]:
         return "expense"
     return None
 
-
 def _parse_amount_and_direction(raw: Any) -> Tuple[Optional[Decimal], Optional[str]]:
-    """
-    Extracts both a Decimal amount and any inline direction ('income' or 'expense')
-    from strings like:
-      '₹ 85,000.00 Cr', '2,450.00 Dr', 'Debit 1,200.50', '1500.00 Withdrawal',
-      '10,000 Deposit', '(2,450.00)', '-3200.00', '+15000.00'
-    Returns (None, None) if raw is a date or non-numeric.
-    """
     if raw is None:
         return None, None
     text = str(raw).strip()
@@ -461,11 +552,9 @@ def _parse_amount_and_direction(raw: Any) -> Tuple[Optional[Decimal], Optional[s
     except (InvalidOperation, ValueError):
         return None, direction
 
-
 def _parse_decimal_amount(raw: Any) -> Optional[Decimal]:
     val, _ = _parse_amount_and_direction(raw)
     return val
-
 
 def _parse_flexible_date(raw: Any) -> datetime:
     if raw is None or not str(raw).strip():
@@ -530,7 +619,6 @@ def _parse_flexible_date(raw: Any) -> datetime:
 
     raise ValueError(f"Unrecognized date format '{text}'")
 
-
 def _infer_category_from_description(description: str, tx_type: str) -> str:
     desc_lower = (description or "").lower()
     if tx_type == "income":
@@ -562,13 +650,7 @@ def _infer_category_from_description(description: str, tx_type: str) -> str:
         return "Travel"
     return "Other"
 
-
-
 def _detect_header_mapping(row_cells: List[Any]) -> Optional[Dict[int, str]]:
-    """
-    Checks if a list of cells represents a table header row.
-    Returns {col_idx: role} if it looks like a header row, else None.
-    """
     mapping: Dict[int, str] = {}
     for idx, cell in enumerate(row_cells):
         cell_str = str(cell or "").strip()
@@ -586,15 +668,10 @@ def _detect_header_mapping(row_cells: List[Any]) -> Optional[Dict[int, str]]:
         return mapping
     return None
 
-
 def _extract_dict_from_mapped_cells(
     cells: List[Any],
     header_map: Dict[int, str],
 ) -> Optional[Dict[str, Any]]:
-    """
-    Given a row of cells and a {col_idx: role} mapping, extracts a normalized
-    transaction dictionary or returns None if the row is not a valid transaction row.
-    """
     if _detect_header_mapping(cells) is not None:
         return None
 
@@ -714,8 +791,6 @@ def _extract_dict_from_mapped_cells(
         "amount": str(final_amount),
     }
 
-
-
 def _extract_rows_via_pdfplumber_tables(pdf) -> List[Dict[str, Any]]:
     extracted: List[Dict[str, Any]] = []
     active_header_map: Optional[Dict[int, str]] = None
@@ -760,12 +835,7 @@ def _extract_rows_via_pdfplumber_tables(pdf) -> List[Dict[str, Any]]:
 
     return extracted
 
-
 def _extract_rows_via_pdfplumber_words(pdf) -> List[Dict[str, Any]]:
-    """
-    Uses word X/Y coordinates to reconstruct visual lines AND detect column X-positions
-    for 'Withdrawal/Debit' vs 'Deposit/Credit' vs 'Balance' columns on borderless PDFs.
-    """
     extracted: List[Dict[str, Any]] = []
     col_x_centers: Dict[str, float] = {}
     pipe_header_map: Optional[Dict[int, str]] = None
@@ -968,7 +1038,6 @@ def _extract_rows_via_pdfplumber_words(pdf) -> List[Dict[str, Any]]:
 
     return extracted
 
-
 def _decode_pdf_literal_string(raw: str) -> str:
     out = []
     i = 0
@@ -993,7 +1062,6 @@ def _decode_pdf_literal_string(raw: str) -> str:
             out.append(ch)
             i += 1
     return "".join(out)
-
 
 def _decode_pdf_hex_string(hex_str: str, cmap: Dict[int, str]) -> str:
     cleaned = re.sub(r"\s+", "", hex_str)
@@ -1024,7 +1092,6 @@ def _decode_pdf_hex_string(hex_str: str, cmap: Dict[int, str]) -> str:
 
     return raw_bytes.decode("latin-1", errors="ignore")
 
-
 def _extract_pdf_cmap(stream_text: str, cmap: Dict[int, str]) -> None:
     for match in re.finditer(r"beginbfchar(.*?)endbfchar", stream_text, re.DOTALL):
         block = match.group(1)
@@ -1046,7 +1113,6 @@ def _extract_pdf_cmap(stream_text: str, cmap: Dict[int, str]) -> None:
             base_val = int(rng.group(3), 16)
             for offset in range(max(0, min(end_code - start_code + 1, 512))):
                 cmap[start_code + offset] = chr(base_val + offset)
-
 
 def _extract_text_lines_from_pdf(content_bytes: bytes) -> List[str]:
     extracted_lines: List[str] = []
@@ -1216,13 +1282,7 @@ def _extract_text_lines_from_pdf(content_bytes: bytes) -> List[str]:
 
     return lines
 
-
 def _parse_pdf_transaction_lines(lines: List[str]) -> List[Dict[str, Any]]:
-    """
-    Parses extracted text lines from any bank statement or expense sheet PDF,
-    supporting single-line and multi-line wrapped entries and detecting
-    credit/debit/withdraw/deposit terms.
-    """
     rows: List[Dict[str, Any]] = []
     if not lines:
         return rows
@@ -1451,7 +1511,6 @@ def _parse_pdf_transaction_lines(lines: List[str]) -> List[Dict[str, Any]]:
 
     return rows
 
-
 def _extract_rows_from_pdf(content_bytes: bytes) -> List[Dict[str, Any]]:
     try:
         import pdfplumber
@@ -1469,14 +1528,7 @@ def _extract_rows_from_pdf(content_bytes: bytes) -> List[Dict[str, Any]]:
     pdf_lines = _extract_text_lines_from_pdf(content_bytes)
     return _parse_pdf_transaction_lines(pdf_lines)
 
-
 def _extract_rows_from_csv(text: str) -> List[Dict[str, Any]]:
-    """
-    Parses any CSV template:
-    - Auto-detects delimiter (',', ';', '\\t', '|')
-    - Skips metadata/bank-summary rows above the actual table header
-    - Maps Credit/Deposit vs Debit/Withdrawal columns automatically
-    """
     lines = [ln for ln in text.splitlines() if ln.strip()]
     if not lines:
         return []
@@ -1528,7 +1580,6 @@ def _extract_rows_from_csv(text: str) -> List[Dict[str, Any]]:
         return dict_rows
     return _parse_pdf_transaction_lines(lines)
 
-
 def _extract_rows_from_file(filename: str, content_bytes: bytes) -> List[Dict[str, Any]]:
     lower_name = (filename or "").lower()
 
@@ -1552,7 +1603,6 @@ def _extract_rows_from_file(filename: str, content_bytes: bytes) -> List[Dict[st
 
     return _extract_rows_from_csv(text)
 
-
 def import_transactions_from_files(
     db: Session,
     user_id: int,
@@ -1566,6 +1616,8 @@ def import_transactions_from_files(
     cat_lookup: Dict[Tuple[str, str], Category] = {}
     for cat in existing_categories:
         cat_lookup[(cat.type.lower(), cat.name.strip().lower())] = cat
+
+    default_book = get_or_create_default_user_book(db, user_id)
 
     total_imported = 0
     total_skipped = 0
@@ -1744,6 +1796,7 @@ def import_transactions_from_files(
 
                 db_tx = Transaction(
                     user_id=user_id,
+                    book_id=default_book.id,
                     category_id=category_obj.id,
                     type=tx_type,
                     amount=amount_val,
@@ -1751,6 +1804,20 @@ def import_transactions_from_files(
                     transaction_date=tx_date,
                 )
                 db.add(db_tx)
+                db.flush()
+
+                db.add(
+                    StreamEntry(
+                        book_id=default_book.id,
+                        user_id=user_id,
+                        transaction_id=db_tx.id,
+                        type="IN" if tx_type == "income" else "OUT",
+                        amount=amount_val,
+                        remarks=description or category_obj.name,
+                        category=category_obj.name,
+                        entry_date=tx_date,
+                    )
+                )
 
                 file_imported += 1
                 total_imported += 1
@@ -1807,12 +1874,12 @@ def import_transactions_from_files(
         errors=all_errors[:25],
     )
 
-
 def export_transactions_csv(
     db: Session,
     user_id: int,
     transaction_type: Optional[str] = None,
     category_id: Optional[int] = None,
+    book_id: Optional[int] = None,
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
     search: Optional[str] = None,
@@ -1820,13 +1887,15 @@ def export_transactions_csv(
 ) -> str:
     query = (
         db.query(Transaction)
-        .options(joinedload(Transaction.category))
+        .options(joinedload(Transaction.category), joinedload(Transaction.book))
         .filter(Transaction.user_id == user_id)
     )
     if transaction_type:
         query = query.filter(Transaction.type == transaction_type)
     if category_id:
         query = query.filter(Transaction.category_id == category_id)
+    if book_id:
+        query = query.filter(Transaction.book_id == book_id)
     if start_date and end_date and start_date > end_date:
         start_date, end_date = end_date, start_date
 
@@ -1859,12 +1928,13 @@ def export_transactions_csv(
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["id", "type", "category", "description", "amount", "transaction_date"])
+    writer.writerow(["id", "type", "book", "category", "description", "amount", "transaction_date"])
     for tx in txs:
         writer.writerow(
             [
                 tx.id,
                 tx.type,
+                tx.book.title if tx.book else "Main Ledger",
                 tx.category.name if tx.category else "Other",
                 tx.description or "",
                 f"{Decimal(str(tx.amount)):.2f}",
@@ -1872,7 +1942,6 @@ def export_transactions_csv(
             ]
         )
     return output.getvalue()
-
 
 def get_import_template_csv() -> str:
     output = io.StringIO()
@@ -1883,7 +1952,6 @@ def get_import_template_csv() -> str:
     writer.writerow(["2026-10-08", "Broadband & Electricity Bill", "Bills", "3200.00", ""])
     writer.writerow(["2026-10-10", "Consulting Project Milestone", "Freelance", "", "15000.00"])
     return output.getvalue()
-
 
 def get_import_template_pdf() -> bytes:
     statement_lines = [

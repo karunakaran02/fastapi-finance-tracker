@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, RotateCcw } from 'lucide-react';
 import CustomSelect from './CustomSelect';
+import { getAppropriateBookIcon } from '../utils/bookIcons';
 import './TransactionFilters.css';
 
 export const TransactionFilters = ({
@@ -8,6 +9,7 @@ export const TransactionFilters = ({
   onChange,
   onReset,
   categories = [],
+  books = [],
 }) => {
   const [localSearch, setLocalSearch] = useState(filters.search || '');
 
@@ -44,6 +46,15 @@ export const TransactionFilters = ({
     { value: '', label: 'All Types' },
     { value: 'income', label: 'Income' },
     { value: 'expense', label: 'Expense' },
+  ];
+
+  const bookOptions = [
+    { value: '', label: 'All Stream Books' },
+    ...books.map((b) => ({
+      value: String(b.id),
+      label: b.title,
+      icon: getAppropriateBookIcon(b.title, b.icon),
+    })),
   ];
 
   const filteredCategories = categories.filter((c) => {
@@ -169,6 +180,16 @@ export const TransactionFilters = ({
             onChange={(val) => handleChange('type', val)}
             options={typeOptions}
             placeholder="All Types"
+          />
+        </div>
+
+        <div className="tx-filter-col">
+          <label className="form-label">Stream Book</label>
+          <CustomSelect
+            value={filters.book_id ? String(filters.book_id) : ''}
+            onChange={(val) => handleChange('book_id', val)}
+            options={bookOptions}
+            placeholder="All Stream Books"
           />
         </div>
 

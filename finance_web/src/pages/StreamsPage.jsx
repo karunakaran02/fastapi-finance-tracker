@@ -32,11 +32,33 @@ import {
 import api, { extractErrorMessage } from '../api/client';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
+import { PRESET_BOOK_ICONS, inferIconFromTitle, getAppropriateBookIcon } from '../utils/bookIcons';
 import './StreamsPage.css';
 
-const PRESET_ICONS = ['🌾', '🏢', '🚗', '🛒', '💼', '🏠', '💰', '📁', '🩺', '⚡'];
 const PRESET_COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#06b6d4'];
 const QUICK_TAGS = ['Income', 'Sales', 'Advance', 'Salary', 'Maintenance', 'Supplies', 'Fuel', 'Labor & Wages', 'Other'];
+
+const getBookColorClass = (color) => {
+  switch (color) {
+    case '#3b82f6': return 'stream-book-avatar-blue';
+    case '#8b5cf6': return 'stream-book-avatar-purple';
+    case '#f59e0b': return 'stream-book-avatar-amber';
+    case '#ef4444': return 'stream-book-avatar-red';
+    case '#06b6d4': return 'stream-book-avatar-cyan';
+    default: return 'stream-book-avatar-emerald';
+  }
+};
+
+const getSwatchColorClass = (color) => {
+  switch (color) {
+    case '#3b82f6': return 'stream-color-blue';
+    case '#8b5cf6': return 'stream-color-purple';
+    case '#f59e0b': return 'stream-color-amber';
+    case '#ef4444': return 'stream-color-red';
+    case '#06b6d4': return 'stream-color-cyan';
+    default: return 'stream-color-emerald';
+  }
+};
 
 export const StreamsPage = () => {
   const { bookId } = useParams();
@@ -62,8 +84,8 @@ export const StreamsPage = () => {
   const [loadingEntries, setLoadingEntries] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState(''); // '' (all), 'IN', 'OUT'
-  const [sortOrder, setSortOrder] = useState('latest'); // 'latest' | 'oldest'
+  const [typeFilter, setTypeFilter] = useState('');
+  const [sortOrder, setSortOrder] = useState('latest');
 
   const [showBookModal, setShowBookModal] = useState(false);
   const [editingBook, setEditingBook] = useState(null);
@@ -71,7 +93,8 @@ export const StreamsPage = () => {
     title: '',
     description: '',
     color: '#10b981',
-    icon: '🌾',
+    icon: 'agriculture',
+    isCustomIcon: false,
   });
 
   const [showEntryModal, setShowEntryModal] = useState(false);
@@ -126,7 +149,7 @@ export const StreamsPage = () => {
   useEffect(() => {
     const handleOpenModal = () => {
       setEditingBook(null);
-      setBookForm({ title: '', description: '', color: '#10b981', icon: '🌾' });
+      setBookForm({ title: '', description: '', color: '#10b981', icon: 'agriculture', isCustomIcon: false });
       setShowBookModal(true);
     };
     window.addEventListener('open-new-stream-modal', handleOpenModal);
@@ -232,7 +255,7 @@ export const StreamsPage = () => {
 
   const handleOpenCreateBook = () => {
     setEditingBook(null);
-    setBookForm({ title: '', description: '', color: '#10b981', icon: '🌾' });
+    setBookForm({ title: '', description: '', color: '#10b981', icon: 'agriculture', isCustomIcon: false });
     setShowBookModal(true);
   };
 
@@ -243,7 +266,8 @@ export const StreamsPage = () => {
       title: book.title,
       description: book.description || '',
       color: book.color || '#10b981',
-      icon: book.icon || '🌾',
+      icon: getAppropriateBookIcon(book.title, book.icon),
+      isCustomIcon: true,
     });
     setShowBookModal(true);
   };
@@ -255,14 +279,21 @@ export const StreamsPage = () => {
       return;
     }
     try {
+      const resolvedIcon = bookForm.icon || getAppropriateBookIcon(bookForm.title);
+      const payload = {
+        title: bookForm.title.trim(),
+        description: bookForm.description ? bookForm.description.trim() : '',
+        color: bookForm.color || '#10b981',
+        icon: resolvedIcon,
+      };
       if (editingBook) {
-        const updated = await api.updateStreamBook(editingBook.id, bookForm);
+        const updated = await api.updateStreamBook(editingBook.id, payload);
         showToast('success', `"${updated.title}" updated successfully!`);
         if (activeBook && activeBook.id === editingBook.id) {
           setActiveBook(updated);
         }
       } else {
-        const created = await api.createStreamBook(bookForm);
+        const created = await api.createStreamBook(payload);
         showToast('success', `Book "${created.title}" created successfully!`);
         navigate(`/streams/${created.id}`);
       }
@@ -356,11 +387,11 @@ export const StreamsPage = () => {
     }
   };
 
-  const handleExportCsv = async () => {
+  const handleExportPdf = async () => {
     if (!activeBook) return;
     try {
-      await api.downloadStreamExport(activeBook.id, activeBook.title);
-      showToast('success', 'Ledger statement downloaded!');
+      await api.downloadStreamExport(activeBook.id, activeBook.title, 'pdf');
+      showToast('success', 'Book PDF statement downloaded successfully!');
     } catch (err) {
       showToast('error', extractErrorMessage(err, 'Failed to download statement'));
     }
@@ -403,7 +434,7 @@ export const StreamsPage = () => {
 
   return (
     <div className="streams-page-wrapper bg-grid-pattern">
-      
+
       {feedback && (
         <div
           className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium shadow-xl transition-all ${
@@ -417,10 +448,9 @@ export const StreamsPage = () => {
         </div>
       )}
 
-      
       {!activeBook ? (
         <div className="streams-inner-container">
-          
+
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-brand-electric via-brand-cobalt to-brand-cyan flex items-center justify-center text-white shadow-glow-blue">
@@ -451,9 +481,8 @@ export const StreamsPage = () => {
             </button>
           </div>
 
-          
           <div className="kpi-pillar-grid mb-8">
-            
+
             <div className="kpi-pillar-card">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">
@@ -477,7 +506,6 @@ export const StreamsPage = () => {
               </div>
             </div>
 
-            
             <div className="kpi-pillar-card">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">
@@ -499,7 +527,6 @@ export const StreamsPage = () => {
               </div>
             </div>
 
-            
             <div className="kpi-pillar-card">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">
@@ -531,7 +558,6 @@ export const StreamsPage = () => {
             </div>
           </div>
 
-          
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-bold text-white flex items-center gap-2">
@@ -577,13 +603,11 @@ export const StreamsPage = () => {
                         <div className="flex items-start justify-between gap-3 mb-3">
                           <div className="flex items-center gap-3 min-w-0">
                             <div
-                              className="w-12 h-12 rounded-xl flex items-center justify-center text-xl flex-shrink-0 border"
-                              style={{
-                                backgroundColor: `${b.color || '#10b981'}15`,
-                                borderColor: `${b.color || '#10b981'}30`,
-                              }}
+                              className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl flex-shrink-0 border ${getBookColorClass(b.color)}`}
                             >
-                              {b.icon || '🌾'}
+                              <span className="material-symbols-outlined text-[24px]">
+                                {getAppropriateBookIcon(b.title, b.icon)}
+                              </span>
                             </div>
                             <div className="min-w-0">
                               <h3 className="text-base font-bold text-white truncate group-hover:text-emerald-400 transition-colors">
@@ -644,11 +668,11 @@ export const StreamsPage = () => {
           </div>
         </div>
       ) : (
-        
+
         <div className="streams-inner-container">
-          
+
           <div className="desktop-only-view flex flex-col gap-5 mb-6">
-            
+
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex flex-col gap-1">
                 <button
@@ -662,13 +686,11 @@ export const StreamsPage = () => {
 
                 <div className="flex items-center gap-3 mt-1">
                   <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-sm border"
-                    style={{
-                      backgroundColor: `${activeBook.color || '#10b981'}15`,
-                      borderColor: `${activeBook.color || '#10b981'}30`,
-                    }}
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-sm border ${getBookColorClass(activeBook.color)}`}
                   >
-                    {activeBook.icon || '🌾'}
+                    <span className="material-symbols-outlined text-[24px]">
+                      {getAppropriateBookIcon(activeBook.title, activeBook.icon)}
+                    </span>
                   </div>
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2.5">
@@ -693,7 +715,6 @@ export const StreamsPage = () => {
                 </div>
               </div>
 
-              
               <div className="flex flex-wrap items-center gap-2">
                 <div className="relative">
                   <select
@@ -703,7 +724,7 @@ export const StreamsPage = () => {
                   >
                     {books.map((b) => (
                       <option key={b.id} value={b.id}>
-                        {b.icon || '📁'} {b.title}
+                        {b.title}
                       </option>
                     ))}
                   </select>
@@ -720,11 +741,12 @@ export const StreamsPage = () => {
 
                 <button
                   type="button"
-                  onClick={handleExportCsv}
+                  onClick={handleExportPdf}
                   className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-white px-3.5 py-2 rounded-xl text-xs font-semibold border border-white/[0.08] transition-colors"
+                  title="Download Book Statement (PDF)"
                 >
                   <Download size={15} />
-                  <span>Export</span>
+                  <span>Download PDF</span>
                 </button>
 
                 <button
@@ -738,9 +760,8 @@ export const StreamsPage = () => {
               </div>
             </div>
 
-            
             <div className="kpi-pillar-grid">
-              
+
               <div className="kpi-pillar-card">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">
@@ -768,7 +789,6 @@ export const StreamsPage = () => {
                 </div>
               </div>
 
-              
               <div className="kpi-pillar-card">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">
@@ -796,7 +816,6 @@ export const StreamsPage = () => {
                 </div>
               </div>
 
-              
               <div className="kpi-pillar-card">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">
@@ -830,7 +849,6 @@ export const StreamsPage = () => {
               </div>
             </div>
 
-            
             <div className="desktop-cta-grid">
               <button
                 type="button"
@@ -838,7 +856,7 @@ export const StreamsPage = () => {
                 className="btn-primary-cash-in group"
               >
                 <Plus size={22} className="group-hover:rotate-90 transition-transform" />
-                <span>+ Cash In</span>
+                <span>Cash In</span>
               </button>
               <button
                 type="button"
@@ -846,14 +864,13 @@ export const StreamsPage = () => {
                 className="btn-primary-cash-out group"
               >
                 <Minus size={22} className="group-hover:-translate-x-0.5 transition-transform" />
-                <span>− Cash Out</span>
+                <span>Cash Out</span>
               </button>
             </div>
           </div>
 
-          
           <div className="mobile-only-view flex flex-col gap-4 mb-4">
-            
+
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <button
@@ -879,26 +896,23 @@ export const StreamsPage = () => {
                 </div>
                 <button
                   type="button"
-                  onClick={handleExportCsv}
+                  onClick={handleExportPdf}
                   className="w-8 h-8 rounded-full bg-slate-800 active:bg-slate-700 flex items-center justify-center text-slate-300"
-                  title="Export Statement"
+                  title="Download Book Statement (PDF)"
                 >
                   <Download size={15} />
                 </button>
               </div>
             </div>
 
-            
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
                 <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-inner border"
-                  style={{
-                    backgroundColor: `${activeBook.color || '#10b981'}20`,
-                    borderColor: `${activeBook.color || '#10b981'}40`,
-                  }}
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-inner border ${getBookColorClass(activeBook.color)}`}
                 >
-                  {activeBook.icon || '🌾'}
+                  <span className="material-symbols-outlined text-[24px]">
+                    {getAppropriateBookIcon(activeBook.title, activeBook.icon)}
+                  </span>
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -940,11 +954,11 @@ export const StreamsPage = () => {
                       type="button"
                       onClick={() => {
                         setShowActionsDropdown(false);
-                        handleExportCsv();
+                        handleExportPdf();
                       }}
                       className="w-full px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2"
                     >
-                      <Download size={13} /> Export CSV
+                      <Download size={13} /> Download PDF
                     </button>
                     <button
                       type="button"
@@ -961,7 +975,6 @@ export const StreamsPage = () => {
               </div>
             </div>
 
-            
             <div className="mobile-hero-balance">
               <div className="absolute -right-8 -top-8 w-36 h-36 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
               <div className="absolute -left-8 -bottom-8 w-36 h-36 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -990,9 +1003,8 @@ export const StreamsPage = () => {
               </div>
             </div>
 
-            
             <div className="mobile-quick-stats-grid">
-              
+
               <div className="mobile-quick-stat-card border-emerald-950/60">
                 <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
                   <span className="font-medium">Total Cash In</span>
@@ -1006,7 +1018,6 @@ export const StreamsPage = () => {
                 <p className="text-[10px] text-slate-400 mt-1 truncate">All credited entries</p>
               </div>
 
-              
               <div className="mobile-quick-stat-card border-rose-950/60">
                 <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
                   <span className="font-medium">Total Cash Out</span>
@@ -1021,7 +1032,6 @@ export const StreamsPage = () => {
               </div>
             </div>
 
-            
             <div className="mobile-action-bar">
               <button
                 type="button"
@@ -1042,9 +1052,8 @@ export const StreamsPage = () => {
             </div>
           </div>
 
-          
           <div className="filter-strip-container mb-4">
-            
+
             <div className="search-input-wrap">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <input
@@ -1060,7 +1069,6 @@ export const StreamsPage = () => {
               </div>
             </div>
 
-            
             <div className="flex items-center gap-2 flex-wrap">
               <div className="segmented-pill-box">
                 <button
@@ -1086,7 +1094,6 @@ export const StreamsPage = () => {
                 </button>
               </div>
 
-              
               <button
                 type="button"
                 onClick={() => setSortOrder((prev) => (prev === 'latest' ? 'oldest' : 'latest'))}
@@ -1099,7 +1106,6 @@ export const StreamsPage = () => {
             </div>
           </div>
 
-          
           <div className="desktop-only-view">
             <div className="desktop-table-container">
               {loadingEntries ? (
@@ -1122,14 +1128,14 @@ export const StreamsPage = () => {
                         onClick={() => handleOpenCreateEntry('IN')}
                         className="btn-primary-cash-in text-xs px-4 py-2"
                       >
-                        + Cash In
+                        Cash In
                       </button>
                       <button
                         type="button"
                         onClick={() => handleOpenCreateEntry('OUT')}
                         className="btn-primary-cash-out text-xs px-4 py-2"
                       >
-                        − Cash Out
+                        Cash Out
                       </button>
                     </div>
                   )}
@@ -1247,7 +1253,6 @@ export const StreamsPage = () => {
                 </div>
               )}
 
-              
               <div className="flex flex-col sm:flex-row items-center justify-between p-3.5 bg-slate-950 border-t border-white/[0.06] gap-3 text-xs text-slate-400">
                 <div className="flex items-center gap-3">
                   <span className="font-mono text-slate-300">
@@ -1262,11 +1267,11 @@ export const StreamsPage = () => {
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    onClick={handleExportCsv}
+                    onClick={handleExportPdf}
                     className="hover:text-white flex items-center gap-1.5 transition-colors"
                   >
                     <Download size={14} />
-                    <span>CSV Export</span>
+                    <span>PDF Statement</span>
                   </button>
                   <span className="text-slate-600">•</span>
                   <button
@@ -1281,7 +1286,6 @@ export const StreamsPage = () => {
               </div>
             </div>
 
-            
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 bg-slate-900/60 rounded-xl border border-white/[0.06] gap-4 mt-4">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center flex-shrink-0 border border-cyan-500/20">
@@ -1302,16 +1306,15 @@ export const StreamsPage = () => {
                 </span>
                 <button
                   type="button"
-                  onClick={handleExportCsv}
+                  onClick={handleExportPdf}
                   className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium border border-white/[0.06] transition-colors"
                 >
-                  Download Audit Log
+                  Download PDF Statement
                 </button>
               </div>
             </div>
           </div>
 
-          
           <div className="mobile-only-view space-y-3">
             <div className="flex items-center justify-between text-xs px-1 text-slate-400">
               <span className="font-semibold uppercase tracking-wider text-[11px] font-mono">
@@ -1375,7 +1378,6 @@ export const StreamsPage = () => {
                         </p>
                       </div>
 
-                      
                       <div className="text-right flex-shrink-0">
                         <div
                           className={`text-sm font-bold font-mono ${
@@ -1396,7 +1398,6 @@ export const StreamsPage = () => {
                       </div>
                     </div>
 
-                    
                     <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-xs">
                       <div className="text-slate-400 text-xs">
                         Running Bal:{' '}
@@ -1428,7 +1429,6 @@ export const StreamsPage = () => {
               })
             )}
 
-            
             <div className="pt-2">
               <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-xs">
                 <div className="flex items-center gap-2.5">
@@ -1443,14 +1443,12 @@ export const StreamsPage = () => {
                     </div>
                   </div>
                 </div>
-                <div className="text-[11px] font-mono text-slate-400">Live Sync</div>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      
       {showEntryModal && (
         <div className="streams-modal-overlay" onClick={() => setShowEntryModal(false)}>
           <div className="streams-modal-card" onClick={(e) => e.stopPropagation()}>
@@ -1487,7 +1485,7 @@ export const StreamsPage = () => {
 
             <form onSubmit={handleSaveEntry}>
               <div className="streams-modal-body space-y-4">
-                
+
                 <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-slate-950 border border-white/[0.08]">
                   <button
                     type="button"
@@ -1513,7 +1511,6 @@ export const StreamsPage = () => {
                   </button>
                 </div>
 
-                
                 <div className="space-y-1">
                   <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">
                     Amount ({symbol} {currency}) <span className="text-rose-400">*</span>
@@ -1531,7 +1528,6 @@ export const StreamsPage = () => {
                   />
                 </div>
 
-                
                 <div className="space-y-1">
                   <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">
                     Remarks / Particulars
@@ -1545,7 +1541,6 @@ export const StreamsPage = () => {
                   />
                 </div>
 
-                
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">
@@ -1573,7 +1568,6 @@ export const StreamsPage = () => {
                   </div>
                 </div>
 
-                
                 <div className="space-y-1">
                   <span className="text-[10px] font-mono uppercase text-slate-400">Quick Tags:</span>
                   <div className="flex flex-wrap gap-1.5 pt-0.5">
@@ -1619,7 +1613,6 @@ export const StreamsPage = () => {
         </div>
       )}
 
-      
       {showBookModal && (
         <div className="streams-modal-overlay" onClick={() => setShowBookModal(false)}>
           <div className="streams-modal-card" onClick={(e) => e.stopPropagation()}>
@@ -1650,7 +1643,14 @@ export const StreamsPage = () => {
                     required
                     placeholder="e.g. Samba – 2026, Sundareswar, Karunakaran..."
                     value={bookForm.title}
-                    onChange={(e) => setBookForm({ ...bookForm, title: e.target.value })}
+                    onChange={(e) => {
+                      const newTitle = e.target.value;
+                      setBookForm((prev) => ({
+                        ...prev,
+                        title: newTitle,
+                        icon: prev.isCustomIcon ? prev.icon : inferIconFromTitle(newTitle),
+                      }));
+                    }}
                     className="w-full bg-slate-950 text-white font-medium text-sm px-3.5 py-2.5 rounded-xl border border-white/[0.1] focus:outline-none focus:border-cyan-500"
                     autoFocus
                   />
@@ -1670,22 +1670,32 @@ export const StreamsPage = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-                    Pick an Icon
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {PRESET_ICONS.map((icon) => (
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">
+                      Book Icon
+                    </label>
+                    <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-mono">
+                      <span className="material-symbols-outlined text-[16px]">{bookForm.icon}</span>
+                      <span className="text-[10px] uppercase tracking-wider">
+                        {bookForm.isCustomIcon ? 'Custom Selected' : 'Suggested from Title'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 gap-2 max-h-48 overflow-y-auto p-1.5 rounded-xl bg-slate-950 border border-white/[0.06]">
+                    {PRESET_BOOK_ICONS.map((item) => (
                       <button
-                        key={icon}
+                        key={item.id}
                         type="button"
-                        onClick={() => setBookForm({ ...bookForm, icon })}
-                        className={`w-10 h-10 rounded-xl text-lg flex items-center justify-center border transition-all ${
-                          bookForm.icon === icon
-                            ? 'border-emerald-500 bg-emerald-500/20 scale-105 shadow-glow-emerald'
-                            : 'border-white/[0.08] bg-slate-950 hover:bg-slate-800'
+                        title={item.label}
+                        onClick={() => setBookForm((prev) => ({ ...prev, icon: item.id, isCustomIcon: true }))}
+                        className={`h-11 rounded-xl flex flex-col items-center justify-center gap-0.5 border transition-all ${
+                          bookForm.icon === item.id
+                            ? 'border-emerald-500 bg-emerald-500/20 text-emerald-400 scale-105 shadow-glow-emerald'
+                            : 'border-white/[0.06] bg-slate-900/60 text-slate-400 hover:text-white hover:bg-slate-800'
                         }`}
                       >
-                        {icon}
+                        <span className="material-symbols-outlined text-[20px]">{item.id}</span>
+                        <span className="text-[8px] font-mono truncate max-w-[90%] opacity-75">{item.id.replace('_', ' ')}</span>
                       </button>
                     ))}
                   </div>
@@ -1701,10 +1711,9 @@ export const StreamsPage = () => {
                         key={c}
                         type="button"
                         onClick={() => setBookForm({ ...bookForm, color: c })}
-                        className={`w-7 h-7 rounded-full border-2 transition-transform ${
+                        className={`w-7 h-7 rounded-full border-2 transition-transform ${getSwatchColorClass(c)} ${
                           bookForm.color === c ? 'scale-125 border-white' : 'border-transparent'
                         }`}
-                        style={{ backgroundColor: c }}
                       />
                     ))}
                   </div>
@@ -1731,7 +1740,6 @@ export const StreamsPage = () => {
         </div>
       )}
 
-      
       {deleteConfirm && (
         <div className="streams-modal-overlay" onClick={() => setDeleteConfirm(null)}>
           <div className="streams-modal-card max-w-sm" onClick={(e) => e.stopPropagation()}>

@@ -16,7 +16,6 @@ from app.schemas.user import (
 
 router = APIRouter()
 
-
 @router.get("/overview", response_model=AdminPlatformStats)
 def get_admin_overview(
     db: Session = Depends(get_db),
@@ -107,7 +106,6 @@ def get_admin_overview(
         users=user_list,
     )
 
-
 @router.patch("/users/{user_id}", response_model=AdminUserResponse)
 def admin_update_user(
     user_id: int,
@@ -169,7 +167,6 @@ def admin_update_user(
         total_expenses=Decimal(str(exp)).quantize(Decimal("0.01")),
     )
 
-
 @router.delete("/users/{user_id}", response_model=MessageResponse)
 def admin_delete_user(
     user_id: int,
@@ -191,4 +188,3 @@ def admin_delete_user(
     db.delete(target_user)
     db.commit()
     return MessageResponse(message=f"User {target_user.email} has been permanently deleted.")
-

@@ -412,18 +412,77 @@ class ApiClient {
     return this.delete(`/streams/books/${bookId}/entries/${entryId}`);
   }
 
-  async downloadStreamExport(bookId, bookTitle = 'stream') {
-    const csvText = await this.get(`/streams/books/${bookId}/export`);
-    const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+  async downloadStreamExport(bookId, bookTitle = 'stream', format = 'pdf') {
+    const fmt = String(format || 'pdf').toLowerCase() === 'csv' ? 'csv' : 'pdf';
+    const headers = {};
+    const token = this.token || localStorage.getItem('access_token');
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const base = getApiBase();
+    const resp = await fetch(`${base}/streams/books/${bookId}/export?format=${fmt}`, {
+      method: 'GET',
+      headers,
+    });
+    if (!resp.ok) {
+      const errText = await resp.text();
+      let msg = `Failed to download ${fmt.toUpperCase()} ledger statement.`;
+      try {
+        const json = JSON.parse(errText);
+        if (json.detail) msg = json.detail;
+      } catch (e) {}
+      throw new Error(msg);
+    }
+    const buffer = await resp.arrayBuffer();
+    if (fmt === 'pdf') {
+      const headerStr = String.fromCharCode(...new Uint8Array(buffer.slice(0, 5)));
+      if (!headerStr.startsWith('%PDF')) {
+        throw new Error('Downloaded statement was not a valid PDF file. Please try again.');
+      }
+    }
+    const mime = fmt === 'pdf' ? 'application/pdf' : 'text/csv;charset=utf-8;';
+    const blob = new Blob([buffer], { type: mime });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    const cleanTitle = (bookTitle || 'stream').toLowerCase().replace(/[^a-z0-9_-]/g, '_');
-    link.setAttribute('download', `${cleanTitle}_ledger_statement.csv`);
+    const cleanTitle = (bookTitle || 'stream')
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_+|_+$/g, '') || 'stream';
+    link.setAttribute('download', `${cleanTitle}_ledger_statement.${fmt}`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+  }
+
+  getRecurringItems(params = {}) {
+    return this.get('/recurring', params);
+  }
+
+  createRecurringItem(payload) {
+    return this.post('/recurring', payload);
+  }
+
+  getRecurringItem(id) {
+    return this.get(`/recurring/${id}`);
+  }
+
+  updateRecurringItem(id, payload) {
+    return this.put(`/recurring/${id}`, payload);
+  }
+
+  deleteRecurringItem(id) {
+    return this.delete(`/recurring/${id}`);
+  }
+
+  getCashRunwayForecast(params = {}) {
+    return this.get('/recurring/forecast', params);
+  }
+
+  getRecurringSuggestions() {
+    return this.get('/recurring/suggestions');
   }
 }
 

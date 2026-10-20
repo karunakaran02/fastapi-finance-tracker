@@ -3,7 +3,6 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database.session import Base
 
-
 class User(Base):
     __tablename__ = "users"
 
@@ -20,3 +19,4 @@ class User(Base):
     transactions = relationship("Transaction", back_populates="user", cascade="all, delete-orphan")
     budgets = relationship("Budget", back_populates="user", cascade="all, delete-orphan")
     stream_books = relationship("StreamBook", back_populates="user", cascade="all, delete-orphan")
+    recurring_items = relationship("RecurringItem", back_populates="user", cascade="all, delete-orphan")

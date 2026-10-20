@@ -3,7 +3,6 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database.session import Base
 
-
 class StreamBook(Base):
     __tablename__ = "stream_books"
 
@@ -23,7 +22,11 @@ class StreamBook(Base):
         cascade="all, delete-orphan",
         order_by="StreamEntry.entry_date.desc(), StreamEntry.id.desc()",
     )
-
+    transactions = relationship(
+        "Transaction",
+        back_populates="book",
+        cascade="all, delete-orphan",
+    )
 
 class StreamEntry(Base):
     __tablename__ = "stream_entries"
@@ -31,6 +34,7 @@ class StreamEntry(Base):
     id = Column(Integer, primary_key=True, index=True)
     book_id = Column(Integer, ForeignKey("stream_books.id", ondelete="CASCADE"), nullable=False, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    transaction_id = Column(Integer, ForeignKey("transactions.id", ondelete="CASCADE"), nullable=True, index=True)
     type = Column(String(10), nullable=False, index=True)
     amount = Column(Numeric(precision=12, scale=2), nullable=False)
     remarks = Column(String(500), nullable=True)
@@ -41,4 +45,4 @@ class StreamEntry(Base):
 
     book = relationship("StreamBook", back_populates="entries")
     user = relationship("User")
-
+    transaction = relationship("Transaction")

@@ -16,11 +16,14 @@ from app.schemas.report import (
 )
 from app.schemas.transaction import TransactionResponse
 
-
 def _format_transaction_response(tx: Transaction) -> TransactionResponse:
     return TransactionResponse(
         id=tx.id,
         user_id=tx.user_id,
+        book_id=tx.book_id,
+        book_title=tx.book.title if tx.book else None,
+        book_color=tx.book.color if tx.book else None,
+        book_icon=tx.book.icon if tx.book else None,
         category_id=tx.category_id,
         category_name=tx.category.name if tx.category else None,
         type=tx.type,
@@ -30,7 +33,6 @@ def _format_transaction_response(tx: Transaction) -> TransactionResponse:
         created_at=tx.created_at,
         updated_at=tx.updated_at,
     )
-
 
 def get_dashboard_analytics(
     db: Session,
@@ -208,7 +210,7 @@ def get_dashboard_analytics(
 
     recent_txs_query = (
         db.query(Transaction)
-        .options(joinedload(Transaction.category))
+        .options(joinedload(Transaction.category), joinedload(Transaction.book))
         .filter(Transaction.user_id == user_id)
     )
     if search and search.strip():
@@ -264,7 +266,6 @@ def get_dashboard_analytics(
         top_spending_categories=top_spending_categories,
         recent_transactions=recent_transactions,
     )
-
 
 def get_monthly_trends(
     db: Session,
@@ -377,7 +378,6 @@ def get_monthly_trends(
         max_trend_value=max_observed,
         y_axis_steps=y_axis_steps,
     )
-
 
 def get_category_breakdown(
     db: Session,

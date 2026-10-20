@@ -27,14 +27,12 @@ from app.services.budget import (
 
 router = APIRouter()
 
-
 @router.get("/overview", response_model=BudgetOverviewResponse)
 def get_user_budget_overview(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     return get_budget_overview(db, user_id=current_user.id)
-
 
 @router.get("", response_model=List[BudgetResponse])
 def list_user_budgets(
@@ -43,7 +41,6 @@ def list_user_budgets(
 ):
 
     return get_budgets_with_analytics(db, user_id=current_user.id)
-
 
 @router.post("", response_model=BudgetResponse, status_code=status.HTTP_201_CREATED)
 def create_new_budget(
@@ -61,7 +58,6 @@ def create_new_budget(
     background_tasks.add_task(evaluate_and_trigger_alerts_background, current_user.id)
     return get_single_budget_with_analytics(db, budget=budget)
 
-
 @router.patch("/{budget_id}", response_model=BudgetResponse)
 def update_user_budget(
     budget_id: int,
@@ -70,9 +66,7 @@ def update_user_budget(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    Updates an existing budget limit, category, or active status.
-    """
+
     budget = (
         db.query(Budget)
         .filter(Budget.id == budget_id, Budget.user_id == current_user.id)
@@ -92,16 +86,13 @@ def update_user_budget(
     background_tasks.add_task(evaluate_and_trigger_alerts_background, current_user.id)
     return get_single_budget_with_analytics(db, budget=updated)
 
-
 @router.delete("/{budget_id}", response_model=MessageResponse)
 def delete_user_budget(
     budget_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    Permanently deletes a budget limit configuration and its notification history.
-    """
+
     budget = (
         db.query(Budget)
         .filter(Budget.id == budget_id, Budget.user_id == current_user.id)
@@ -116,7 +107,6 @@ def delete_user_budget(
     delete_budget(db, budget=budget)
     return MessageResponse(message=f"Budget '{budget.name}' deleted successfully.")
 
-
 @router.post("/{budget_id}/test-alert", response_model=MessageResponse)
 def test_budget_alert_email(
     budget_id: int,
@@ -124,10 +114,7 @@ def test_budget_alert_email(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    Dispatches a test simulation email to the user's alert email address
-    via a Python background task to verify email delivery.
-    """
+
     budget = (
         db.query(Budget)
         .filter(Budget.id == budget_id, Budget.user_id == current_user.id)
@@ -149,15 +136,12 @@ def test_budget_alert_email(
 
     return MessageResponse(message=msg)
 
-
 @router.get("/notifications", response_model=List[AlertNotificationResponse])
 def list_alert_notifications(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    Returns audit log of all email alert notifications dispatched for this account.
-    """
+
     notifications = (
         db.query(AlertNotification)
         .options(joinedload(AlertNotification.budget))
@@ -183,4 +167,3 @@ def list_alert_notifications(
         )
         for n in notifications
     ]
-

@@ -88,17 +88,17 @@ export const RegisterPage = () => {
         </div>
 
         {error && (
-          <div className="alert-banner error" style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+          <div className="alert-banner error auth-alert-error">
+            <div className="auth-alert-row">
+              <AlertCircle size={16} className="auth-alert-icon" />
               <span>{typeof error === 'string' ? error : 'Registration failed.'}</span>
             </div>
             {isExistingAccount && (
-              <div style={{ marginTop: '0.25rem', paddingTop: '0.4rem', borderTop: '1px solid rgba(239, 68, 68, 0.25)', fontSize: '0.8rem' }}>
+              <div className="auth-alert-subtext">
                 Account already registered.{' '}
                 <Link
                   to={`/login?email=${encodeURIComponent(email)}`}
-                  style={{ color: '#60a5fa', fontWeight: 600, textDecoration: 'underline' }}
+                  className="auth-alert-action-link"
                 >
                   Sign in to your account &rarr;
                 </Link>
@@ -108,8 +108,8 @@ export const RegisterPage = () => {
         )}
 
         {coldStartNotice && (
-          <div className="alert-banner info" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', background: 'rgba(59, 130, 246, 0.12)', color: '#93c5fd', border: '1px solid rgba(59, 130, 246, 0.25)', marginBottom: '1rem' }}>
-            <Clock size={16} className="animate-spin" style={{ flexShrink: 0 }} />
+          <div className="alert-banner info auth-alert-coldstart">
+            <Clock size={16} className="animate-spin auth-alert-icon" />
             <span>Render backend server is spinning up (20-30s on free tier). Please hold on...</span>
           </div>
         )}

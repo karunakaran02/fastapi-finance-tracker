@@ -1,6 +1,5 @@
 from datetime import datetime, timezone
 
-
 def test_create_stream_books_and_isolation(client, auth_headers):
     res_sundar = client.post(
         "/api/v1/streams/books",
@@ -86,7 +85,6 @@ def test_create_stream_books_and_isolation(client, auth_headers):
     assert karun_entries["total"] == 1
     assert karun_entries["items"][0]["amount"] == "200.00"
 
-
 def test_stream_running_balance_and_export(client, auth_headers):
     res_book = client.post(
         "/api/v1/streams/books",
@@ -151,6 +149,13 @@ def test_stream_running_balance_and_export(client, auth_headers):
     assert "Agriculture" in export_resp.text
     assert "Fertilizer purchase" in export_resp.text
 
+    export_pdf_resp = client.get(
+        f"/api/v1/streams/books/{book_id}/export?format=pdf",
+        headers=auth_headers,
+    )
+    assert export_pdf_resp.status_code == 200
+    assert "application/pdf" in export_pdf_resp.headers["content-type"]
+    assert export_pdf_resp.content.startswith(b"%PDF")
 
 def test_update_and_delete_stream_book(client, auth_headers):
     res_book = client.post(
@@ -180,4 +185,3 @@ def test_update_and_delete_stream_book(client, auth_headers):
         headers=auth_headers,
     )
     assert res_get.status_code == 404
-

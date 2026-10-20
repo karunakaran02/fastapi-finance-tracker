@@ -3,7 +3,6 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database.session import Base
 
-
 class Budget(Base):
     __tablename__ = "budgets"
 
@@ -24,7 +23,6 @@ class Budget(Base):
     category = relationship("Category")
     notifications = relationship("AlertNotification", back_populates="budget", cascade="all, delete-orphan")
 
-
 class AlertNotification(Base):
     __tablename__ = "alert_notifications"
 
@@ -43,4 +41,3 @@ class AlertNotification(Base):
     budget = relationship("Budget", back_populates="notifications")
     user = relationship("User")
     transaction = relationship("Transaction")
-

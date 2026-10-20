@@ -28,16 +28,13 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 import app.database.session as session_module
 session_module.SessionLocal = TestingSessionLocal
 
-
 from app.core.rate_limiter import login_rate_limiter
-
 
 @pytest.fixture(autouse=True)
 def reset_rate_limiter_fixture():
     login_rate_limiter.reset()
     yield
     login_rate_limiter.reset()
-
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_database():
@@ -48,17 +45,16 @@ def setup_database():
     yield
     Base.metadata.drop_all(bind=engine)
 
-
 @pytest.fixture
 def db_session():
     connection = engine.connect()
     transaction = connection.begin()
     db = TestingSessionLocal(bind=connection)
+    session_module.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=connection)
     yield db
     db.close()
     transaction.rollback()
     connection.close()
-
 
 @pytest.fixture
 def client(db_session):
@@ -72,7 +68,6 @@ def client(db_session):
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
-
 
 @pytest.fixture
 def auth_headers(client):
@@ -92,7 +87,6 @@ def auth_headers(client):
         token = login_resp.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
 
-
 @pytest.fixture
 def other_user_headers(client):
     register_payload = {
@@ -110,4 +104,3 @@ def other_user_headers(client):
         )
         token = login_resp.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
-

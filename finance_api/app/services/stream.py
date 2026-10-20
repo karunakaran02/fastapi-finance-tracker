@@ -3,9 +3,16 @@ import io
 from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional
-from sqlalchemy import case, func
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.pdfgen import canvas
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from sqlalchemy import case, func, or_
 from sqlalchemy.orm import Session
+from app.models.category import Category
 from app.models.stream import StreamBook, StreamEntry
+from app.models.transaction import Transaction
 from app.schemas.stream import (
     PaginatedStreamEntries,
     StreamBookCreate,
@@ -15,7 +22,6 @@ from app.schemas.stream import (
     StreamEntryResponse,
     StreamEntryUpdate,
 )
-
 
 def list_user_books(db: Session, user_id: int) -> List[StreamBookSummary]:
     books = (
@@ -82,14 +88,12 @@ def list_user_books(db: Session, user_id: int) -> List[StreamBookSummary]:
         )
     return result
 
-
 def get_book(db: Session, book_id: int, user_id: int) -> Optional[StreamBook]:
     return (
         db.query(StreamBook)
         .filter(StreamBook.id == book_id, StreamBook.user_id == user_id)
         .first()
     )
-
 
 def get_book_summary(db: Session, book_id: int, user_id: int) -> Optional[StreamBookSummary]:
     book = get_book(db, book_id, user_id)
@@ -132,7 +136,6 @@ def get_book_summary(db: Session, book_id: int, user_id: int) -> Optional[Stream
         entries_count=count,
     )
 
-
 def create_book(db: Session, user_id: int, book_in: StreamBookCreate) -> StreamBookSummary:
     book = StreamBook(
         user_id=user_id,
@@ -159,7 +162,6 @@ def create_book(db: Session, user_id: int, book_in: StreamBookCreate) -> StreamB
         entries_count=0,
     )
 
-
 def update_book(
     db: Session, book_id: int, user_id: int, book_in: StreamBookUpdate
 ) -> Optional[StreamBookSummary]:
@@ -180,7 +182,6 @@ def update_book(
     db.refresh(book)
     return get_book_summary(db, book.id, user_id)
 
-
 def delete_book(db: Session, book_id: int, user_id: int) -> bool:
     book = get_book(db, book_id, user_id)
     if not book:
@@ -188,7 +189,6 @@ def delete_book(db: Session, book_id: int, user_id: int) -> bool:
     db.delete(book)
     db.commit()
     return True
-
 
 def list_book_entries(
     db: Session,
@@ -232,6 +232,7 @@ def list_book_entries(
                 id=entry.id,
                 book_id=entry.book_id,
                 user_id=entry.user_id,
+                transaction_id=entry.transaction_id,
                 type=entry.type,
                 amount=amt,
                 remarks=entry.remarks,
@@ -288,7 +289,6 @@ def list_book_entries(
         net_balance=total_in - total_out,
     )
 
-
 def create_entry(
     db: Session, book_id: int, user_id: int, entry_in: StreamEntryCreate
 ) -> Optional[StreamEntryResponse]:
@@ -296,13 +296,49 @@ def create_entry(
     if not book:
         return None
 
+    cat_type = "income" if entry_in.type == "IN" else "expense"
+    category = None
+    if entry_in.category:
+        category = (
+            db.query(Category)
+            .filter(
+                func.lower(Category.name) == func.lower(entry_in.category.strip()),
+                Category.type == cat_type,
+                or_(Category.is_system == True, Category.user_id == user_id),
+            )
+            .first()
+        )
+    if not category:
+        category = (
+            db.query(Category)
+            .filter(
+                Category.type == cat_type,
+                or_(Category.is_system == True, Category.user_id == user_id),
+            )
+            .order_by(Category.id.asc())
+            .first()
+        )
+
+    tx = Transaction(
+        user_id=user_id,
+        book_id=book_id,
+        category_id=category.id if category else 1,
+        type=cat_type,
+        amount=entry_in.amount,
+        description=entry_in.remarks.strip() if entry_in.remarks else (entry_in.category or "Stream Entry"),
+        transaction_date=entry_in.entry_date,
+    )
+    db.add(tx)
+    db.flush()
+
     entry = StreamEntry(
         book_id=book_id,
         user_id=user_id,
+        transaction_id=tx.id,
         type=entry_in.type,
         amount=entry_in.amount,
         remarks=entry_in.remarks.strip() if entry_in.remarks else None,
-        category=entry_in.category.strip() if entry_in.category else None,
+        category=entry_in.category.strip() if entry_in.category else (category.name if category else None),
         entry_date=entry_in.entry_date,
     )
     db.add(entry)
@@ -314,6 +350,7 @@ def create_entry(
         id=entry.id,
         book_id=entry.book_id,
         user_id=entry.user_id,
+        transaction_id=entry.transaction_id,
         type=entry.type,
         amount=Decimal(str(entry.amount)),
         remarks=entry.remarks,
@@ -323,7 +360,6 @@ def create_entry(
         updated_at=entry.updated_at,
         running_balance=summary.net_balance if summary else Decimal(str(entry.amount)),
     )
-
 
 def update_entry(
     db: Session, book_id: int, entry_id: int, user_id: int, entry_in: StreamEntryUpdate
@@ -351,13 +387,27 @@ def update_entry(
     if entry_in.entry_date is not None:
         entry.entry_date = entry_in.entry_date
 
+    if entry.transaction_id:
+        tx = db.query(Transaction).filter(Transaction.id == entry.transaction_id).first()
+        if tx:
+            if entry_in.type is not None:
+                tx.type = "income" if entry.type == "IN" else "expense"
+            if entry_in.amount is not None:
+                tx.amount = entry.amount
+            if entry_in.remarks is not None:
+                tx.description = entry.remarks
+            if entry_in.entry_date is not None:
+                tx.transaction_date = entry.entry_date
+
     db.commit()
     db.refresh(entry)
 
+    summary = get_book_summary(db, book_id, user_id)
     return StreamEntryResponse(
         id=entry.id,
         book_id=entry.book_id,
         user_id=entry.user_id,
+        transaction_id=entry.transaction_id,
         type=entry.type,
         amount=Decimal(str(entry.amount)),
         remarks=entry.remarks,
@@ -365,8 +415,8 @@ def update_entry(
         entry_date=entry.entry_date,
         created_at=entry.created_at,
         updated_at=entry.updated_at,
+        running_balance=summary.net_balance if summary else Decimal(str(entry.amount)),
     )
-
 
 def delete_entry(db: Session, book_id: int, entry_id: int, user_id: int) -> bool:
     book = get_book(db, book_id, user_id)
@@ -381,10 +431,14 @@ def delete_entry(db: Session, book_id: int, entry_id: int, user_id: int) -> bool
     if not entry:
         return False
 
+    if entry.transaction_id:
+        tx = db.query(Transaction).filter(Transaction.id == entry.transaction_id).first()
+        if tx:
+            db.delete(tx)
+
     db.delete(entry)
     db.commit()
     return True
-
 
 def export_book_csv(db: Session, book_id: int, user_id: int) -> Optional[io.StringIO]:
     book = get_book(db, book_id, user_id)
@@ -441,3 +495,198 @@ def export_book_csv(db: Session, book_id: int, user_id: int) -> Optional[io.Stri
     output.seek(0)
     return output
 
+class NumberedCanvas(canvas.Canvas):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._saved_page_states = []
+
+    def showPage(self):
+        self._saved_page_states.append(dict(self.__dict__))
+        self._startPage()
+
+    def save(self):
+        num_pages = len(self._saved_page_states)
+        for state in self._saved_page_states:
+            self.__dict__.update(state)
+            self.draw_page_number(num_pages)
+            super().showPage()
+        super().save()
+
+    def draw_page_number(self, page_count):
+        self.saveState()
+        self.setStrokeColor(colors.HexColor("#cbd5e1"))
+        self.setLineWidth(0.5)
+        self.line(36, 30, 576, 30)
+        self.setFont("Helvetica", 7.5)
+        self.setFillColor(colors.HexColor("#64748b"))
+        self.drawString(36, 18, "Finance Intel  *  Official Stream Book Ledger Statement  *  Verified Audit")
+        self.drawRightString(576, 18, f"Page {self._pageNumber} of {page_count}")
+        self.restoreState()
+
+def clean_pdf_string(val: Optional[str]) -> str:
+    if val is None:
+        return ""
+    s = str(val).replace("₹", "INR ").replace("–", "-").replace("—", "-").replace("•", " * ").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    return s.encode("latin-1", "replace").decode("latin-1")
+
+def generate_stream_pdf(book_title: str, book_desc: Optional[str], entries: List[StreamEntry]) -> bytes:
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=letter,
+        leftMargin=36,
+        rightMargin=36,
+        topMargin=36,
+        bottomMargin=44,
+    )
+    styles = getSampleStyleSheet()
+
+    title_clean = clean_pdf_string(book_title or "Stream Book")
+    desc_clean = clean_pdf_string(book_desc or "Isolated financial cash book ledger")
+
+    header_data = [
+        [
+            Paragraph(f'<font size=7 color="#38bdf8"><b>FINANCE INTEL  |  ISOLATED CASH BOOK STATEMENT</b></font><br/><font size=15 color="#ffffff"><b>{title_clean}</b></font><br/><font size=8 color="#94a3b8">{desc_clean}</font>', styles["Normal"]),
+            Paragraph('<font size=8 color="#00f5d4"><b>VERIFIED LEDGER</b></font><br/><font size=7.5 color="#cbd5e1">Official CashBook Record</font><br/><font size=7.5 color="#cbd5e1">Currency: INR (Rs.)</font>', styles["Normal"]),
+        ]
+    ]
+    header_table = Table(header_data, colWidths=[370, 170])
+    header_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#090e1a")),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ("LEFTPADDING", (0, 0), (-1, -1), 12),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+    ]))
+
+    total_in = Decimal("0.00")
+    total_out = Decimal("0.00")
+    for e in entries:
+        amt = Decimal(str(e.amount))
+        if e.type == "IN":
+            total_in += amt
+        else:
+            total_out += amt
+    net_bal = total_in - total_out
+    bal_hex = "#059669" if net_bal >= 0 else "#dc2626"
+
+    kpi_data = [
+        [
+            Paragraph(f'<font size=7 color="#047857"><b>TOTAL CASH INFLOW</b></font><br/><font size=12 color="#059669"><b>+INR {total_in:,.2f}</b></font>', styles["Normal"]),
+            Paragraph(f'<font size=7 color="#b91c1c"><b>TOTAL CASH OUTFLOW</b></font><br/><font size=12 color="#dc2626"><b>-INR {total_out:,.2f}</b></font>', styles["Normal"]),
+            Paragraph(f'<font size=7 color="#0369a1"><b>NET RUNNING BALANCE</b></font><br/><font size=12 color="{bal_hex}"><b>INR {net_bal:,.2f}</b></font>', styles["Normal"]),
+        ]
+    ]
+    kpi_table = Table(kpi_data, colWidths=[176, 176, 176])
+    kpi_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (0, 0), colors.HexColor("#f0fdf4")),
+        ("BACKGROUND", (1, 0), (1, 0), colors.HexColor("#fef2f2")),
+        ("BACKGROUND", (2, 0), (2, 0), colors.HexColor("#f0f9ff")),
+        ("BOX", (0, 0), (0, 0), 0.75, colors.HexColor("#86efac")),
+        ("BOX", (1, 0), (1, 0), 0.75, colors.HexColor("#fca5a5")),
+        ("BOX", (2, 0), (2, 0), 0.75, colors.HexColor("#7dd3fc")),
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ("LEFTPADDING", (0, 0), (-1, -1), 8),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+    ]))
+
+    table_data = [
+        ["#", "Date", "Type", "Category", "Remarks / Description", "Cash In", "Cash Out", "Balance"]
+    ]
+
+    table_styles = [
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0f172a")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, 0), 7.5),
+        ("TOPPADDING", (0, 0), (-1, 0), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 6),
+        ("ALIGN", (0, 0), (0, -1), "CENTER"),
+        ("ALIGN", (2, 0), (2, -1), "CENTER"),
+        ("ALIGN", (5, 0), (-1, -1), "RIGHT"),
+        ("FONTSIZE", (0, 1), (-1, -1), 7),
+        ("TOPPADDING", (0, 1), (-1, -1), 4),
+        ("BOTTOMPADDING", (0, 1), (-1, -1), 4),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#e2e8f0")),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+    ]
+
+    running_bal = Decimal("0.00")
+    for idx, e in enumerate(entries, 1):
+        amt = Decimal(str(e.amount))
+        is_in = e.type == "IN"
+        if is_in:
+            running_bal += amt
+            in_val = f"+{amt:,.2f}"
+            out_val = "-"
+            type_str = "IN"
+        else:
+            running_bal -= amt
+            in_val = "-"
+            out_val = f"-{amt:,.2f}"
+            type_str = "OUT"
+
+        row_idx = len(table_data)
+        bg = colors.HexColor("#f8fafc") if idx % 2 == 1 else colors.white
+        table_styles.append(("BACKGROUND", (0, row_idx), (-1, row_idx), bg))
+
+        type_color = colors.HexColor("#059669") if is_in else colors.HexColor("#dc2626")
+        table_styles.append(("TEXTCOLOR", (2, row_idx), (2, row_idx), type_color))
+        table_styles.append(("FONTNAME", (2, row_idx), (2, row_idx), "Helvetica-Bold"))
+
+        if is_in:
+            table_styles.append(("TEXTCOLOR", (5, row_idx), (5, row_idx), colors.HexColor("#059669")))
+            table_styles.append(("FONTNAME", (5, row_idx), (5, row_idx), "Helvetica-Bold"))
+        else:
+            table_styles.append(("TEXTCOLOR", (6, row_idx), (6, row_idx), colors.HexColor("#dc2626")))
+            table_styles.append(("FONTNAME", (6, row_idx), (6, row_idx), "Helvetica-Bold"))
+
+        table_styles.append(("FONTNAME", (7, row_idx), (7, row_idx), "Helvetica-Bold"))
+
+        date_val = e.entry_date.strftime("%Y-%m-%d") if e.entry_date else "-"
+        cat_val = clean_pdf_string(e.category or "General")[:20]
+        rem_val = clean_pdf_string(e.remarks or "-")[:36]
+
+        table_data.append([
+            str(idx),
+            date_val,
+            type_str,
+            cat_val,
+            rem_val,
+            in_val,
+            out_val,
+            f"{running_bal:,.2f}",
+        ])
+
+    ledger_table = Table(
+        table_data,
+        colWidths=[20, 62, 34, 76, 172, 58, 58, 60],
+        repeatRows=1,
+    )
+    ledger_table.setStyle(TableStyle(table_styles))
+
+    elements = [
+        header_table,
+        Spacer(1, 8),
+        kpi_table,
+        Spacer(1, 10),
+        ledger_table,
+    ]
+
+    doc.build(elements, canvasmaker=NumberedCanvas)
+    return buffer.getvalue()
+
+def export_book_pdf(db: Session, book_id: int, user_id: int) -> Optional[bytes]:
+    book = get_book(db, book_id, user_id)
+    if not book:
+        return None
+    entries = (
+        db.query(StreamEntry)
+        .filter(StreamEntry.book_id == book_id)
+        .order_by(StreamEntry.entry_date.asc(), StreamEntry.id.asc())
+        .all()
+    )
+    return generate_stream_pdf(book.title, book.description, entries)

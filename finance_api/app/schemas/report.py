@@ -3,7 +3,6 @@ from typing import List
 from pydantic import BaseModel
 from app.schemas.transaction import TransactionResponse
 
-
 class SpendingByCategory(BaseModel):
     category_id: int
     category_name: str
@@ -14,7 +13,6 @@ class SpendingByCategory(BaseModel):
     bar_width_percentage: float = 0.0
     doughnut_segment_length: float = 0.0
     doughnut_dash_offset: float = 0.0
-
 
 class DashboardResponse(BaseModel):
     total_income: Decimal
@@ -49,7 +47,6 @@ class DashboardResponse(BaseModel):
     top_spending_categories: List[SpendingByCategory]
     recent_transactions: List[TransactionResponse]
 
-
 class MonthlyTrendItem(BaseModel):
     month: str
     month_name: str
@@ -60,7 +57,6 @@ class MonthlyTrendItem(BaseModel):
     income_bar_height: float = 0.0
     expense_bar_height: float = 0.0
 
-
 class CategoryReportItem(BaseModel):
     category_id: int
     category_name: str
@@ -68,7 +64,6 @@ class CategoryReportItem(BaseModel):
     amount: Decimal
     transaction_count: int
     percentage: float
-
 
 class MonthlyReportResponse(BaseModel):
     months: List[MonthlyTrendItem]
@@ -79,9 +74,6 @@ class MonthlyReportResponse(BaseModel):
     max_trend_value: Decimal = Decimal("70000.00")
     y_axis_steps: List[int] = []
 
-
 class CategoryReportResponse(BaseModel):
     categories: List[CategoryReportItem]
     total_amount: Decimal
-
-

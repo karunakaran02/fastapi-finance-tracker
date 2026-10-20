@@ -15,6 +15,7 @@ const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
 const AdminPage = React.lazy(() => import('./pages/AdminPage'));
 const BudgetsPage = React.lazy(() => import('./pages/BudgetsPage'));
 const StreamsPage = React.lazy(() => import('./pages/StreamsPage'));
+const RecurringPage = React.lazy(() => import('./pages/RecurringPage'));
 
 const PageLoader = () => (
   <div className="flex-1 flex flex-col items-center justify-center min-h-[50vh] p-8 text-slate-400">
@@ -35,10 +36,10 @@ const CurrencyPill = () => {
       type="button"
       onClick={nextCurrency}
       title={`Active Currency: ${currency} (${symbol}). Click to switch.`}
-      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-obsidian-800 hover:bg-obsidian-700 text-slate-200 border border-white/[0.08] transition-colors"
+      className="currency-pill-btn touch-lift"
     >
-      <span className="text-blue-400 font-bold">{symbol}</span>
-      <span>{currency}</span>
+      <span className="currency-pill-symbol">{symbol}</span>
+      <span className="currency-pill-code">{currency}</span>
     </button>
   );
 };
@@ -57,6 +58,7 @@ const SecondaryTopBar = () => {
     '/admin': 'Admin & Entities Control',
     '/settings': 'Security & Vault Settings',
     '/streams': 'Streams & Financial Books',
+    '/recurring': 'Subscriptions & Cash Runway',
   };
 
   const title =
@@ -65,15 +67,14 @@ const SecondaryTopBar = () => {
 
   return (
     <header
-      className="sticky top-0 z-30 bg-obsidian-900/80 backdrop-blur-xl border-b border-white/[0.06] px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-3"
-      style={{ paddingTop: 'max(0.625rem, env(safe-area-inset-top, 0px))' }}
+      className="top-navbar-safe sticky top-0 z-30 bg-surface-container-lowest/90 backdrop-blur-xl border-b border-slate-800/70 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-3"
       data-purpose="top-navigation-bar"
     >
       <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
         <MobileMenuButton />
-        <span className="text-xs sm:text-sm font-bold text-white truncate max-w-[150px] xs:max-w-[210px] sm:max-w-none">{title}</span>
-        <span className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Live Sync
+        <span className="text-xs sm:text-sm font-bold text-on-surface truncate max-w-[150px] xs:max-w-[210px] sm:max-w-none">{title}</span>
+        <span className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-primary-container/10 text-primary-fixed-dim border border-primary-container/20 shrink-0">
+          <span className="w-1.5 h-1.5 rounded-full bg-primary-container animate-pulse"></span> Live Sync
         </span>
       </div>
       <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
@@ -100,7 +101,7 @@ const ProtectedRoute = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen flex bg-obsidian-950 text-slate-100 antialiased bg-grid-mesh selection:bg-brand-cobalt selection:text-white">
+    <div className="min-h-screen flex app-shell-container antialiased selection:bg-primary-container selection:text-on-primary-fixed">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0">
         <SecondaryTopBar />
@@ -194,6 +195,14 @@ export const App = () => {
                   element={
                     <ProtectedRoute>
                       <StreamsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/recurring"
+                  element={
+                    <ProtectedRoute>
+                      <RecurringPage />
                     </ProtectedRoute>
                   }
                 />

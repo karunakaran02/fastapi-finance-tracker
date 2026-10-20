@@ -113,13 +113,7 @@ export const SpendingChart = ({ categories = [], savingsRate = 0, showLegendPill
             return (
               <div key={cat.category_id || idx} className="doughnut-legend-item">
                 <div className="doughnut-legend-left">
-                  <span
-                    className="doughnut-legend-dot"
-                    style={{
-                      backgroundColor: color,
-                      boxShadow: `0 0 8px ${color}`,
-                    }}
-                  />
+                  <span className={`doughnut-legend-dot color-${idx % 9}`} />
                   <span className="doughnut-legend-name">{cat.category_name}</span>
                 </div>
 

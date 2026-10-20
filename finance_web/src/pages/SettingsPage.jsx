@@ -219,58 +219,33 @@ export const SettingsPage = () => {
           </form>
         </div>
 
-        <div className="card" style={{ gridColumn: 'span 2' }}>
+        <div className="card settings-card-wide">
           <div className="card-header">
             <h3 className="card-title with-icon">
               <Coins size={18} /> Regional Currency Preference
             </h3>
           </div>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.25rem', marginTop: 0 }}>
+          <p className="settings-pref-desc">
             Choose your preferred currency symbol and formatting for your transactions, dashboard metrics, budgets, and reports.
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.85rem' }}>
+          <div className="settings-currency-grid">
             {Object.values(currencies).map((curr) => {
               const isSelected = currency === curr.code;
               return (
                 <div
                   key={curr.code}
                   onClick={() => setCurrency(curr.code)}
-                  style={{
-                    padding: '1rem',
-                    borderRadius: '0.75rem',
-                    border: '1px solid',
-                    borderColor: isSelected ? '#3b82f6' : 'var(--border-color)',
-                    backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.12)' : 'var(--bg-elevated)',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.85rem',
-                  }}
+                  className={`currency-option-card ${isSelected ? 'selected' : ''}`}
                 >
-                  <div
-                    style={{
-                      width: '2.5rem',
-                      height: '2.5rem',
-                      borderRadius: '0.5rem',
-                      background: isSelected ? '#3b82f6' : 'rgba(255, 255, 255, 0.05)',
-                      color: isSelected ? '#ffffff' : 'var(--text-primary)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '1.2rem',
-                      fontWeight: 700,
-                      flexShrink: 0,
-                    }}
-                  >
+                  <div className="currency-symbol-badge">
                     {curr.symbol}
                   </div>
                   <div>
-                    <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.9rem' }}>
+                    <div className="currency-option-label">
                       {curr.label}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    <div className="currency-option-sample">
                       Code: {curr.code} • Sample: {curr.symbol}1,250.00
                     </div>
                   </div>

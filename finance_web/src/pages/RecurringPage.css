@@ -1,0 +1,178 @@
+.recurring-page-wrapper {
+  color: var(--text-primary);
+}
+.recurring-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.recurring-smart-banner {
+  background-color: rgba(6, 182, 212, 0.07);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+}
+.recurring-suggestion-card {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  transition: all 0.15s ease;
+}
+.recurring-suggestion-card:hover {
+  border-color: rgba(6, 182, 212, 0.4);
+}
+.recurring-milestone-card {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  transition: all 0.15s ease;
+}
+.recurring-milestone-card:hover {
+  border-color: rgba(6, 182, 212, 0.35);
+}
+.recurring-table th {
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-color);
+}
+.recurring-table-row {
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.15s ease;
+}
+.recurring-table-row:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+.recurring-action-btn {
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+.recurring-action-btn:hover {
+  color: var(--text-primary);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+.recurring-modal-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+.recurring-input {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+.recurring-input:focus {
+  border-color: #06b6d4;
+  outline: none;
+}
+.recurring-input::placeholder {
+  color: var(--text-muted);
+}
+.recurring-cancel-btn {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+.recurring-cancel-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-surface);
+}
+html[data-theme="light"] .recurring-card {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+}
+html[data-theme="light"] .recurring-smart-banner {
+  background-color: #f0fdfa;
+  border-color: #99f6e4;
+}
+html[data-theme="light"] .recurring-suggestion-card {
+  background-color: #ffffff;
+  border-color: #ccfbf1;
+  color: #0f172a;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+html[data-theme="light"] .recurring-suggestion-card:hover {
+  border-color: #5eead4;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.1);
+}
+html[data-theme="light"] .recurring-milestone-card {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+  color: #0f172a;
+}
+html[data-theme="light"] .recurring-milestone-card:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+}
+html[data-theme="light"] .recurring-table th {
+  color: #64748b;
+  border-color: #e2e8f0;
+}
+html[data-theme="light"] .recurring-table-row {
+  border-color: #f1f5f9;
+}
+html[data-theme="light"] .recurring-table-row:hover {
+  background-color: #f8fafc;
+}
+html[data-theme="light"] .recurring-action-btn:hover {
+  color: #0f172a;
+  background-color: #f1f5f9;
+}
+html[data-theme="light"] .recurring-modal-card {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+  color: #0f172a;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15);
+}
+html[data-theme="light"] .recurring-input {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+html[data-theme="light"] .recurring-input:focus {
+  border-color: #0891b2;
+  background-color: #ffffff;
+}
+html[data-theme="light"] .recurring-input::placeholder {
+  color: #94a3b8;
+}
+html[data-theme="light"] .recurring-cancel-btn {
+  background-color: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #475569;
+}
+html[data-theme="light"] .recurring-cancel-btn:hover {
+  background-color: #e2e8f0;
+  color: #0f172a;
+}
+.recurring-track-btn {
+  padding: 0.25rem 0.65rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background-color: rgba(6, 182, 212, 0.15);
+  color: #22d3ee;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.recurring-track-btn:hover {
+  background-color: #06b6d4;
+  color: #020617;
+}
+html[data-theme="light"] .recurring-track-btn {
+  background-color: #ecfeff;
+  color: #0e7490;
+  border-color: #a5f3fc;
+}
+html[data-theme="light"] .recurring-track-btn:hover {
+  background-color: #0891b2;
+  color: #ffffff;
+  border-color: #0891b2;
+}
+
+.recurring-refresh-btn {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+

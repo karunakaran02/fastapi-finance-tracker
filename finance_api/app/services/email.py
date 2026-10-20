@@ -9,7 +9,6 @@ from app.core.config import settings
 
 logger = logging.getLogger("finance_api.email")
 
-
 def generate_alert_html(
     budget_name: str,
     budget_type: str,
@@ -59,7 +58,6 @@ def generate_alert_html(
         <tr>
             <td align="center">
                 <table role="presentation" width="100%" style="max-width: 580px; background-color: #11141c; border: 1px solid #1e2433; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);" cellspacing="0" cellpadding="0">
-                    <!-- Brand Header -->
                     <tr>
                         <td style="padding: 28px 32px; border-bottom: 1px solid #1e2433; background: linear-gradient(180deg, #161b26 0%, #11141c 100%);">
                             <table width="100%" cellspacing="0" cellpadding="0">
@@ -78,20 +76,18 @@ def generate_alert_html(
                         </td>
                     </tr>
 
-                    <!-- Alert Body -->
                     <tr>
                         <td style="padding: 32px;">
                             <h2 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 700; color: #ffffff;">{budget_name}</h2>
                             <p style="margin: 0 0 24px 0; font-size: 13px; color: #94a3b8; line-height: 1.5;">{headline}</p>
 
-                            <!-- Stat Card -->
                             <div style="background: #151923; border: 1px solid #22293b; border-radius: 14px; padding: 20px;">
                                 <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; font-weight: 700; margin-bottom: 12px;">{scope_label}</div>
-                                
+
                                 <table width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 16px;">
                                     <tr>
                                         <td style="padding-bottom: 8px;">
-                                            <span style="font-size: 12px; color: #94a3b8;">Configured Threshold:</span>
+                                             <span style="font-size: 12px; color: #94a3b8;">Configured Threshold:</span>
                                         </td>
                                         <td align="right" style="padding-bottom: 8px;">
                                             <span style="font-size: 14px; font-weight: 600; color: #cbd5e1; font-family: monospace;">₹{threshold_amount:,.2f}</span>
@@ -115,7 +111,6 @@ def generate_alert_html(
                                     </tr>
                                 </table>
 
-                                <!-- Progress Bar Visualization -->
                                 <div style="background: #202637; border-radius: 6px; height: 8px; width: 100%; overflow: hidden;">
                                     <div style="background: {badge_color}; height: 8px; width: 100%; border-radius: 6px;"></div>
                                 </div>
@@ -131,7 +126,6 @@ def generate_alert_html(
                         </td>
                     </tr>
 
-                    <!-- Footer -->
                     <tr>
                         <td style="padding: 24px 32px; border-top: 1px solid #1e2433; background: #0d1017; font-size: 11px; color: #475569; text-align: center; line-height: 1.5;">
                             This automated financial intelligence notification was dispatched to <strong>{recipient_email}</strong> based on your configured budget parameters.<br>
@@ -145,7 +139,6 @@ def generate_alert_html(
 </body>
 </html>"""
 
-
 def send_threshold_alert_email(
     recipient_email: str,
     budget_name: str,
@@ -158,11 +151,6 @@ def send_threshold_alert_email(
     transaction_amount: Optional[Decimal] = None,
     period: str = "monthly",
 ) -> tuple[bool, str]:
-    """
-    Sends an automated HTML email alert to the user.
-    Uses SMTP when configured; gracefully falls back to structured logging
-    in local/test environments so background workflows never fail.
-    """
     is_expense = budget_type == "expense"
     subject = (
         f"⚠️ Alert: {budget_name} limit exceeded (₹{current_amount:,.2f} / ₹{threshold_amount:,.2f})"
@@ -230,4 +218,3 @@ def send_threshold_alert_email(
 
     logger.info("Mock SMTP mode: alert email recorded in audit log for %s (Budget: %s)", recipient_email, budget_name)
     return True, "Mock Mode (SMTP_HOST not set)"
-

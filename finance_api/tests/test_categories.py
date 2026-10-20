@@ -10,7 +10,6 @@ def test_list_default_categories(client, auth_headers):
     assert "Salary" in cat_names
     assert "Freelance" in cat_names
 
-
 def test_filter_categories_by_type(client, auth_headers):
     resp = client.get("/api/v1/categories?type=expense", headers=auth_headers)
     assert resp.status_code == 200
@@ -22,7 +21,6 @@ def test_filter_categories_by_type(client, auth_headers):
     for c in resp_inc.json():
         assert c["type"] == "income"
 
-
 def test_create_custom_category(client, auth_headers):
     payload = {"name": "Gym & Fitness", "type": "expense"}
     resp = client.post("/api/v1/categories", json=payload, headers=auth_headers)
@@ -32,7 +30,6 @@ def test_create_custom_category(client, auth_headers):
     assert data["type"] == "expense"
     assert data["is_system"] is False
     assert data["user_id"] is not None
-
 
 def test_update_custom_category(client, auth_headers):
     create_resp = client.post(
@@ -50,7 +47,6 @@ def test_update_custom_category(client, auth_headers):
     assert patch_resp.status_code == 200
     assert patch_resp.json()["name"] == "Video Games & Streaming"
 
-
 def test_prevent_modifying_system_category(client, auth_headers):
     resp = client.get("/api/v1/categories", headers=auth_headers)
     food_cat = next(c for c in resp.json() if c["name"] == "Food")
@@ -63,7 +59,6 @@ def test_prevent_modifying_system_category(client, auth_headers):
     assert patch_resp.status_code == 403
     assert "Default system categories cannot be modified" in patch_resp.json()["detail"]
 
-
 def test_prevent_deleting_system_category(client, auth_headers):
     resp = client.get("/api/v1/categories", headers=auth_headers)
     food_cat = next(c for c in resp.json() if c["name"] == "Food")
@@ -71,7 +66,6 @@ def test_prevent_deleting_system_category(client, auth_headers):
     del_resp = client.delete(f"/api/v1/categories/{food_cat['id']}", headers=auth_headers)
     assert del_resp.status_code == 403
     assert "Default system categories cannot be deleted" in del_resp.json()["detail"]
-
 
 def test_delete_custom_category(client, auth_headers):
     create_resp = client.post(
@@ -84,7 +78,6 @@ def test_delete_custom_category(client, auth_headers):
     del_resp = client.delete(f"/api/v1/categories/{cat_id}", headers=auth_headers)
     assert del_resp.status_code == 200
     assert "successfully deleted" in del_resp.json()["message"]
-
 
 def test_category_user_isolation(client, auth_headers, other_user_headers):
     create_resp = client.post(

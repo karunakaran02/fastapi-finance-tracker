@@ -10,12 +10,10 @@ from app.services.user import get_user_by_email, update_user
 
 router = APIRouter()
 
-
 @router.get("/me", response_model=UserResponse)
 def get_user_profile(current_user: User = Depends(get_current_user)):
 
     return current_user
-
 
 @router.patch("/me", response_model=UserResponse)
 def update_user_profile(
@@ -33,7 +31,6 @@ def update_user_profile(
             )
     updated = update_user(db, current_user, user_in)
     return updated
-
 
 @router.post("/me/change-password", response_model=MessageResponse)
 def change_password(

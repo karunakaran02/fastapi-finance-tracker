@@ -22,7 +22,6 @@ from app.services.email import send_threshold_alert_email
 
 logger = logging.getLogger("finance_api.budget")
 
-
 def _calculate_budget_current_volume(
     db: Session,
     user_id: int,
@@ -31,10 +30,6 @@ def _calculate_budget_current_volume(
     start_of_month: datetime,
     end_of_month: datetime,
 ) -> Decimal:
-    """
-    Authoritative financial arithmetic: computes sum of transactions for the user
-    in the current calendar cycle using Decimal-accurate SQL SUM.
-    """
     query = (
         db.query(func.coalesce(func.sum(Transaction.amount), Decimal("0.00")))
         .filter(
@@ -49,7 +44,6 @@ def _calculate_budget_current_volume(
 
     total = query.scalar()
     return Decimal(str(total or "0.00"))
-
 
 def _format_budget_response(budget: Budget, current_volume: Decimal) -> BudgetResponse:
     threshold = Decimal(str(budget.threshold_amount))
@@ -89,11 +83,7 @@ def _format_budget_response(budget: Budget, current_volume: Decimal) -> BudgetRe
         notification_count=notif_count,
     )
 
-
 def get_single_budget_with_analytics(db: Session, budget: Budget) -> BudgetResponse:
-    """
-    Computes analytics for a single budget without reloading the entire portfolio.
-    """
     now = datetime.now(timezone.utc)
     start_of_month = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
     end_of_month = (
@@ -111,12 +101,7 @@ def get_single_budget_with_analytics(db: Session, budget: Budget) -> BudgetRespo
     )
     return _format_budget_response(budget, current_vol)
 
-
 def get_budgets_with_analytics(db: Session, user_id: int) -> List[BudgetResponse]:
-    """
-    Batch-optimized: loads all active budgets and computes utilization in a single
-    SQL aggregation query rather than running N individual sum queries.
-    """
     now = datetime.now(timezone.utc)
     start_of_month = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
     end_of_month = (
@@ -169,7 +154,6 @@ def get_budgets_with_analytics(db: Session, user_id: int) -> List[BudgetResponse
         results.append(_format_budget_response(b, current_vol))
 
     return results
-
 
 def get_budget_overview(db: Session, user_id: int) -> BudgetOverviewResponse:
     budgets_with_analytics = get_budgets_with_analytics(db, user_id)
@@ -234,7 +218,6 @@ def get_budget_overview(db: Session, user_id: int) -> BudgetOverviewResponse:
         recent_notifications=recent_notifications,
     )
 
-
 def create_budget(db: Session, user_id: int, budget_in: BudgetCreate) -> Budget:
     if budget_in.category_id is not None:
         cat = (
@@ -267,7 +250,6 @@ def create_budget(db: Session, user_id: int, budget_in: BudgetCreate) -> Budget:
     db.refresh(budget)
     return budget
 
-
 def update_budget(db: Session, budget: Budget, budget_in: BudgetUpdate) -> Budget:
     update_data = budget_in.model_dump(exclude_unset=True)
 
@@ -299,20 +281,14 @@ def update_budget(db: Session, budget: Budget, budget_in: BudgetUpdate) -> Budge
     db.refresh(budget)
     return budget
 
-
 def delete_budget(db: Session, budget: Budget) -> None:
     db.delete(budget)
     db.commit()
-
 
 def evaluate_and_trigger_alerts_background(
     user_id: int,
     transaction_ids: Optional[List[int]] = None,
 ) -> int:
-    """
-    Background Task: Evaluates active budgets for a user and dispatches
-    asynchronous email notifications whenever spending or income exceeds thresholds.
-    """
     db = session_module.SessionLocal()
     triggered_count = 0
     try:
@@ -517,11 +493,7 @@ def evaluate_and_trigger_alerts_background(
 
     return triggered_count
 
-
 def trigger_test_alert(db: Session, user_id: int, budget: Budget) -> bool:
-    """
-    Sends an immediate test email alert to the user so they can verify delivery.
-    """
     user = db.query(User).filter(User.id == user_id).first()
     recipient = budget.alert_email or (user.email if user else "user@financeintel.com")
     cat_name = budget.category.name if budget.category else None
@@ -558,12 +530,7 @@ def trigger_test_alert(db: Session, user_id: int, budget: Budget) -> bool:
     db.commit()
     return success
 
-
 def trigger_test_alert_background(user_id: int, budget_id: int) -> bool:
-    """
-    Background Task: Dispatches an immediate test email alert safely
-    within an isolated database session.
-    """
     db = session_module.SessionLocal()
     try:
         budget = (
@@ -577,4 +544,3 @@ def trigger_test_alert_background(user_id: int, budget_id: int) -> bool:
         return trigger_test_alert(db, user_id, budget)
     finally:
         db.close()
-

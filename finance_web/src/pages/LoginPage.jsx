@@ -78,17 +78,17 @@ export const LoginPage = () => {
         </div>
 
         {error && (
-          <div className="alert-banner error" style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+          <div className="alert-banner error auth-alert-error">
+            <div className="auth-alert-row">
+              <AlertCircle size={16} className="auth-alert-icon" />
               <span>{typeof error === 'string' ? error : 'Login failed. Please verify credentials.'}</span>
             </div>
             {isUnregistered && (
-              <div style={{ marginTop: '0.25rem', paddingTop: '0.4rem', borderTop: '1px solid rgba(239, 68, 68, 0.25)', fontSize: '0.8rem' }}>
+              <div className="auth-alert-subtext">
                 New user?{' '}
                 <Link
                   to={`/register?email=${encodeURIComponent(email)}`}
-                  style={{ color: '#60a5fa', fontWeight: 600, textDecoration: 'underline' }}
+                  className="auth-alert-action-link"
                 >
                   Create an account with this email &rarr;
                 </Link>
@@ -98,8 +98,8 @@ export const LoginPage = () => {
         )}
 
         {coldStartNotice && (
-          <div className="alert-banner info" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', background: 'rgba(59, 130, 246, 0.12)', color: '#93c5fd', border: '1px solid rgba(59, 130, 246, 0.25)' }}>
-            <Clock size={16} className="animate-spin" style={{ flexShrink: 0 }} />
+          <div className="alert-banner info auth-alert-coldstart">
+            <Clock size={16} className="animate-spin auth-alert-icon" />
             <span>Render backend server is spinning up (20-30s on free tier). Please hold on...</span>
           </div>
         )}

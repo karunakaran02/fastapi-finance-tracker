@@ -7,7 +7,6 @@ BudgetType = Literal["expense", "income"]
 BudgetPeriod = Literal["monthly", "per_transaction"]
 BudgetStatus = Literal["safe", "warning", "exceeded"]
 
-
 class BudgetBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100, description="Name or label for this threshold")
     type: BudgetType = Field("expense", description="'expense' limit or 'income' goal")
@@ -17,10 +16,8 @@ class BudgetBase(BaseModel):
     alert_email: Optional[EmailStr] = Field(None, description="Custom recipient email; defaults to account email if omitted")
     is_active: bool = Field(True, description="Whether alert evaluation is enabled")
 
-
 class BudgetCreate(BudgetBase):
     pass
-
 
 class BudgetUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
@@ -29,7 +26,6 @@ class BudgetUpdate(BaseModel):
     period: Optional[BudgetPeriod] = None
     alert_email: Optional[EmailStr] = None
     is_active: Optional[bool] = None
-
 
 class BudgetResponse(BudgetBase):
     id: int
@@ -48,7 +44,6 @@ class BudgetResponse(BudgetBase):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 class AlertNotificationResponse(BaseModel):
     id: int
     user_id: int
@@ -65,7 +60,6 @@ class AlertNotificationResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 class BudgetOverviewResponse(BaseModel):
     total_budgets: int = 0
     active_budgets: int = 0
@@ -77,4 +71,3 @@ class BudgetOverviewResponse(BaseModel):
     smtp_configured: bool = False
     budgets: List[BudgetResponse] = []
     recent_notifications: List[AlertNotificationResponse] = []
-
