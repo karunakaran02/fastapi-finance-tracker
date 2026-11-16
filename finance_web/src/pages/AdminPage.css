@@ -76,3 +76,13 @@
     gap: 0.35rem;
   }
 }
+
+html[data-theme="light"] .admin-user-name-row .admin-self-tag {
+  background-color: #dbeafe !important;
+  color: #1d4ed8 !important;
+}
+html[data-theme="light"] .badge.admin-role-badge.is-user {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border-color: #e2e8f0 !important;
+}

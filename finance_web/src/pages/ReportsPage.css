@@ -35,7 +35,7 @@
   display: flex;
   background-color: var(--bg-surface);
   padding: 2px;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   border: 1px solid var(--border-color);
 }
 .reports-type-toggle .btn {
@@ -45,6 +45,26 @@
 
 .grid-cols-2.reports-cat-grid {
   align-items: center;
+}
+
+html[data-theme="light"] .reports-type-toggle {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+}
+html[data-theme="light"] .reports-type-toggle .btn {
+  color: #64748b !important;
+}
+html[data-theme="light"] .reports-type-toggle .btn.btn-primary {
+  background: #ffffff !important;
+  color: #0284c7 !important;
+  border-color: #bae6fd !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+html[data-theme="light"] .table td.reports-net-pos {
+  color: #0284c7 !important;
+}
+html[data-theme="light"] .table td.reports-rate {
+  color: #7c3aed !important;
 }
 
 @media (max-width: 640px) {

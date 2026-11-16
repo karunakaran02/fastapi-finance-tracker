@@ -523,3 +523,30 @@
   }
 }
 
+
+html[data-theme="light"] .kpi-card,
+html[data-theme="light"] .budget-card,
+html[data-theme="light"] .notifications-panel,
+html[data-theme="light"] .budget-modal-dialog {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important;
+}
+html[data-theme="light"] .kpi-card:hover,
+html[data-theme="light"] .budget-card:hover {
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08) !important;
+}
+html[data-theme="light"] .kpi-icon-wrap {
+  background: #f1f5f9 !important;
+}
+html[data-theme="light"] .budget-metrics-row {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+html[data-theme="light"] .notification-item {
+  border-bottom-color: #f1f5f9 !important;
+}
+html[data-theme="light"] .notification-item:hover {
+  background: #f8fafc !important;
+}

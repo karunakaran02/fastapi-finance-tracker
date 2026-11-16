@@ -75,3 +75,24 @@
   font-size: 0.75rem;
   color: var(--text-muted);
 }
+
+html[data-theme="light"] .currency-option-card {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+html[data-theme="light"] .currency-option-card:hover {
+  border-color: #0284c7 !important;
+  background-color: #f0f9ff !important;
+}
+html[data-theme="light"] .currency-option-card.selected {
+  border-color: #0284c7 !important;
+  background-color: #f0f9ff !important;
+}
+html[data-theme="light"] .currency-symbol-badge {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+html[data-theme="light"] .currency-option-card.selected .currency-symbol-badge {
+  background-color: #0284c7 !important;
+  color: #ffffff !important;
+}

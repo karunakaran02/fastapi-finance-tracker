@@ -27,6 +27,7 @@ from app.services.transaction import (
     get_transaction,
     get_transactions,
     import_transactions_from_files,
+    seed_user_demo_transactions,
     update_transaction,
 )
 
@@ -237,6 +238,17 @@ def update_existing_transaction(
     updated_tx = update_transaction(db, transaction=tx, transaction_in=transaction_in)
     background_tasks.add_task(evaluate_and_trigger_alerts_background, current_user.id, [updated_tx.id])
     return _format_transaction(updated_tx)
+
+@router.post("/seed-demo-data", response_model=MessageResponse)
+def seed_demo_data(
+    months: int = Query(6, ge=1, le=24, description="Number of past months to seed with realistic transactions"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    count = seed_user_demo_transactions(db, user_id=current_user.id, months=months)
+    return MessageResponse(
+        message=f"Successfully generated {count} realistic transaction(s) across the past {months} month(s)."
+    )
 
 @router.delete("/clear-all", response_model=MessageResponse)
 def clear_all_transactions(

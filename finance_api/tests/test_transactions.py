@@ -320,3 +320,14 @@ def test_transaction_stream_book_integration(client, auth_headers):
 
     entries_after_del = client.get(f"/api/v1/streams/books/{book_id}/entries", headers=auth_headers).json()
     assert not any(e["id"] == found_entry["id"] for e in entries_after_del["items"])
+
+def test_seed_demo_data(client, auth_headers):
+    resp = client.post("/api/v1/transactions/seed-demo-data?months=6", headers=auth_headers)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "realistic transaction" in data["message"]
+
+    list_resp = client.get("/api/v1/transactions?page_size=100", headers=auth_headers)
+    assert list_resp.status_code == 200
+    tx_data = list_resp.json()
+    assert tx_data["total"] >= 48

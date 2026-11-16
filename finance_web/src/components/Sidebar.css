@@ -5,15 +5,27 @@
   width: 38px;
   height: 38px;
   border-radius: 0.75rem;
-  background-color: var(--bg-input);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-primary);
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
   cursor: pointer;
   flex-shrink: 0;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+  transition: all 0.2s ease;
 }
 .mobile-menu-btn:hover {
-  border-color: #3b82f6;
+  border-color: #38bdf8;
+  color: #ffffff;
+  background-color: rgba(56, 189, 248, 0.1);
+}
+html[data-theme="light"] .mobile-menu-btn {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+  color: #475569;
+}
+html[data-theme="light"] .mobile-menu-btn:hover {
+  border-color: #0284c7;
+  color: #0284c7;
+  background-color: #f0f9ff;
 }
 
 .mobile-sidebar-backdrop {
@@ -25,13 +37,19 @@
   margin-left: auto;
   background: none;
   border: none;
-  color: var(--text-muted);
+  color: #94a3b8;
   cursor: pointer;
   padding: 0.35rem;
   border-radius: 0.5rem;
 }
 .mobile-drawer-close:hover {
-  color: var(--text-primary);
+  color: #ffffff;
+}
+html[data-theme="light"] .mobile-drawer-close {
+  color: #64748b;
+}
+html[data-theme="light"] .mobile-drawer-close:hover {
+  color: #0f172a;
 }
 
 .mobile-bottom-nav {
@@ -54,8 +72,8 @@
     bottom: 0;
     left: 0;
     z-index: 60 !important;
-    width: 280px;
-    max-width: 84vw;
+    width: 288px;
+    max-width: 86vw;
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
     transform: translateX(-105%);
@@ -72,9 +90,9 @@
     position: fixed;
     inset: 0;
     z-index: 55;
-    background-color: rgba(7, 10, 16, 0.68);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    background-color: rgba(7, 12, 20, 0.75);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
   }
 
   .mobile-bottom-nav {
@@ -85,10 +103,10 @@
     left: 0;
     right: 0;
     z-index: 45;
-    background-color: rgba(15, 20, 34, 0.94);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-top: 1px solid var(--border-subtle);
+    background-color: rgba(7, 12, 20, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
     padding: 0.35rem 0.2rem calc(0.45rem + env(safe-area-inset-bottom, 0px));
     min-height: calc(52px + env(safe-area-inset-bottom, 0px));
   }
@@ -103,9 +121,9 @@
     border-radius: 0.65rem;
     font-size: 0.65rem;
     font-weight: 600;
-    color: var(--text-muted);
+    color: #94a3b8;
     text-decoration: none;
-    transition: color 0.15s ease, background-color 0.15s ease;
+    transition: all 0.15s ease;
     min-width: 0;
   }
 
@@ -119,14 +137,23 @@
   }
 
   .mobile-bottom-nav .mobile-tab-link.active {
-    color: #3b82f6;
-    background-color: rgba(59, 130, 246, 0.12);
+    color: #38bdf8;
+    background-color: rgba(56, 189, 248, 0.12);
   }
 
   html[data-theme="light"] .mobile-bottom-nav {
-    background-color: rgba(255, 255, 255, 0.95);
-    border-top-color: var(--border-color);
+    background-color: rgba(255, 255, 255, 0.96);
+    border-top-color: #e2e8f0;
     box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.06);
+  }
+
+  html[data-theme="light"] .mobile-bottom-nav .mobile-tab-link {
+    color: #64748b;
+  }
+
+  html[data-theme="light"] .mobile-bottom-nav .mobile-tab-link.active {
+    color: #0284c7;
+    background-color: #f0f9ff;
   }
 }
 
@@ -140,109 +167,94 @@
   }
 }
 
-html[data-theme="light"] aside.sidebar-drawer {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
+aside.sidebar-drawer {
+  background-color: rgba(10, 17, 32, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
 }
-html[data-theme="light"] aside.sidebar-drawer .text-on-surface {
+
+html[data-theme="light"] aside.sidebar-drawer {
+  background-color: rgba(255, 255, 255, 0.98) !important;
+  border-right-color: #e2e8f0 !important;
+  box-shadow: 2px 0 12px rgba(15, 23, 42, 0.05) !important;
+}
+
+html[data-theme="light"] aside.sidebar-drawer .text-white {
   color: #0f172a !important;
 }
-html[data-theme="light"] aside.sidebar-drawer .text-on-surface-variant {
+html[data-theme="light"] aside.sidebar-drawer .text-slate-100 {
+  color: #0f172a !important;
+}
+html[data-theme="light"] aside.sidebar-drawer .text-slate-200 {
+  color: #1e293b !important;
+}
+html[data-theme="light"] aside.sidebar-drawer .text-slate-300 {
+  color: #334155 !important;
+}
+html[data-theme="light"] aside.sidebar-drawer .text-slate-400 {
+  color: #64748b !important;
+}
+html[data-theme="light"] aside.sidebar-drawer .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+html[data-theme="light"] aside.sidebar-drawer .border-white\/\[0\.08\],
+html[data-theme="light"] aside.sidebar-drawer .border-white\/10 {
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] aside.sidebar-drawer a.glacier-nav-active {
+  background-color: #f0f9ff !important;
+  border-color: #7dd3fc !important;
+  color: #0284c7 !important;
+  box-shadow: 0 1px 3px rgba(2, 132, 199, 0.08) !important;
+}
+html[data-theme="light"] aside.sidebar-drawer a.glacier-nav-active .text-cyan-400,
+html[data-theme="light"] aside.sidebar-drawer a.glacier-nav-active .text-cyan-200 {
+  color: #0284c7 !important;
+}
+html[data-theme="light"] aside.sidebar-drawer a.glacier-nav-active .bg-cyan-400 {
+  background-color: #0284c7 !important;
+  box-shadow: 0 0 8px rgba(2, 132, 199, 0.5) !important;
+}
+
+html[data-theme="light"] aside.sidebar-drawer a:not(.glacier-nav-active):hover {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] aside.sidebar-drawer .badge-counter {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
   color: #475569 !important;
 }
-html[data-theme="light"] aside.sidebar-drawer .text-outline {
-  color: #64748b !important;
-}
-html[data-theme="light"] aside.sidebar-drawer .border-slate-800\/70,
-html[data-theme="light"] aside.sidebar-drawer .border-slate-700\/60,
-html[data-theme="light"] aside.sidebar-drawer .border-slate-800\/80 {
-  border-color: #e2e8f0 !important;
-}
-html[data-theme="light"] aside.sidebar-drawer .bg-surface-container-lowest {
-  background-color: #ffffff !important;
-}
-html[data-theme="light"] aside.sidebar-drawer .bg-surface-container {
+
+html[data-theme="light"] aside.sidebar-drawer .user-profile-box {
   background-color: #f8fafc !important;
-}
-html[data-theme="light"] aside.sidebar-drawer .bg-surface-container-high {
-  background-color: #f1f5f9 !important;
-}
-html[data-theme="light"] aside.sidebar-drawer .bg-slate-800 {
-  background-color: #f1f5f9 !important;
   border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
 }
-html[data-theme="light"] aside.sidebar-drawer a.text-primary-fixed-dim {
+html[data-theme="light"] aside.sidebar-drawer .user-profile-avatar-inner {
+  background-color: #e0f2fe !important;
   color: #0284c7 !important;
+}
+html[data-theme="light"] aside.sidebar-drawer .btn-create-stream {
   background-color: #f0f9ff !important;
   border-color: #bae6fd !important;
-  box-shadow: inset 2px 0 0 0 #0284c7 !important;
-}
-html[data-theme="light"] aside.sidebar-drawer .text-secondary {
   color: #0284c7 !important;
 }
-html[data-theme="light"] aside.sidebar-drawer a:not(.font-bold):hover {
-  background-color: #f8fafc !important;
-  color: #0f172a !important;
-}
-html[data-theme="light"] .sidebar-drawer a:not(.from-brand-electric):hover {
-  background-color: rgba(15, 23, 42, 0.05) !important;
-  color: var(--text-primary) !important;
-}
-html[data-theme="light"] .sidebar-drawer a[href^="/streams/"].bg-blue-600\/30 {
-  background-color: #dbeafe !important;
-  color: #1d4ed8 !important;
-  border-color: #93c5fd !important;
-}
-html[data-theme="light"] .sidebar-drawer button[title="Create New Book"] {
-  background-color: rgba(59, 130, 246, 0.1) !important;
-  color: #2563eb !important;
-  border-color: rgba(59, 130, 246, 0.3) !important;
-}
-html[data-theme="light"] .sidebar-drawer button[title="Create New Book"]:hover {
-  background-color: #2563eb !important;
+html[data-theme="light"] aside.sidebar-drawer .btn-create-stream:hover {
+  background-color: #0284c7 !important;
   color: #ffffff !important;
-}
-
-html[data-theme="light"] aside.sidebar-drawer [data-purpose="workspace-switcher"] {
-  background-color: #ffffff !important;
-  border-top-color: #e2e8f0 !important;
-}
-
-html[data-theme="light"] aside.sidebar-drawer [data-purpose="workspace-switcher"] > div {
-  background-color: #f8fafc !important;
-  border-color: #e2e8f0 !important;
-}
-
-html[data-theme="light"] aside.sidebar-drawer [data-purpose="workspace-switcher"] .w-8.h-8 {
-  background-color: #f1f5f9 !important;
-  border-color: #e2e8f0 !important;
-}
-
-html[data-theme="light"] aside.sidebar-drawer [data-purpose="workspace-switcher"] .text-primary-container {
-  color: #0284c7 !important;
-}
-
-html[data-theme="light"] nav#bottomNav,
-html[data-theme="light"] [data-purpose="mobile-bottom-nav"] {
-  background-color: rgba(255, 255, 255, 0.96) !important;
-  border-top-color: #e2e8f0 !important;
-  box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.06) !important;
-}
-
-html[data-theme="light"] nav#bottomNav .nav-tab,
-html[data-theme="light"] [data-purpose="mobile-bottom-nav"] .nav-tab {
-  color: #64748b !important;
-}
-
-html[data-theme="light"] nav#bottomNav .nav-tab.text-primary-container,
-html[data-theme="light"] [data-purpose="mobile-bottom-nav"] .nav-tab.text-primary-container {
-  color: #0284c7 !important;
 }
 
 nav#bottomNav .morph-pill,
 [data-purpose="mobile-bottom-nav"] .morph-pill {
-  background-color: #00f5d4;
-  box-shadow: 0 0 10px rgba(0, 245, 212, 0.6);
+  background-color: #22d3ee;
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.6);
   transform: translateX(-50%);
   opacity: 0;
 }
@@ -258,4 +270,3 @@ html[data-theme="light"] [data-purpose="mobile-bottom-nav"] .morph-pill {
   background-color: #0284c7 !important;
   box-shadow: 0 1px 4px rgba(2, 132, 199, 0.35) !important;
 }
-

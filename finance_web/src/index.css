@@ -1,18 +1,18 @@
 :root,
 html[data-theme="dark"] {
   color-scheme: dark;
-  --bg-page: #0a0d14;
-  --bg-surface: #0d111a;
-  --bg-elevated: #111520;
-  --bg-input: #151a27;
-  --bg-popover: #151a27;
-  --text-primary: #dee2f6;
-  --text-secondary: #94a3b8;
-  --text-muted: #6b7c85;
-  --text-dim: #6b7c85;
-  --border-color: #1e2436;
-  --border-subtle: rgba(51, 65, 85, 0.6);
-  --border-card: #1e2436;
+  --bg-page: #070C14;
+  --bg-surface: #0A1120;
+  --bg-elevated: #0F172A;
+  --bg-input: #0F1A30;
+  --bg-popover: #0F172A;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-card: rgba(255, 255, 255, 0.08);
 }
 html[data-theme="light"] {
   color-scheme: light;
@@ -35,12 +35,65 @@ html[data-theme="light"] {
   padding: 0;
 }
 body {
+  background: radial-gradient(130% 90% at 15% 0%, #071529 0%, #070C14 40%, #050911 100%);
   background-color: var(--bg-page);
   color: var(--text-primary);
-  font-family: 'Inter', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", 'Inter', "Plus Jakarta Sans", "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+html[data-theme="light"] body {
+  background: #f8fafc !important;
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+.glacier-ambient-1 {
+  position: fixed;
+  top: -15%;
+  left: 15%;
+  width: 750px;
+  height: 750px;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, rgba(6, 182, 212, 0.05) 50%, transparent 75%);
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: 0;
+}
+.glacier-ambient-2 {
+  position: fixed;
+  bottom: -20%;
+  right: 5%;
+  width: 850px;
+  height: 850px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, rgba(15, 23, 42, 0.2) 55%, transparent 75%);
+  filter: blur(110px);
+  pointer-events: none;
+  z-index: 0;
+}
+html[data-theme="light"] .glacier-ambient-1,
+html[data-theme="light"] .glacier-ambient-2 {
+  opacity: 0.12;
+}
+.frost-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.frost-sheen::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(115deg, transparent 20%, rgba(255, 255, 255, 0.08) 45%, rgba(56, 189, 248, 0.08) 55%, transparent 75%);
+  pointer-events: none;
+  transition: transform 0.85s ease;
+}
+.frost-sheen:hover::before {
+  transform: translateX(50%);
+}
+html[data-theme="light"] .frost-sheen::before {
+  background: linear-gradient(115deg, transparent 20%, rgba(255, 255, 255, 0.4) 45%, rgba(2, 132, 199, 0.08) 55%, transparent 75%);
 }
 .app-shell-container {
   background-color: var(--bg-page);
@@ -477,13 +530,59 @@ html[data-theme="light"] .bg-grid-mesh {
     linear-gradient(to bottom, rgba(15, 23, 42, 0.04) 1px, transparent 1px) !important;
 }
 html[data-theme="light"] aside[data-purpose="sidebar-navigation"],
-html[data-theme="light"] header[data-purpose="top-navigation-bar"] {
-  background-color: rgba(255, 255, 255, 0.95) !important;
-  border-color: var(--border-color) !important;
+html[data-theme="light"] header,
+html[data-theme="light"] header[data-purpose="top-navigation-bar"],
+html[data-theme="light"] header.top-navbar-safe,
+html[data-theme="light"] .glacier-header,
+html[data-theme="light"] .dashboard-hud-header {
+  background-color: #ffffff !important;
+  background-image: none !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.03) !important;
 }
+
+html[data-theme="light"] header h1,
+html[data-theme="light"] header h2,
+html[data-theme="light"] header .header-title,
+html[data-theme="light"] header .text-white:not(.glacier-add-btn *):not(.btn-primary *) {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] header p,
+html[data-theme="light"] header .header-subtitle,
+html[data-theme="light"] header .text-slate-400 {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] header .text-slate-300,
+html[data-theme="light"] header .text-slate-200 {
+  color: #334155 !important;
+}
+
 html[data-theme="light"] header[data-purpose="top-navigation-bar"] .bg-surface-container-low {
   background-color: #f1f5f9 !important;
   border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] .currency-pill-btn {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .currency-pill-btn:hover {
+  background-color: #f8fafc !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .currency-pill-btn .currency-pill-symbol {
+  color: #0284c7 !important;
+}
+
+html[data-theme="light"] .currency-pill-btn .currency-pill-code {
+  color: #0f172a !important;
 }
 html[data-theme="light"] .text-on-surface {
   color: #0f172a !important;
@@ -586,6 +685,15 @@ html[data-theme="light"] .modal-content {
   box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06) !important;
   color: var(--text-primary) !important;
 }
+html[data-theme="light"] .modal-content label,
+html[data-theme="light"] .modal-content .text-slate-300,
+html[data-theme="light"] .modal-content .text-slate-400 {
+  color: #334155 !important;
+}
+html[data-theme="light"] .modal-content h3,
+html[data-theme="light"] .modal-content .text-white {
+  color: #0f172a !important;
+}
 html[data-theme="light"] .text-white {
   color: var(--text-primary) !important;
 }
@@ -608,18 +716,60 @@ html[data-theme="light"] .text-slate-500 {
 }
 html[data-theme="light"] [data-purpose="workspace-switcher"],
 html[data-theme="light"] .bg-obsidian-950\/40,
+html[data-theme="light"] .bg-obsidian-950\/80,
+html[data-theme="light"] .bg-obsidian-950\/90,
 html[data-theme="light"] .bg-obsidian-900,
+html[data-theme="light"] .bg-obsidian-900\/80,
+html[data-theme="light"] .bg-obsidian-900\/90,
 html[data-theme="light"] .bg-obsidian-850\/80,
 html[data-theme="light"] .bg-obsidian-850\/60,
 html[data-theme="light"] .bg-obsidian-800,
 html[data-theme="light"] .bg-obsidian-800\/90,
 html[data-theme="light"] .bg-obsidian-800\/80,
 html[data-theme="light"] .bg-obsidian-750,
-html[data-theme="light"] .from-obsidian-800 {
+html[data-theme="light"] .from-obsidian-800,
+html[data-theme="light"] .bg-\[\#070C14\],
+html[data-theme="light"] .bg-\[\#050911\],
+html[data-theme="light"] .bg-\[\#0A1120\],
+html[data-theme="light"] .bg-\[\#0A1120\]\/75,
+html[data-theme="light"] .bg-\[\#0A1120\]\/70,
+html[data-theme="light"] .bg-\[\#0A1120\]\/90,
+html[data-theme="light"] .bg-\[\#0F172A\],
+html[data-theme="light"] .bg-\[\#0F172A\]\/70,
+html[data-theme="light"] .bg-\[\#0F172A\]\/80,
+html[data-theme="light"] .bg-\[\#101D36\]\/70,
+html[data-theme="light"] .bg-\[\#0D1629\],
+html[data-theme="light"] .bg-\[\#0D1527\]\/95 {
   background-color: var(--bg-surface) !important;
   background-image: none !important;
   border-color: var(--border-color) !important;
   color: var(--text-primary) !important;
+}
+html[data-theme="light"] .bg-white\/\[0\.04\],
+html[data-theme="light"] .bg-white\/\[0\.05\],
+html[data-theme="light"] .bg-white\/\[0\.06\],
+html[data-theme="light"] .bg-white\/\[0\.08\],
+html[data-theme="light"] .bg-white\/\[0\.1\],
+html[data-theme="light"] .bg-white\/10 {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+html[data-theme="light"] .border-white\/\[0\.06\],
+html[data-theme="light"] .border-white\/\[0\.07\],
+html[data-theme="light"] .border-white\/\[0\.08\],
+html[data-theme="light"] .border-white\/\[0\.1\],
+html[data-theme="light"] .border-white\/10 {
+  border-color: #e2e8f0 !important;
+}
+html[data-theme="light"] .shadow-glacier-card {
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05), 0 0 0 1px #e2e8f0 !important;
+}
+html[data-theme="light"] .shadow-glacier-sm {
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+}
+html[data-theme="light"] .shadow-glacier-btn {
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35) !important;
 }
 html[data-theme="light"] [data-purpose="workspace-switcher"] > div,
 html[data-theme="light"] .bg-obsidian-700 {

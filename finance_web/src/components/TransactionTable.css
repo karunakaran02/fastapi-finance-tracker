@@ -143,3 +143,13 @@ html[data-theme="light"] .tx-book-pill {
   border-color: #cbd5e1;
   color: #334155;
 }
+
+html[data-theme="light"] .tx-icon-box {
+  background-color: #f1f5f9;
+  border-color: #e2e8f0;
+}
+html[data-theme="light"] .tx-category-pill {
+  background-color: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #334155;
+}

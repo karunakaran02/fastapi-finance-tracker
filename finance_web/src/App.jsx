@@ -19,7 +19,7 @@ const RecurringPage = React.lazy(() => import('./pages/RecurringPage'));
 
 const PageLoader = () => (
   <div className="flex-1 flex flex-col items-center justify-center min-h-[50vh] p-8 text-slate-400">
-    <div className="w-7 h-7 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+    <div className="w-7 h-7 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin mb-3"></div>
     <span className="text-xs font-medium tracking-wide">Loading view...</span>
   </div>
 );
@@ -46,7 +46,8 @@ const CurrencyPill = () => {
 
 const SecondaryTopBar = () => {
   const location = useLocation();
-  if (location.pathname === '/dashboard') {
+  const normalizedPath = location.pathname.replace(/\/+$/, '') || '/';
+  if (normalizedPath === '/dashboard' || normalizedPath === '/' || normalizedPath === '') {
     return null;
   }
 
@@ -62,22 +63,25 @@ const SecondaryTopBar = () => {
   };
 
   const title =
-    pageTitles[location.pathname] ||
-    (location.pathname.startsWith('/streams') ? 'Streams & Financial Books' : 'Finance Intel');
+    pageTitles[normalizedPath] ||
+    (normalizedPath.startsWith('/streams') ? 'Streams & Financial Books' : 'Finance Intel');
 
   return (
     <header
-      className="top-navbar-safe sticky top-0 z-30 bg-surface-container-lowest/90 backdrop-blur-xl border-b border-slate-800/70 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-3"
+      className="top-navbar-safe glacier-header sticky top-0 z-30 flex-shrink-0 px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4 transition-colors duration-200"
       data-purpose="top-navigation-bar"
     >
-      <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+      <div className="flex items-center space-x-3 min-w-max">
         <MobileMenuButton />
-        <span className="text-xs sm:text-sm font-bold text-on-surface truncate max-w-[150px] xs:max-w-[210px] sm:max-w-none">{title}</span>
-        <span className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-primary-container/10 text-primary-fixed-dim border border-primary-container/20 shrink-0">
-          <span className="w-1.5 h-1.5 rounded-full bg-primary-container animate-pulse"></span> Live Sync
+        <h1 className="text-base sm:text-xl font-bold tracking-tight text-white header-title truncate max-w-[170px] xs:max-w-[240px] sm:max-w-none">
+          {title}
+        </h1>
+        <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 backdrop-blur-md">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
+          <span className="hidden xs:inline">Live Sync</span>
         </span>
       </div>
-      <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+      <div className="flex items-center space-x-2 shrink-0">
         <CurrencyPill />
         <ThemeToggleButton />
       </div>
@@ -90,7 +94,7 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-obsidian-950 text-slate-400 text-sm">
+      <div className="min-h-screen flex items-center justify-center bg-[#070C14] text-slate-400 text-sm">
         Loading Finance Intel...
       </div>
     );
@@ -101,11 +105,15 @@ const ProtectedRoute = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen flex app-shell-container antialiased selection:bg-primary-container selection:text-on-primary-fixed">
-      <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0">
-        <SecondaryTopBar />
-        {children}
+    <div className="min-h-screen flex app-shell-container antialiased selection:bg-cyan-500 selection:text-slate-900 relative overflow-hidden bg-[#070C14]">
+      <div aria-hidden="true" className="glacier-ambient-1"></div>
+      <div aria-hidden="true" className="glacier-ambient-2"></div>
+      <div className="relative z-10 flex w-full h-full min-h-screen overflow-hidden backdrop-blur-[2px]">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-w-0 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0 h-screen overflow-y-auto">
+          <SecondaryTopBar />
+          {children}
+        </div>
       </div>
     </div>
   );

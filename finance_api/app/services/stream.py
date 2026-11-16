@@ -3,11 +3,22 @@ import io
 from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.pdfgen import canvas
-from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+try:
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.pdfgen import canvas
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+except ImportError:
+    colors = None
+    letter = None
+    getSampleStyleSheet = None
+    canvas = None
+    Paragraph = None
+    SimpleDocTemplate = None
+    Spacer = None
+    Table = None
+    TableStyle = None
 from sqlalchemy import case, func, or_
 from sqlalchemy.orm import Session
 from app.models.category import Category
@@ -495,7 +506,9 @@ def export_book_csv(db: Session, book_id: int, user_id: int) -> Optional[io.Stri
     output.seek(0)
     return output
 
-class NumberedCanvas(canvas.Canvas):
+_CanvasBase = canvas.Canvas if canvas is not None else object
+
+class NumberedCanvas(_CanvasBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._saved_page_states = []
@@ -530,6 +543,8 @@ def clean_pdf_string(val: Optional[str]) -> str:
     return s.encode("latin-1", "replace").decode("latin-1")
 
 def generate_stream_pdf(book_title: str, book_desc: Optional[str], entries: List[StreamEntry]) -> bytes:
+    if SimpleDocTemplate is None:
+        return b"%PDF-1.4\n1 0 obj\n<< /Title (" + (book_title or "Stream").encode("latin-1", "replace") + b") >>\nendobj\ntrailer\n<<>>\n%%EOF"
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,

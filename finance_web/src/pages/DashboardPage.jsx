@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ShoppingBag,
@@ -15,6 +15,7 @@ import ImportTransactionsModal from '../components/ImportTransactionsModal';
 import { MobileMenuButton } from '../components/Sidebar';
 import { ThemeToggleButton } from '../context/ThemeContext';
 import { useCurrency } from '../context/CurrencyContext';
+import './DashboardPage.css';
 
 const splitCurrency = (val, locale = 'en-IN') => {
   const num = Number(val || 0);
@@ -29,73 +30,81 @@ const splitCurrency = (val, locale = 'en-IN') => {
 
 const getCategoryVisual = (name = '', index = 0) => {
   const lower = name.toLowerCase();
-  if (lower.includes('shop')) {
+  if (lower.includes('shop') || lower.includes('cloud') || lower.includes('tech') || lower.includes('infra')) {
     return {
       icon: ShoppingBag,
-      boxBg: 'bg-blue-500/10 text-brand-cobalt',
-      barGradient: 'bg-gradient-to-r from-blue-600 via-brand-cobalt to-brand-cyan shadow-glow-blue',
-      dotClass: 'bg-brand-cobalt shadow-glow-blue',
-      pillClass: 'bg-brand-cobalt/20 text-brand-cobalt',
-      stroke: '#3b82f6',
+      dotClass: 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]',
+      boxBg: 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30',
+      pillClass: 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30',
+      stroke: '#06B6D4',
+      barGradient: 'bg-gradient-to-r from-cyan-500 to-sky-400',
     };
   }
-  if (lower.includes('transport') || lower.includes('travel')) {
+  if (lower.includes('transport') || lower.includes('travel') || lower.includes('op') || lower.includes('tool')) {
     return {
       icon: Car,
-      boxBg: 'bg-emerald-500/10 text-emerald-400',
-      barGradient: 'bg-gradient-to-r from-emerald-500 to-brand-mint shadow-glow-emerald',
-      dotClass: 'bg-brand-emerald shadow-glow-emerald',
-      pillClass: 'bg-emerald-500/20 text-emerald-400',
-      stroke: '#10b981',
+      dotClass: 'bg-indigo-400 shadow-[0_0_8px_#818cf8]',
+      boxBg: 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30',
+      pillClass: 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30',
+      stroke: '#818CF8',
+      barGradient: 'bg-gradient-to-r from-indigo-500 to-violet-400',
     };
   }
-  if (lower.includes('food') || lower.includes('dining')) {
+  if (lower.includes('food') || lower.includes('dining') || lower.includes('market') || lower.includes('growth')) {
     return {
       icon: Utensils,
-      boxBg: 'bg-amber-500/10 text-amber-400',
-      barGradient: 'bg-gradient-to-r from-amber-500 to-orange-400',
-      dotClass: 'bg-amber-400',
-      pillClass: 'bg-amber-500/20 text-amber-400',
-      stroke: '#f59e0b',
+      dotClass: 'bg-rose-400 shadow-[0_0_8px_#f43f5e]',
+      boxBg: 'bg-rose-500/15 text-rose-400 border border-rose-500/30',
+      pillClass: 'bg-rose-500/20 text-rose-300 border border-rose-500/30',
+      stroke: '#F43F5E',
+      barGradient: 'bg-gradient-to-r from-rose-500 to-pink-400',
     };
   }
-  if (lower.includes('bill') || lower.includes('util')) {
+  if (lower.includes('bill') || lower.includes('util') || lower.includes('sub') || lower.includes('office')) {
     return {
       icon: Zap,
-      boxBg: 'bg-violet-500/10 text-violet-400',
-      barGradient: 'bg-gradient-to-r from-violet-600 to-purple-400',
-      dotClass: 'bg-brand-violet',
-      pillClass: 'bg-violet-500/20 text-violet-400',
-      stroke: '#8b5cf6',
+      dotClass: 'bg-amber-400 shadow-[0_0_8px_#fbbf24]',
+      boxBg: 'bg-amber-500/15 text-amber-400 border border-amber-500/30',
+      pillClass: 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
+      stroke: '#F59E0B',
+      barGradient: 'bg-gradient-to-r from-amber-500 to-orange-400',
     };
   }
-  const defaults = [
+  const palette = [
     {
       icon: ShoppingBag,
-      boxBg: 'bg-blue-500/10 text-brand-cobalt',
-      barGradient: 'bg-gradient-to-r from-blue-600 via-brand-cobalt to-brand-cyan shadow-glow-blue',
-      dotClass: 'bg-brand-cobalt shadow-glow-blue',
-      pillClass: 'bg-brand-cobalt/20 text-brand-cobalt',
-      stroke: '#3b82f6',
+      dotClass: 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]',
+      boxBg: 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/30',
+      pillClass: 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30',
+      stroke: '#06B6D4',
+      barGradient: 'bg-gradient-to-r from-cyan-500 to-sky-400',
     },
     {
       icon: Car,
-      boxBg: 'bg-emerald-500/10 text-emerald-400',
-      barGradient: 'bg-gradient-to-r from-emerald-500 to-brand-mint shadow-glow-emerald',
-      dotClass: 'bg-brand-emerald shadow-glow-emerald',
-      pillClass: 'bg-emerald-500/20 text-emerald-400',
-      stroke: '#10b981',
+      dotClass: 'bg-indigo-400 shadow-[0_0_8px_#818cf8]',
+      boxBg: 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30',
+      pillClass: 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30',
+      stroke: '#818CF8',
+      barGradient: 'bg-gradient-to-r from-indigo-500 to-violet-400',
     },
     {
       icon: Tag,
-      boxBg: 'bg-slate-500/10 text-slate-400',
-      barGradient: 'bg-gradient-to-r from-slate-600 to-slate-400',
-      dotClass: 'bg-slate-400',
-      pillClass: 'bg-slate-500/20 text-slate-300',
-      stroke: '#64748b',
+      dotClass: 'bg-rose-400 shadow-[0_0_8px_#f43f5e]',
+      boxBg: 'bg-rose-500/15 text-rose-400 border border-rose-500/30',
+      pillClass: 'bg-rose-500/20 text-rose-300 border border-rose-500/30',
+      stroke: '#F43F5E',
+      barGradient: 'bg-gradient-to-r from-rose-500 to-pink-400',
+    },
+    {
+      icon: Zap,
+      dotClass: 'bg-amber-400 shadow-[0_0_8px_#fbbf24]',
+      boxBg: 'bg-amber-500/15 text-amber-400 border border-amber-500/30',
+      pillClass: 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
+      stroke: '#F59E0B',
+      barGradient: 'bg-gradient-to-r from-amber-500 to-orange-400',
     },
   ];
-  return defaults[index % defaults.length];
+  return palette[index % palette.length];
 };
 
 const getLedgerRowVisual = (tx) => {
@@ -104,40 +113,41 @@ const getLedgerRowVisual = (tx) => {
   if (isIncome) {
     return {
       icon: Briefcase,
-      iconBox: 'bg-emerald-500/20 text-emerald-300',
-      hoverText: 'group-hover:text-brand-mint',
-    };
-  }
-  if (cat.includes('shop')) {
-    return {
-      icon: ShoppingBag,
-      iconBox: 'bg-blue-500/20 text-blue-300',
-      hoverText: 'group-hover:text-blue-300',
-    };
-  }
-  if (cat.includes('transport') || cat.includes('travel')) {
-    return {
-      icon: Car,
-      iconBox: 'bg-emerald-500/20 text-emerald-300',
+      iconBox: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
       hoverText: 'group-hover:text-emerald-300',
     };
   }
-  if (cat.includes('food') || cat.includes('dining')) {
+  if (cat.includes('shop') || cat.includes('cloud') || cat.includes('infra')) {
+    return {
+      icon: ShoppingBag,
+      iconBox: 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30',
+      hoverText: 'group-hover:text-cyan-300',
+    };
+  }
+  if (cat.includes('transport') || cat.includes('travel') || cat.includes('op')) {
+    return {
+      icon: Car,
+      iconBox: 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30',
+      hoverText: 'group-hover:text-indigo-300',
+    };
+  }
+  if (cat.includes('food') || cat.includes('dining') || cat.includes('market')) {
     return {
       icon: Utensils,
-      iconBox: 'bg-amber-500/20 text-amber-300',
+      iconBox: 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
       hoverText: 'group-hover:text-amber-300',
     };
   }
   return {
     icon: CreditCard,
-    iconBox: 'bg-blue-500/20 text-blue-300',
-    hoverText: 'group-hover:text-blue-300',
+    iconBox: 'bg-sky-500/20 text-sky-300 border border-sky-500/30',
+    hoverText: 'group-hover:text-sky-300',
   };
 };
 
 export const DashboardPage = () => {
   const navigate = useNavigate();
+  const searchInputRef = useRef(null);
   const { symbol, activeCurrency, currency, setCurrency, currencies } = useCurrency();
   const formatAmt = (val, opts = {}) => Number(val || 0).toLocaleString(activeCurrency.locale, opts);
 
@@ -151,6 +161,8 @@ export const DashboardPage = () => {
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [periodTab, setPeriodTab] = useState('1m');
   const [searchQuery, setSearchQuery] = useState('');
+  const [seeding, setSeeding] = useState(false);
+  const [seedNotice, setSeedNotice] = useState('');
 
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
@@ -174,8 +186,36 @@ export const DashboardPage = () => {
     }
   }, [periodTab]);
 
+  const handleSeedDemoData = async () => {
+    setSeeding(true);
+    setError('');
+    setSeedNotice('');
+    try {
+      const res = await api.seedDemoData(6);
+      setSeedNotice(res?.message || 'Successfully generated 6 months of test transactions.');
+      await fetchDashboardData();
+    } catch (err) {
+      setError(err.message || 'Failed to generate test data.');
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   useEffect(() => {
     fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const handlePeriodChange = async (tab) => {
@@ -239,79 +279,87 @@ export const DashboardPage = () => {
   const retainedPct = Number(dashboardData?.retained_percentage ?? 0).toFixed(1);
   const burnRate = Number(dashboardData?.burn_rate_percentage ?? 0).toFixed(1);
   const capUtilized = Number(dashboardData?.cap_utilized_percentage ?? 0).toFixed(1);
-  const capBarWidth = Number(dashboardData?.cap_bar_width_percentage ?? 0);
   const cashflowRatio = Number(dashboardData?.cashflow_ratio_percentage ?? 0).toFixed(1);
   const balanceStatus = dashboardData?.balance_status || 'Balanced';
   const roundedSavingsRate = Number(dashboardData?.rounded_savings_rate ?? 0);
-  const benchmarkTier = dashboardData?.benchmark_tier || '0% Baseline';
-  const trendFootnote =
-    dashboardData?.trend_footnote || 'No monthly cashflow recorded in current fiscal cycle';
+  const benchmarkTier = dashboardData?.benchmark_tier || 'Top 5% Tier';
   const hasActivity = Boolean(dashboardData?.has_activity);
 
-  const gaugeCircumference = Number(dashboardData?.gauge_circumference ?? 283);
-  const gaugeOffset = Number(dashboardData?.gauge_offset ?? 283);
-  const doughnutCircumference = Number(dashboardData?.doughnut_circumference ?? 389.5);
-
   const displayMonths = monthlyReport?.months || [];
-  const yAxisSteps = monthlyReport?.y_axis_steps || [70000, 60000, 50000, 40000, 30000, 20000, 10000, 0];
+  const yAxisSteps = monthlyReport?.y_axis_steps || [70000, 50000, 30000, 10000, 0];
 
   const spendingCats = dashboardData?.spending_by_category || [];
   const topCategories = dashboardData?.top_spending_categories || [];
 
-  const currentMonthShort = dashboardData?.current_month_short || 'Current';
+  const currentMonthShort = dashboardData?.current_month_short || 'Nov 2026';
   const currentMonthLong = dashboardData?.current_month_long || 'Current Month';
 
+  const arcCircumference = 88;
+  const targetSavingsRate = 50;
+  const arcDashOffset = arcCircumference - (arcCircumference * Math.min(Math.max(roundedSavingsRate, 0), 100)) / 100;
+
   return (
-    <>
+    <div className="dashboard-page-root flex-1 flex flex-col min-w-0">
       <header
-        className="top-navbar-safe sticky top-0 z-30 bg-obsidian-900/80 backdrop-blur-xl border-b border-white/[0.06] px-3 sm:px-6 lg:px-8 py-2.5 sm:py-4 flex flex-wrap items-center justify-between gap-2.5 sm:gap-3"
+        className="top-navbar-safe glacier-header sticky top-0 z-30 flex-shrink-0 px-4 sm:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3 sm:gap-4 transition-colors duration-200"
+        data-purpose="top-navigation-bar"
       >
-        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+        <div className="flex items-center space-x-3 min-w-0">
           <MobileMenuButton />
           <div className="min-w-0">
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-              <h2 className="text-base sm:text-2xl font-bold tracking-tight text-white font-sans truncate">
+            <div className="flex items-center space-x-2 sm:space-x-3 flex-wrap">
+              <h1 className="text-base sm:text-2xl font-bold tracking-tight text-white header-title font-sans truncate">
                 Financial Overview
-              </h2>
-              <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Live Sync
+              </h1>
+              <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 backdrop-blur-md">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
+                <span className="hidden xs:inline">Live Sync</span>
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5 hidden sm:block">
+            <p className="text-xs text-slate-400 header-subtitle mt-0.5 hidden sm:block">
               Real-time balance, savings rates, and automated cashflow analytics
             </p>
           </div>
         </div>
 
-        <div className="flex items-center flex-wrap gap-1.5 sm:gap-2.5 w-full sm:w-auto justify-between sm:justify-end sm:ml-auto">
-          <div className="relative hidden md:block">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                />
-              </svg>
-            </span>
+        <div className="flex-1 max-w-md hidden md:block">
+          <div className="relative flex items-center">
+            <svg
+              className="absolute left-3.5 w-4 h-4 text-slate-400 pointer-events-none"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              ></path>
+            </svg>
             <input
-              className="pl-9 pr-4 py-2 text-xs bg-obsidian-800/90 text-slate-200 placeholder-slate-400 rounded-xl border border-white/[0.08] focus:outline-none focus:border-brand-cobalt focus:ring-1 focus:ring-brand-cobalt w-52 transition-all"
-              placeholder="Search entries, tags... (⌘K)"
+              ref={searchInputRef}
+              className="w-full pl-10 pr-12 py-1.5 text-xs bg-white/[0.05] border border-white/[0.1] rounded-xl placeholder-slate-400 text-white shadow-inner focus:outline-none focus:ring-2 focus:ring-cyan-400/40 focus:border-cyan-400/50 transition-all backdrop-blur-md"
+              placeholder="Search entries, tags, receipts..."
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            <kbd className="absolute right-2.5 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 bg-white/[0.08] border border-white/10 rounded pointer-events-none">
+              ⌘K
+            </kbd>
           </div>
+        </div>
 
-          <div className="flex items-center bg-obsidian-800/80 border border-white/[0.08] rounded-xl p-0.5 sm:p-1 text-[11px] sm:text-xs font-medium">
+        <div className="flex items-center flex-wrap gap-1.5 sm:gap-2 min-w-max ml-auto">
+          <div className="flex items-center p-0.5 bg-white/[0.05] backdrop-blur-md rounded-xl border border-white/[0.08] text-xs">
             <button
               type="button"
               onClick={() => handlePeriodChange('1m')}
-              className={`px-1.5 sm:px-2.5 py-1 rounded-lg transition-colors ${
+              className={`px-2.5 py-1 rounded-lg transition-colors ${
                 periodTab === '1m'
-                  ? 'bg-obsidian-700 text-white shadow-sm font-semibold'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'glacier-period-active bg-cyan-500/20 font-medium text-cyan-300 border border-cyan-400/20 shadow-xs'
+                  : 'text-slate-300 hover:text-white'
               }`}
             >
               {currentMonthShort}
@@ -319,10 +367,10 @@ export const DashboardPage = () => {
             <button
               type="button"
               onClick={() => handlePeriodChange('6m')}
-              className={`px-1.5 sm:px-2.5 py-1 rounded-lg transition-colors ${
+              className={`px-2.5 py-1 rounded-lg transition-colors ${
                 periodTab === '6m'
-                  ? 'bg-obsidian-700 text-white shadow-sm font-semibold'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'glacier-period-active bg-cyan-500/20 font-medium text-cyan-300 border border-cyan-400/20 shadow-xs'
+                  : 'text-slate-300 hover:text-white'
               }`}
             >
               6M
@@ -330,68 +378,104 @@ export const DashboardPage = () => {
             <button
               type="button"
               onClick={() => handlePeriodChange('ytd')}
-              className={`px-1.5 sm:px-2.5 py-1 rounded-lg transition-colors ${
+              className={`px-2.5 py-1 rounded-lg transition-colors ${
                 periodTab === 'ytd'
-                  ? 'bg-obsidian-700 text-white shadow-sm font-semibold'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'glacier-period-active bg-cyan-500/20 font-medium text-cyan-300 border border-cyan-400/20 shadow-xs'
+                  : 'text-slate-300 hover:text-white'
               }`}
             >
               YTD
             </button>
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center space-x-1.5">
             <button
-              onClick={fetchDashboardData}
-              className="inline-flex items-center justify-center gap-1.5 p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl bg-obsidian-800 hover:bg-obsidian-750 text-slate-200 border border-white/[0.08] transition-colors shadow-sm"
-              title="Refresh Telemetry"
               type="button"
+              onClick={fetchDashboardData}
+              className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-xs font-medium text-slate-200 shadow-glacier-sm transition-all"
+              title="Refresh Telemetry"
             >
-              <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-3.5 h-3.5 text-slate-400"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
                 <path
                   d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth="2"
-                />
+                ></path>
               </svg>
               <span className="hidden sm:inline">Refresh</span>
             </button>
 
             <button
-              onClick={() => setIsImportOpen(true)}
-              className="inline-flex items-center justify-center gap-1.5 p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl bg-obsidian-800 hover:bg-obsidian-750 text-slate-200 border border-white/[0.08] transition-colors shadow-sm"
-              title="Import Single or Multiple CSV/JSON Files"
               type="button"
+              onClick={() => setIsImportOpen(true)}
+              className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-xs font-medium text-slate-200 shadow-glacier-sm transition-all"
+              title="Import Records"
             >
-              <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-3.5 h-3.5 text-slate-400"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
                 <path
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth="2"
-                />
+                ></path>
               </svg>
               <span className="hidden sm:inline">Import</span>
             </button>
 
             <button
-              onClick={handleExportCsv}
-              className="inline-flex items-center justify-center gap-1.5 p-2 sm:px-3 sm:py-2 text-xs font-semibold rounded-xl bg-obsidian-800 hover:bg-obsidian-750 text-slate-200 border border-white/[0.08] transition-colors shadow-sm"
-              title="Export Ledger"
               type="button"
+              onClick={handleExportCsv}
+              className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-xs font-medium text-slate-200 shadow-glacier-sm transition-all"
+              title="Export Report"
             >
-              <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-3.5 h-3.5 text-slate-400"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
                 <path
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth="2"
-                />
+                ></path>
               </svg>
               <span className="hidden sm:inline">Export</span>
             </button>
 
+            <button
+              type="button"
+              onClick={handleSeedDemoData}
+              disabled={seeding}
+              className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-xs font-medium text-slate-200 shadow-glacier-sm transition-all disabled:opacity-50"
+              title="Generate 6 Months of Test Data"
+            >
+              <svg
+                className={`w-3.5 h-3.5 text-cyan-400 ${seeding ? 'animate-spin' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+              </svg>
+              <span className="hidden sm:inline">{seeding ? 'Seeding...' : 'Seed Data'}</span>
+            </button>
+          </div>
+
+          <div className="flex items-center space-x-1 pl-1">
             <button
               type="button"
               onClick={() => {
@@ -400,241 +484,246 @@ export const DashboardPage = () => {
                 setCurrency(keys[nextIdx]);
               }}
               title={`Active Currency: ${currency} (${symbol}). Click to switch.`}
-              className="inline-flex items-center gap-1 px-2 py-1.5 sm:px-2.5 rounded-xl text-xs font-semibold bg-obsidian-800 hover:bg-obsidian-700 text-slate-200 border border-white/[0.08] transition-colors"
+              className="px-2 py-1 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] rounded-xl text-xs font-medium text-slate-300 shadow-xs transition-colors"
             >
-              <span className="text-blue-400 font-bold">{symbol}</span>
+              <span className="text-cyan-400 font-bold mr-1">{symbol}</span>
               <span>{currency}</span>
             </button>
 
             <ThemeToggleButton />
-
-            <button
-              onClick={() => setIsFormOpen(true)}
-              className="inline-flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs font-bold rounded-xl text-white bg-gradient-to-r from-brand-electric to-brand-cobalt hover:from-blue-600 hover:to-blue-500 shadow-glow-blue transition-all active:scale-95"
-              type="button"
-            >
-              <svg className="w-4 h-4 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M12 4v16m8-8H4" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span>Add</span>
-              <span className="hidden sm:inline">Transaction</span>
-            </button>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setIsFormOpen(true)}
+            className="frost-sheen glacier-add-btn flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-400 hover:to-cyan-400 text-white text-xs font-semibold shadow-glacier-btn transition-all duration-200 active:scale-95"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 4v16m8-8H4" strokeLinecap="round" strokeLinejoin="round"></path>
+            </svg>
+            <span>Add Transaction</span>
+          </button>
         </div>
       </header>
 
-      <main
-        className="flex-1 px-2.5 sm:px-6 lg:px-8 py-3.5 sm:py-8 space-y-4 sm:space-y-7 max-w-[1700px] w-full mx-auto"
-        data-purpose="executive-metrics-grid"
-      >
+      <div className="p-4 sm:p-8 space-y-6 max-w-7xl mx-auto w-full">
+        {seedNotice && (
+          <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center justify-between">
+            <span>{seedNotice}</span>
+            <button type="button" onClick={() => setSeedNotice('')} className="text-emerald-300 hover:text-white font-bold ml-2">✕</button>
+          </div>
+        )}
+
         {error && (
-          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs">
+          <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs">
             {error}
           </div>
         )}
 
         <section
-          aria-label="Key Financial Performance Indicators"
-          className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-5"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5"
+          data-purpose="kpi-metrics-grid"
         >
-          <div
-            className="glass-card glass-card-interactive rounded-xl sm:rounded-2xl p-3.5 sm:p-6 relative overflow-hidden flex flex-col justify-between"
-            data-purpose="metric-total-income"
-          >
+          <div className="frost-sheen glacier-card-surface relative rounded-3xl p-5 bg-[#0F172A]/70 backdrop-blur-2xl border border-white/[0.08] border-t-2 border-t-cyan-400/40 shadow-glacier-card hover:shadow-glacier-glow transition-all duration-300 flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <span className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                   Total Income
                 </span>
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-glow-emerald">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-xs">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    viewBox="0 0 24 24"
+                  >
                     <path
-                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                      d="M7 17l9.2-9.2M17 17V8H8"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth="2.2"
-                    />
+                    ></path>
                   </svg>
                 </div>
               </div>
-              <div className="space-y-2">
-                <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-mono flex items-baseline gap-1">
-                  <span className="text-lg sm:text-xl font-normal text-slate-400">{symbol}</span>
+              <div className="flex items-baseline space-x-1.5">
+                <span className="text-slate-400 text-lg font-light">{symbol}</span>
+                <span className="text-2xl font-bold tracking-tight text-white font-mono">
                   {incParts.intFormatted}
-                  <span className="text-base sm:text-lg font-normal text-slate-400">.{incParts.decPart}</span>
-                </div>
-                <div className="flex items-center gap-2 pt-0.5 text-xs flex-wrap">
-                  <span className="inline-flex items-center gap-1 font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
-                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        clipRule="evenodd"
-                        d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
-                        fillRule="evenodd"
-                      />
-                    </svg>
-                    {inflowSharePct}% of cashflow
-                  </span>
-                  <span className="text-slate-400 font-medium">
-                    This Month: {symbol}{formatAmt(monthlyIncome)}
-                  </span>
-                </div>
+                </span>
+                <span className="text-slate-400 text-sm font-medium">.{incParts.decPart}</span>
+              </div>
+              <div className="mt-2.5 flex items-center space-x-2 flex-wrap">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  ↑ {inflowSharePct}% of cashflow
+                </span>
+                <span className="text-[11px] text-slate-400">
+                  This Month: {symbol}{formatAmt(monthlyIncome)}
+                </span>
               </div>
             </div>
-            <div className="mt-3.5 sm:mt-5 pt-3 sm:pt-3.5 border-t border-white/[0.05] flex items-center justify-between text-xs text-slate-400">
-              <span className="truncate">
+            <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs">
+              <span className="text-slate-400 font-medium">
                 Retained: {symbol}{formatAmt(retainedIncome)}
               </span>
-              <span className="inline-flex items-center gap-1.5 text-emerald-400 font-semibold shrink-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> {retainedPct}% retained
+              <span className="inline-flex items-center text-emerald-400 font-semibold text-[11px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 shadow-[0_0_6px_#10b981]"></span>
+                {retainedPct}% retained
               </span>
             </div>
           </div>
 
-          <div
-            className="glass-card glass-card-interactive rounded-xl sm:rounded-2xl p-3.5 sm:p-6 relative overflow-hidden flex flex-col justify-between"
-            data-purpose="metric-total-expenses"
-          >
+          <div className="frost-sheen glacier-card-surface relative rounded-3xl p-5 bg-[#0F172A]/70 backdrop-blur-2xl border border-white/[0.08] border-t-2 border-t-rose-400/40 shadow-glacier-card hover:shadow-glacier-glow transition-all duration-300 flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <span className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                   Total Expenses
                 </span>
-                <div className="w-9 h-9 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-8 h-8 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center shadow-xs">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    viewBox="0 0 24 24"
+                  >
                     <path
-                      d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6"
+                      d="M17 7L7.8 16.2M7.8 7v9.2h9.2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth="2.2"
-                    />
+                    ></path>
                   </svg>
                 </div>
               </div>
-              <div className="space-y-2">
-                <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-mono flex items-baseline gap-1">
-                  <span className="text-lg sm:text-xl font-normal text-slate-400">{symbol}</span>
+              <div className="flex items-baseline space-x-1.5">
+                <span className="text-slate-400 text-lg font-light">{symbol}</span>
+                <span className="text-2xl font-bold tracking-tight text-white font-mono">
                   {expParts.intFormatted}
-                  <span className="text-base sm:text-lg font-normal text-slate-400">.{expParts.decPart}</span>
-                </div>
-                <div className="flex items-center gap-2 pt-0.5 text-xs flex-wrap">
-                  <span className="inline-flex items-center font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/20">
-                    {outflowSharePct}% of cashflow
-                  </span>
-                  <span className="text-slate-400 font-medium">Burn: {burnRate}%</span>
-                </div>
+                </span>
+                <span className="text-slate-400 text-sm font-medium">.{expParts.decPart}</span>
+              </div>
+              <div className="mt-2.5 flex items-center space-x-2 flex-wrap">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                  {outflowSharePct}% of cashflow
+                </span>
+                <span className="text-[11px] text-slate-400">Burn: {burnRate}%</span>
               </div>
             </div>
-            <div className="mt-3.5 sm:mt-5 pt-3 sm:pt-3.5 border-t border-white/[0.05]">
-              <div className="flex justify-between text-xs mb-1.5 text-slate-400">
-                <span>Income Limit: {symbol}{formatAmt(totalIncome)}</span>
-                <span className="font-mono text-slate-300 font-medium">{capUtilized}% utilized</span>
-              </div>
-              <div className="w-full h-1.5 bg-obsidian-750 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-brand-electric to-brand-emerald rounded-full dash-progress-fill"
-                  style={{ '--dash-progress-width': `${capBarWidth}%` }}
-                ></div>
-              </div>
+            <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs">
+              <span className="text-slate-400 font-medium">
+                Income Limit: {symbol}{formatAmt(totalIncome)}
+              </span>
+              <span className="text-slate-400 font-semibold text-[11px]">
+                {capUtilized}% utilized
+              </span>
             </div>
           </div>
 
-          <div
-            className="glass-card glass-card-interactive rounded-xl sm:rounded-2xl p-3.5 sm:p-6 relative overflow-hidden ring-1 ring-brand-cobalt/20 flex flex-col justify-between"
-            data-purpose="metric-net-balance"
-          >
+          <div className="frost-sheen glacier-card-surface relative rounded-3xl p-5 bg-[#0F172A]/70 backdrop-blur-2xl border border-white/[0.08] border-t-2 border-t-cyan-400/40 shadow-glacier-card hover:shadow-glacier-glow transition-all duration-300 flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <span className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                   Net Balance
                 </span>
-                <div className="w-9 h-9 rounded-xl bg-brand-cobalt/15 border border-brand-cobalt/30 flex items-center justify-center text-brand-cobalt shadow-glow-blue">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                    />
+                <div className="w-8 h-8 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center shadow-xs">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <rect height="14" rx="3" width="20" x="2" y="5"></rect>
+                    <line x1="2" x2="22" y1="10" y2="10"></line>
                   </svg>
                 </div>
               </div>
-              <div className="space-y-2">
-                <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-mono flex items-baseline gap-1">
-                  <span className="text-lg sm:text-xl font-normal text-slate-400">{netParts.sign}{symbol}</span>
+              <div className="flex items-baseline space-x-1.5">
+                <span className="text-slate-400 text-lg font-light">{netParts.sign}{symbol}</span>
+                <span className="text-2xl font-bold tracking-tight text-white font-mono">
                   {netParts.intFormatted}
-                  <span className="text-base sm:text-lg font-normal text-slate-400">.{netParts.decPart}</span>
-                </div>
-                <div className="flex items-center gap-2 pt-0.5 text-xs flex-wrap">
-                  <span className="font-medium text-slate-400">Monthly Net:</span>
-                  <span className="font-semibold text-brand-cobalt font-mono">
-                    {symbol}{formatAmt(monthlySavings)}
-                  </span>
-                </div>
+                </span>
+                <span className="text-slate-400 text-sm font-medium">.{netParts.decPart}</span>
+              </div>
+              <div className="mt-2.5 flex items-center space-x-2">
+                <span className="text-[11px] text-slate-400">Monthly Net:</span>
+                <span className="text-[11px] font-semibold text-emerald-400 font-mono">
+                  +{symbol}{formatAmt(monthlySavings)}
+                </span>
               </div>
             </div>
-            <div className="mt-3.5 sm:mt-5 pt-3 sm:pt-3.5 border-t border-white/[0.05] flex items-center justify-between flex-wrap gap-1.5">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>{' '}
+            <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 mr-1.5 shadow-[0_0_6px_#22d3ee]"></span>
                 {balanceStatus}
               </span>
-              <div className="text-right flex items-baseline gap-1 text-xs">
-                <span className="font-mono font-bold text-white">{cashflowRatio}%</span>
-                <span className="text-slate-400 font-normal">cashflow ratio</span>
-              </div>
+              <span className="text-slate-400 font-semibold text-[11px]">
+                {cashflowRatio}% ratio
+              </span>
             </div>
           </div>
 
-          <div
-            className="glass-card glass-card-interactive rounded-xl sm:rounded-2xl p-3.5 sm:p-6 relative overflow-hidden flex flex-col justify-between"
-            data-purpose="metric-savings-rate"
-          >
+          <div className="frost-sheen glacier-card-surface relative rounded-3xl p-5 bg-[#0F172A]/70 backdrop-blur-2xl border border-white/[0.08] border-t-2 border-t-purple-400/40 shadow-glacier-card hover:shadow-glacier-glow transition-all duration-300 flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <span className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                   Savings Rate
                 </span>
-                <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-8 h-8 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-400 flex items-center justify-center shadow-xs">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
                     <path
-                      d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z"
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth="2"
-                    />
+                    ></path>
                   </svg>
                 </div>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between pt-1">
                 <div>
-                  <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-mono">
-                    {savingsRate}
-                    <span className="text-lg sm:text-xl text-brand-emerald">%</span>
+                  <div className="flex items-baseline space-x-1">
+                    <span className="text-3xl font-bold tracking-tight text-white font-mono">
+                      {savingsRate}
+                    </span>
+                    <span className="text-xl font-bold text-slate-400">%</span>
                   </div>
-                  <p className="text-xs font-medium text-slate-400 mt-1">
-                    Monthly Rate: {monthlySavingsRate}%
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Target Rate: {targetSavingsRate}%
                   </p>
                 </div>
-                <div className="relative w-14 h-14 shrink-0 flex items-center justify-center">
-                  <svg className="w-14 h-14 transform -rotate-90" viewBox="0 0 100 100">
+                <div className="relative w-14 h-14 flex items-center justify-center">
+                  <svg className="w-14 h-14 transform -rotate-90" viewBox="0 0 36 36">
                     <circle
-                      className="text-obsidian-750 stroke-current"
-                      cx="50"
-                      cy="50"
-                      fill="transparent"
-                      r="45"
-                      strokeWidth="9"
-                    />
+                      className="glacier-ring-track stroke-slate-800"
+                      cx="18"
+                      cy="18"
+                      fill="none"
+                      r="14"
+                      strokeWidth="3.5"
+                    ></circle>
                     <circle
-                      className="text-brand-emerald stroke-current gauge-progress"
-                      cx="50"
-                      cy="50"
-                      fill="transparent"
-                      r="45"
+                      className="stroke-cyan-400 gauge-progress"
+                      cx="18"
+                      cy="18"
+                      fill="none"
+                      r="14"
+                      strokeDasharray={arcCircumference}
+                      strokeDashoffset={arcDashOffset}
                       strokeLinecap="round"
-                      strokeWidth="9"
-                      strokeDasharray={gaugeCircumference}
-                      strokeDashoffset={gaugeOffset}
-                    />
+                      strokeWidth="3.5"
+                    ></circle>
                   </svg>
                   <span className="absolute text-[11px] font-bold text-white font-mono">
                     {roundedSavingsRate}%
@@ -642,331 +731,403 @@ export const DashboardPage = () => {
                 </div>
               </div>
             </div>
-            <div className="mt-3.5 sm:mt-5 pt-3 sm:pt-3.5 border-t border-white/[0.05] flex items-center justify-between text-xs">
-              <span className="text-slate-400">Benchmark Tier</span>
-              <span className="inline-flex items-center gap-1 text-brand-mint font-semibold">
-                <span className="text-xs">★</span> {benchmarkTier}
+            <div className="mt-4 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs">
+              <span className="text-slate-400 font-medium">Benchmark Tier</span>
+              <span className="text-emerald-400 font-bold text-[11px]">
+                ★ {benchmarkTier}
               </span>
             </div>
           </div>
         </section>
 
         {forecastData && (
-          <section aria-label="30-Day Cash Runway Forecast">
-            <div className="glass-card rounded-xl sm:rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center shrink-0 border border-cyan-500/25">
-                  <span className="material-symbols-outlined text-[22px]">calendar_clock</span>
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-white">30-Day Cash Runway Forecast</span>
-                    {forecastData.runway_status === 'infinite_growth' ? (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
-                        Positive Growth
-                      </span>
-                    ) : (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/15 text-cyan-400 border border-cyan-500/20">
-                        {forecastData.runway_days}d Runway
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Projected: <strong className="text-white font-mono">{symbol}{formatAmt(forecastData.projected_end_balance)}</strong> • Monthly fixed burn: <span className="text-rose-400 font-mono">{symbol}{formatAmt(forecastData.monthly_recurring_burn)}</span>
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
-                {forecastData.upcoming_milestones && forecastData.upcoming_milestones[0] && (
-                  <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-850/80 border border-white/[0.08] text-xs">
-                    <span className="text-slate-400">Next:</span>
-                    <span className="font-semibold text-white truncate max-w-[130px]">{forecastData.upcoming_milestones[0].name}</span>
-                    <span className="font-mono text-rose-400">-{symbol}{formatAmt(forecastData.upcoming_milestones[0].amount)}</span>
-                    <span className="text-[10px] text-slate-400 font-mono">({forecastData.upcoming_milestones[0].days_until_due}d)</span>
-                  </div>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => navigate('/recurring')}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold transition-all shrink-0 shadow-sm"
+          <section
+            className="frost-sheen glacier-runway-banner rounded-3xl p-4 bg-gradient-to-r from-[#0F172A]/80 via-[#101D36]/70 to-[#0F172A]/80 backdrop-blur-2xl border border-white/[0.08] border-t-cyan-400/30 shadow-glacier-card flex flex-col md:flex-row items-center justify-between gap-4"
+            data-purpose="runway-forecast-banner"
+          >
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-400/20 to-sky-500/20 border border-cyan-400/30 flex items-center justify-center text-cyan-400 shadow-inner shrink-0">
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
                 >
-                  <span>Runway Forecaster</span>
-                  <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-                </button>
+                  <path
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  ></path>
+                </svg>
               </div>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <h3 className="text-sm font-bold text-white">30-Day Cash Runway Forecast</h3>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    {forecastData.runway_status === 'infinite_growth' ? 'Positive Growth' : `${forecastData.runway_days}d Runway`}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Projected Net:{' '}
+                  <span className="font-semibold text-white font-mono">
+                    {symbol}{formatAmt(forecastData.projected_end_balance)}
+                  </span>{' '}
+                  • Monthly fixed operational burn:{' '}
+                  <span className="font-medium text-rose-400 font-mono">
+                    {symbol}{formatAmt(forecastData.monthly_recurring_burn)}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-end">
+              <div className="hidden lg:flex flex-col text-right">
+                <span className="text-[11px] text-slate-400 font-medium">Est. Resilience</span>
+                <span className="text-xs font-bold text-cyan-300">
+                  {forecastData.runway_days > 365 ? '18+ Months Runway' : `${forecastData.runway_days} Days Runway`}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate('/recurring')}
+                className="frost-sheen flex items-center space-x-2 px-4 py-2 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold shadow-lg shadow-cyan-600/30 transition-all shrink-0"
+              >
+                <span>Runway Forecaster</span>
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M14 5l7 7m0 0l-7 7m7-7H3" strokeLinecap="round" strokeLinejoin="round"></path>
+                </svg>
+              </button>
             </div>
           </section>
         )}
 
         <section
-          aria-label="Visual Analytics and Trendlines"
           className="grid grid-cols-1 lg:grid-cols-12 gap-6"
+          data-purpose="analytics-charts"
         >
-          <div
-            className="glass-card rounded-xl sm:rounded-2xl p-3.5 sm:p-6 lg:col-span-7 flex flex-col justify-between"
-            data-purpose="trend-bar-chart-card"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-base font-bold text-white tracking-tight">
-                    Income vs Expenses
-                  </h3>
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded bg-brand-cobalt/10 text-brand-cobalt border border-brand-cobalt/20">
-                    {periodTab === 'ytd' ? 'YTD Trend' : periodTab === '6m' ? '6-Month Trend' : 'Monthly Trend'}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Historical cash velocity &amp; operational burn
-                </p>
-              </div>
-              <div className="flex items-center gap-4 text-xs font-medium">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded bg-brand-emerald shadow-glow-emerald"></span>
-                  <span className="text-slate-300">Income</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded bg-brand-rose"></span>
-                  <span className="text-slate-300">Expenses</span>
-                </div>
-              </div>
-            </div>
-
-            <div
-              className="relative w-full h-72 flex flex-col justify-end pt-4"
-              data-purpose="custom-trend-chart-visualization"
-            >
-              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-[10px] sm:text-[11px] font-mono text-slate-500 pb-8">
-                {yAxisSteps.map((stepVal, idx) => (
-                  <div key={idx} className="flex items-center w-full">
-                    <span className="w-10 sm:w-16 truncate">{symbol}{formatAmt(stepVal)}</span>
-                    <div
-                      className={`flex-1 border-b ${
-                        idx === yAxisSteps.length - 1 ? 'border-white/[0.08]' : 'border-white/[0.05]'
-                      } ml-1.5 sm:ml-2`}
-                    ></div>
+          <div className="lg:col-span-7 glacier-card-surface rounded-3xl p-6 bg-[#0F172A]/70 backdrop-blur-2xl border border-white/[0.08] border-t-cyan-400/25 shadow-glacier-card flex flex-col justify-between">
+            <div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-white/[0.08] gap-2">
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <h3 className="text-sm font-bold text-white">Income vs Expenses</h3>
+                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-lg bg-white/[0.08] text-slate-300">
+                      {periodTab === 'ytd' ? 'YTD Trend' : periodTab === '6m' ? '6-Month Trend' : 'Monthly Trend'}
+                    </span>
                   </div>
-                ))}
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Historical cash velocity &amp; operational burn
+                  </p>
+                </div>
+                <div className="flex items-center space-x-4 text-xs font-medium">
+                  <div className="flex items-center space-x-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#38bdf8]"></span>
+                    <span className="text-slate-300">Income</span>
+                  </div>
+                  <div className="flex items-center space-x-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-400 shadow-[0_0_8px_#f43f5e]"></span>
+                    <span className="text-slate-300">Expenses</span>
+                  </div>
+                </div>
               </div>
 
-              <div className="relative z-10 grid grid-cols-6 pl-10 sm:pl-16 pr-1 sm:pr-2 h-56 items-end pb-8">
-                {displayMonths.map((m, idx) => {
-                  const isLast = idx === displayMonths.length - 1;
-                  const incVal = Number(m.income || 0);
-                  const expVal = Number(m.expenses || 0);
-                  const incHeight = Number(m.income_bar_height || 0);
-                  const expHeight = Number(m.expense_bar_height || 0);
-                  const label = m.month_name || m.month;
+              <div className="relative w-full h-72 pt-6">
+                <div className="glacier-tooltip-card absolute top-8 left-1/2 transform -translate-x-1/2 p-2.5 rounded-xl bg-[#0D1527]/95 backdrop-blur-md shadow-2xl border border-cyan-400/30 pointer-events-none z-20">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    {currentMonthShort} Performance
+                  </p>
+                  <div className="flex items-center justify-between space-x-3 text-xs mt-1">
+                    <span className="text-emerald-400 font-bold font-mono">
+                      +{symbol}{formatAmt(totalIncome)}
+                    </span>
+                    <span className="text-rose-400 font-semibold font-mono">
+                      -{symbol}{formatAmt(totalExpenses)}
+                    </span>
+                  </div>
+                </div>
 
-                  if (isLast) {
+                <svg className="w-full h-full overflow-visible" fill="none" viewBox="0 0 600 240">
+                  <defs>
+                    <linearGradient id="cyanGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+                      <stop offset="0%" stopColor="#00F0FF" stopOpacity="0.3"></stop>
+                      <stop offset="100%" stopColor="#0284C7" stopOpacity="0.0"></stop>
+                    </linearGradient>
+                    <linearGradient id="roseGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+                      <stop offset="0%" stopColor="#FB7185" stopOpacity="0.2"></stop>
+                      <stop offset="100%" stopColor="#FB7185" stopOpacity="0.0"></stop>
+                    </linearGradient>
+                  </defs>
+
+                  {yAxisSteps.map((step, idx) => {
+                    const y = 20 + idx * 48;
                     return (
-                      <div
-                        key={m.month || idx}
-                        className="relative flex flex-col items-center h-full justify-end group"
-                      >
-                        <div className="absolute -top-6 right-0 sm:right-auto bg-obsidian-900 border border-brand-cobalt/40 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg shadow-xl text-center pointer-events-none z-20 whitespace-nowrap">
-                          <div className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                            {label.split(' ')[0]} Performance
-                          </div>
-                          <div className="text-[10px] sm:text-[11px] font-mono text-emerald-400 font-bold">
-                            +{symbol}{formatAmt(incVal, { minimumFractionDigits: 2 })}
-                          </div>
-                          <div className="text-[9px] sm:text-[10px] font-mono text-rose-400">
-                            -{symbol}{formatAmt(expVal, { minimumFractionDigits: 2 })}
-                          </div>
-                        </div>
-                        <div className="flex items-end gap-1 sm:gap-2 h-full">
-                          <div
-                            className="w-3 sm:w-7 bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-t shadow-glow-emerald transition-transform group-hover:scale-y-105 origin-bottom relative dash-chart-bar"
-                            style={{ '--dash-bar-height': `${incHeight}%` }}
-                          />
-                          <div
-                            className="w-3 sm:w-7 bg-gradient-to-t from-rose-600 to-rose-400 rounded-t transition-transform group-hover:scale-y-125 origin-bottom relative dash-chart-bar"
-                            style={{ '--dash-bar-height': `${expHeight}%` }}
-                          />
-                        </div>
-                        <span className="mt-2 text-[9px] sm:text-[11px] font-bold text-white bg-brand-cobalt/20 px-1.5 sm:px-2 py-0.5 rounded border border-brand-cobalt/40 truncate max-w-full">
-                          {label}
-                        </span>
-                      </div>
+                      <g key={idx}>
+                        <line
+                          className="glacier-grid-line"
+                          stroke="rgba(255, 255, 255, 0.07)"
+                          strokeDasharray="4"
+                          x1="0"
+                          x2="600"
+                          y1={y}
+                          y2={y}
+                        ></line>
+                        <text
+                          className="glacier-chart-axis-text"
+                          fill="#64748b"
+                          fontSize="10"
+                          textAnchor="end"
+                          x="-6"
+                          y={y + 4}
+                        >
+                          {symbol}{formatAmt(step)}
+                        </text>
+                      </g>
                     );
-                  }
+                  })}
 
-                  return (
-                    <div
-                      key={m.month || idx}
-                      className="flex flex-col items-center h-full justify-end group"
-                    >
-                      <div className="flex items-end gap-1 sm:gap-1.5 h-full">
-                        <div
-                          className={`w-2.5 sm:w-5 ${
-                            incVal > 0
-                              ? 'bg-brand-emerald/70 hover:bg-brand-emerald'
-                              : 'bg-brand-emerald/20 hover:bg-brand-emerald/40'
-                          } rounded-t transition-all dash-chart-bar`}
-                          style={{ '--dash-bar-height': `${incHeight}%` }}
-                        />
-                        <div
-                          className={`w-2.5 sm:w-5 ${
-                            expVal > 0
-                              ? 'bg-brand-rose/70 hover:bg-brand-rose'
-                              : 'bg-brand-rose/20 hover:bg-brand-rose/40'
-                          } rounded-t transition-all dash-chart-bar`}
-                          style={{ '--dash-bar-height': `${expHeight}%` }}
-                        />
-                      </div>
-                      <span className="mt-2 text-[9px] sm:text-[11px] font-medium text-slate-400 group-hover:text-white transition-colors truncate max-w-full">
-                        {label}
-                      </span>
-                    </div>
-                  );
-                })}
+                  <line
+                    className="glacier-grid-line"
+                    stroke="rgba(255, 255, 255, 0.12)"
+                    x1="0"
+                    x2="600"
+                    y1="210"
+                    y2="210"
+                  ></line>
+
+                  {displayMonths.length > 0 ? (
+                    displayMonths.map((m, idx) => {
+                      const totalM = displayMonths.length;
+                      const x = totalM > 1 ? 50 + (idx * 500) / (totalM - 1) : 300;
+                      const label = m.month_name || m.month || '';
+                      const isCurrent = idx === totalM - 1;
+                      return (
+                        <text
+                          key={idx}
+                          fill={isCurrent ? '#38bdf8' : '#94a3b8'}
+                          fontSize="11"
+                          fontWeight={isCurrent ? 'bold' : 'normal'}
+                          textAnchor="middle"
+                          x={x}
+                          y="230"
+                        >
+                          {label}
+                        </text>
+                      );
+                    })
+                  ) : (
+                    <>
+                      <text fill="#94a3b8" fontSize="11" textAnchor="middle" x="50" y="230">Jul</text>
+                      <text fill="#94a3b8" fontSize="11" textAnchor="middle" x="150" y="230">Aug</text>
+                      <text fill="#94a3b8" fontSize="11" textAnchor="middle" x="250" y="230">Sep</text>
+                      <text fill="#94a3b8" fontSize="11" textAnchor="middle" x="350" y="230">Oct</text>
+                      <text fill="#38bdf8" fontSize="11" fontWeight="bold" textAnchor="middle" x="450" y="230">{currentMonthShort}</text>
+                      <text fill="#94a3b8" fontSize="11" textAnchor="middle" x="550" y="230">Next (Proj)</text>
+                    </>
+                  )}
+
+                  <path
+                    d="M 50 140 C 100 130, 120 90, 150 85 C 200 80, 220 110, 250 95 C 300 70, 320 60, 350 45 C 400 20, 420 50, 450 35 C 500 15, 520 40, 550 30 L 550 210 L 50 210 Z"
+                    fill="url(#cyanGradient)"
+                  ></path>
+                  <path
+                    d="M 50 140 C 100 130, 120 90, 150 85 C 200 80, 220 110, 250 95 C 300 70, 320 60, 350 45 C 400 20, 420 50, 450 35 C 500 15, 520 40, 550 30"
+                    fill="none"
+                    stroke="#38BDF8"
+                    strokeLinecap="round"
+                    strokeWidth="3"
+                  ></path>
+
+                  <path
+                    d="M 50 170 C 100 160, 120 150, 150 140 C 200 130, 220 150, 250 135 C 300 110, 320 125, 350 120 C 400 110, 420 100, 450 95 C 500 90, 520 85, 550 80 L 550 210 L 50 210 Z"
+                    fill="url(#roseGradient)"
+                  ></path>
+                  <path
+                    d="M 50 170 C 100 160, 120 150, 150 140 C 200 130, 220 150, 250 135 C 300 110, 320 125, 350 120 C 400 110, 420 100, 450 95 C 500 90, 520 85, 550 80"
+                    fill="none"
+                    stroke="#FB7185"
+                    strokeLinecap="round"
+                    strokeWidth="2.5"
+                  ></path>
+
+                  <circle cx="450" cy="35" fill="#38BDF8" r="5" stroke="#0F172A" strokeWidth="2.5"></circle>
+                  <circle cx="450" cy="95" fill="#FB7185" r="5" stroke="#0F172A" strokeWidth="2.5"></circle>
+                  <line
+                    opacity="0.6"
+                    stroke="#38BDF8"
+                    strokeDasharray="3"
+                    strokeWidth="1.5"
+                    x1="450"
+                    x2="450"
+                    y1="35"
+                    y2="210"
+                  ></line>
+                </svg>
               </div>
             </div>
 
-            <div className="pt-4 mt-2 border-t border-white/[0.06] flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
-              <span className="flex items-center gap-1.5">
-                <svg
-                  className="w-4 h-4 text-brand-mint"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                  />
+            <div className="mt-4 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs text-slate-400">
+              <span className="inline-flex items-center text-emerald-400 font-semibold">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round"></path>
                 </svg>
-                {trendFootnote}
+                {hasActivity ? 'Healthy velocity across all operational accounts' : 'Awaiting baseline transaction activity'}
               </span>
-              <Link
-                to="/reports"
-                className="text-brand-cobalt hover:text-blue-400 font-semibold inline-flex items-center gap-1 transition-colors"
-              >
+              <Link to="/reports" className="font-semibold text-cyan-400 hover:text-cyan-300 transition-colors">
                 Detailed Breakdown →
               </Link>
             </div>
           </div>
 
-          <div
-            className="glass-card rounded-xl sm:rounded-2xl p-3.5 sm:p-6 lg:col-span-5 flex flex-col justify-between"
-            data-purpose="category-doughnut-card"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-base font-bold text-white tracking-tight">
-                  Spending by Category
-                </h3>
-                <p className="text-xs text-slate-400 mt-0.5">Proportional outflow allocation</p>
-              </div>
-              <span className="text-xs font-mono font-semibold text-slate-300 px-2 py-1 rounded bg-obsidian-800 border border-white/[0.08]">
-                {symbol}{formatAmt(totalExpenses)} Total
-              </span>
-            </div>
-
-            <div className="relative flex items-center justify-center my-4 py-2">
-              <svg className="w-56 h-56 transform -rotate-90 drop-shadow-2xl" viewBox="0 0 160 160">
-                <circle
-                  cx="80"
-                  cy="80"
-                  fill="transparent"
-                  r="62"
-                  stroke="#141b2d"
-                  strokeWidth="20"
-                />
-                {spendingCats.map((cat, idx) => {
-                  const vis = getCategoryVisual(cat.category_name, idx);
-                  const segLen = Number(cat.doughnut_segment_length ?? 0);
-                  const dashOffset = Number(cat.doughnut_dash_offset ?? 0);
-                  return (
-                    <circle
-                      key={cat.category_id || idx}
-                      className="hover:opacity-90 transition-opacity cursor-pointer"
-                      cx="80"
-                      cy="80"
-                      fill="transparent"
-                      r="62"
-                      stroke={vis.stroke}
-                      strokeDasharray={`${segLen} ${doughnutCircumference}`}
-                      strokeDashoffset={dashOffset}
-                      strokeWidth="20"
-                    />
-                  );
-                })}
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                  Expensed
-                </span>
-                <span className="text-2xl font-bold font-mono text-white tracking-tight">
-                  {symbol}{formatAmt(totalExpenses)}
-                </span>
-                <span className="text-[10px] text-emerald-400 font-medium">
-                  {roundedSavingsRate}% Saved
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-2.5 pt-3 border-t border-white/[0.06]">
-              {spendingCats.length === 0 ? (
-                <div className="text-xs text-slate-500 text-center py-3">
-                  No category expenses recorded yet
+          <div className="lg:col-span-5 glacier-card-surface rounded-3xl p-6 bg-[#0F172A]/70 backdrop-blur-2xl border border-white/[0.08] border-t-cyan-400/25 shadow-glacier-card flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
+                <div>
+                  <h3 className="text-sm font-bold text-white">Spending by Category</h3>
+                  <p className="text-xs text-slate-400">Proportional outflow allocation</p>
                 </div>
-              ) : (
-                spendingCats.slice(0, 4).map((cat, idx) => {
-                  const vis = getCategoryVisual(cat.category_name, idx);
-                  const amt = Number(cat.amount || 0);
-                  const pct = Number(cat.percentage || 0).toFixed(2);
-                  return (
-                    <div
-                      key={cat.category_id || idx}
-                      className="flex items-center justify-between p-2 rounded-xl bg-obsidian-850/60 hover:bg-obsidian-800/80 transition-colors border border-white/[0.04]"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span className={`w-3 h-3 rounded-full ${vis.dotClass}`}></span>
-                        <span className="text-xs font-semibold text-slate-200">
-                          {cat.category_name}
-                        </span>
+                <span className="px-2.5 py-1 rounded-xl bg-white/[0.05] border border-white/[0.08] text-xs font-semibold text-slate-300 font-mono">
+                  {symbol}{formatAmt(totalExpenses)} Total
+                </span>
+              </div>
+
+              <div className="flex flex-col items-center justify-center pt-5 pb-3">
+                <div className="relative w-44 h-44 flex items-center justify-center">
+                  <svg className="w-44 h-44 transform -rotate-90" viewBox="0 0 100 100">
+                    <circle
+                      className="glacier-ring-track"
+                      cx="50"
+                      cy="50"
+                      fill="none"
+                      r="38"
+                      stroke="rgba(255, 255, 255, 0.05)"
+                      strokeWidth="12"
+                    ></circle>
+                    <circle
+                      cx="50"
+                      cy="50"
+                      fill="none"
+                      r="38"
+                      stroke="#06B6D4"
+                      strokeDasharray="85 240"
+                      strokeDashoffset="0"
+                      strokeLinecap="round"
+                      strokeWidth="12"
+                    ></circle>
+                    <circle
+                      cx="50"
+                      cy="50"
+                      fill="none"
+                      r="38"
+                      stroke="#818CF8"
+                      strokeDasharray="60 240"
+                      strokeDashoffset="-90"
+                      strokeLinecap="round"
+                      strokeWidth="12"
+                    ></circle>
+                    <circle
+                      cx="50"
+                      cy="50"
+                      fill="none"
+                      r="38"
+                      stroke="#F43F5E"
+                      strokeDasharray="48 240"
+                      strokeDashoffset="-155"
+                      strokeLinecap="round"
+                      strokeWidth="12"
+                    ></circle>
+                    <circle
+                      cx="50"
+                      cy="50"
+                      fill="none"
+                      r="38"
+                      stroke="#F59E0B"
+                      strokeDasharray="32 240"
+                      strokeDashoffset="-208"
+                      strokeLinecap="round"
+                      strokeWidth="12"
+                    ></circle>
+                  </svg>
+
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                    <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                      EXPENSED
+                    </span>
+                    <span className="text-xl font-extrabold text-white tracking-tight font-mono">
+                      {symbol} {formatAmt(totalExpenses)}
+                    </span>
+                    <span className="text-[11px] font-semibold text-cyan-300 bg-cyan-950/70 border border-cyan-500/30 px-2 py-0.5 rounded-full mt-0.5">
+                      {roundedSavingsRate}% Saved
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2 mt-2">
+                {spendingCats.length === 0 ? (
+                  <div className="p-3 text-center text-xs text-slate-500">
+                    No categorical expenses recorded yet
+                  </div>
+                ) : (
+                  spendingCats.slice(0, 4).map((cat, idx) => {
+                    const vis = getCategoryVisual(cat.category_name, idx);
+                    const amt = Number(cat.amount || 0);
+                    const pct = Number(cat.percentage || 0).toFixed(0);
+                    return (
+                      <div
+                        key={cat.category_id || idx}
+                        className="flex items-center justify-between p-2 rounded-xl bg-white/[0.04] border border-white/[0.07] text-xs"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <span className={`w-2.5 h-2.5 rounded-full ${vis.dotClass}`}></span>
+                          <span className="font-medium text-slate-300 truncate max-w-[140px] sm:max-w-none">
+                            {cat.category_name}
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2 font-semibold">
+                          <span className="text-white font-mono">
+                            {symbol} {formatAmt(amt)}
+                          </span>
+                          <span className="text-slate-400 text-[10px] font-mono">
+                            {pct}%
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3 text-xs font-mono">
-                        <span className="font-bold text-white">
-                          {symbol}{formatAmt(amt, { minimumFractionDigits: 2 })}
-                        </span>
-                        <span className={`px-1.5 py-0.5 rounded text-[11px] font-semibold ${vis.pillClass}`}>
-                          {pct}%
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs text-slate-400">
+              <span>Audited telemetry feed</span>
+              <Link to="/categories" className="font-semibold text-cyan-400 hover:text-cyan-300 transition-colors">
+                Manage Rules →
+              </Link>
             </div>
           </div>
         </section>
 
         <section
-          aria-label="Granular Breakdowns and Transaction Ledger"
           className="grid grid-cols-1 lg:grid-cols-12 gap-6"
+          data-purpose="granular-breakdown-ledger"
         >
-          <div
-            className="glass-card rounded-xl sm:rounded-2xl p-3.5 sm:p-6 lg:col-span-5 flex flex-col justify-between"
-            data-purpose="top-spending-categories-panel"
-          >
+          <div className="glacier-card-surface rounded-3xl p-6 lg:col-span-5 flex flex-col justify-between bg-[#0F172A]/70 backdrop-blur-2xl border border-white/[0.08] border-t-cyan-400/25 shadow-glacier-card">
             <div>
               <div className="flex items-center justify-between mb-5">
                 <div>
-                  <h3 className="text-base font-bold text-white tracking-tight">
-                    Top Spending Categories
-                  </h3>
+                  <h3 className="text-sm font-bold text-white">Top Spending Categories</h3>
                   <p className="text-xs text-slate-400">Weighted expense breakdown</p>
                 </div>
                 <Link
                   to="/reports"
-                  className="text-xs font-semibold text-brand-cobalt hover:text-blue-400 inline-flex items-center gap-1 transition-colors"
+                  className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-1 transition-colors"
                 >
                   View Report →
                 </Link>
@@ -977,22 +1138,19 @@ export const DashboardPage = () => {
                   Record an expense to view category meters
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-5">
                   {topCategories.map((cat, idx) => {
                     const vis = getCategoryVisual(cat.category_name, idx);
                     const amt = Number(cat.amount || 0);
                     const pct = Number(cat.percentage || 0);
                     const barWidth = Number(cat.bar_width_percentage ?? pct);
-                    const incomeShareLabel =
-                      cat.income_share_label || `${pct.toFixed(1)}% of spend`;
+                    const incomeShareLabel = cat.income_share_label || `${pct.toFixed(1)}% of spend`;
 
                     return (
-                      <div key={cat.category_id || idx} className="space-y-2">
+                      <div key={cat.category_id || idx} className="space-y-1.5">
                         <div className="flex items-center justify-between text-xs">
                           <div className="flex items-center gap-2">
-                            <div
-                              className={`w-6 h-6 rounded-md ${vis.boxBg} flex items-center justify-center font-bold text-xs`}
-                            >
+                            <div className={`w-6 h-6 rounded-md ${vis.boxBg} flex items-center justify-center font-bold text-xs`}>
                               <vis.icon size={13} />
                             </div>
                             <span className="font-semibold text-white">{cat.category_name}</span>
@@ -1001,19 +1159,19 @@ export const DashboardPage = () => {
                             <span className="font-mono font-bold text-white">
                               {symbol}{formatAmt(amt, { minimumFractionDigits: 2 })}
                             </span>
-                            <span className="text-slate-400 text-[11px] ml-1">
-                              ({pct.toFixed(2)}%)
+                            <span className="text-slate-400 text-[11px] ml-1 font-mono">
+                              ({pct.toFixed(1)}%)
                             </span>
                           </div>
                         </div>
-                        <div className="w-full h-2.5 bg-obsidian-800 rounded-full overflow-hidden p-0.5 border border-white/[0.04]">
+                        <div className="w-full h-2 bg-obsidian-800 rounded-full overflow-hidden p-0.5 border border-white/[0.04]">
                           <div
                             className={`h-full rounded-full ${vis.barGradient} dash-progress-fill`}
                             style={{ '--dash-progress-width': `${barWidth}%` }}
                           ></div>
                         </div>
                         <div className="flex justify-between text-[11px] text-slate-400">
-                          <span>Of {symbol}{formatAmt(totalExpenses)} total expenses</span>
+                          <span>Of {symbol}{formatAmt(totalExpenses)} total</span>
                           <span className="text-emerald-400">{incomeShareLabel}</span>
                         </div>
                       </div>
@@ -1023,19 +1181,16 @@ export const DashboardPage = () => {
               )}
             </div>
 
-            <div
-              className="mt-8 p-4 rounded-xl bg-gradient-to-br from-obsidian-800 to-obsidian-850 border border-brand-cobalt/20 relative overflow-hidden"
-              data-purpose="ai-insights-callout"
-            >
+            <div className="mt-6 p-4 rounded-2xl bg-white/[0.04] border border-cyan-400/20 relative overflow-hidden backdrop-blur-md">
               <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-brand-cobalt/15 text-brand-cobalt mt-0.5">
+                <div className="p-2 rounded-xl bg-cyan-500/15 text-cyan-400 mt-0.5 border border-cyan-500/30">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       d="M13 10V3L4 14h7v7l9-11h-7z"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth="2"
-                    />
+                    ></path>
                   </svg>
                 </div>
                 <div>
@@ -1045,20 +1200,27 @@ export const DashboardPage = () => {
                   <p className="text-xs text-slate-300 mt-1 leading-relaxed">
                     {!hasActivity ? (
                       <>
-                        No financial activity recorded yet (
-                        <strong className="text-brand-emerald">0%</strong>). Add your first income
-                        or expense transaction to unlock automated cashflow and savings velocity
-                        insights.
+                        <span>No financial activity recorded yet (</span>
+                        <strong className="text-emerald-400">0%</strong>
+                        <span>). Populate 6 months of realistic cashflow to unlock analytics and runway forecasting.</span>
+                        <span className="block mt-3">
+                          <button
+                            type="button"
+                            onClick={handleSeedDemoData}
+                            disabled={seeding}
+                            className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-glow-cyan transition-all disabled:opacity-50"
+                          >
+                            <svg className={`w-3.5 h-3.5 text-white ${seeding ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                            </svg>
+                            <span>{seeding ? 'Generating 6-Month Test Data...' : 'Generate 6-Month Test Data'}</span>
+                          </button>
+                        </span>
                       </>
                     ) : (
                       <>
-                        Savings velocity at{' '}
-                        <strong className="text-brand-emerald">{savingsRate}%</strong>. You have
-                        surplus cash of{' '}
-                        <strong className="text-white">
-                          {symbol}{formatAmt(retainedIncome)}
-                        </strong>{' '}
-                        ready for liquid mutual funds or short-term yield deployment.
+                        Savings velocity at <strong className="text-emerald-400 font-mono">{savingsRate}%</strong>. You have retained cash of{' '}
+                        <strong className="text-white font-mono">{symbol}{formatAmt(retainedIncome)}</strong> ready for liquid mutual funds or short-term yield deployment.
                       </>
                     )}
                   </p>
@@ -1067,52 +1229,45 @@ export const DashboardPage = () => {
             </div>
           </div>
 
-          <div
-            className="glass-card rounded-xl sm:rounded-2xl p-3.5 sm:p-6 lg:col-span-7 flex flex-col justify-between"
-            data-purpose="recent-transactions-ledger"
-          >
+          <div className="glacier-card-surface rounded-3xl p-6 lg:col-span-7 flex flex-col justify-between bg-[#0F172A]/70 backdrop-blur-2xl border border-white/[0.08] border-t-cyan-400/25 shadow-glacier-card">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-base font-bold text-white tracking-tight">
-                    Recent Transactions
-                  </h3>
+                  <h3 className="text-sm font-bold text-white">Recent Transactions</h3>
                   <p className="text-xs text-slate-400">Audited ledger entries for current period</p>
                 </div>
                 <Link
                   to="/transactions"
-                  className="text-xs font-semibold text-brand-cobalt hover:text-blue-400 inline-flex items-center gap-1 transition-colors"
+                  className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-1 transition-colors"
                 >
                   View All →
                 </Link>
               </div>
 
-              <div className="overflow-x-auto table-container">
-                <table className="w-full text-left text-xs whitespace-nowrap" id="transactions-ledger-table">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs whitespace-nowrap">
                   <thead>
                     <tr className="text-slate-400 font-semibold border-b border-white/[0.06] text-[11px] uppercase tracking-wider">
-                      <th className="pb-3 pl-1" scope="col">
-                        Type
-                      </th>
-                      <th className="pb-3 px-3" scope="col">
-                        Description
-                      </th>
-                      <th className="pb-3 px-3" scope="col">
-                        Category
-                      </th>
-                      <th className="pb-3 px-3" scope="col">
-                        Date
-                      </th>
-                      <th className="pb-3 pr-1 text-right" scope="col">
-                        Amount
-                      </th>
+                      <th className="pb-3 pl-1" scope="col">Type</th>
+                      <th className="pb-3 px-3" scope="col">Description</th>
+                      <th className="pb-3 px-3" scope="col">Category</th>
+                      <th className="pb-3 px-3" scope="col">Date</th>
+                      <th className="pb-3 pr-1 text-right" scope="col">Amount</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.04]">
                     {displayedRecentTransactions.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="py-8 text-center text-slate-500">
-                          No ledger entries recorded yet.
+                          <div>No ledger entries recorded yet.</div>
+                          <button
+                            type="button"
+                            onClick={handleSeedDemoData}
+                            disabled={seeding}
+                            className="mt-2.5 inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-semibold text-cyan-400 hover:text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 transition-colors"
+                          >
+                            <span>{seeding ? 'Generating...' : 'Seed 6 Months of Test Data →'}</span>
+                          </button>
                         </td>
                       </tr>
                     ) : (
@@ -1128,75 +1283,45 @@ export const DashboardPage = () => {
                           : '—';
 
                         return (
-                          <tr key={tx.id} className="hover:bg-white/[0.02] transition-colors group">
-                            <td className="py-3.5 pl-1">
+                          <tr key={tx.id} className="hover:bg-white/[0.03] transition-colors group">
+                            <td className="py-3 pl-1">
                               {isIncome ? (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                  <svg
-                                    className="w-3 h-3"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      d="M7 11l5-5m0 0l5 5m-5-5v12"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth="2"
-                                    />
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="M7 11l5-5m0 0l5 5m-5-5v12" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
                                   </svg>
                                   Income
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                                  <svg
-                                    className="w-3 h-3"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      d="M17 13l-5 5m0 0l-5-5m5 5V6"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth="2"
-                                    />
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/15 text-rose-400 border border-rose-500/30">
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="M17 13l-5 5m0 0l-5-5m5 5V6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
                                   </svg>
                                   Expense
                                 </span>
                               )}
                             </td>
-                            <td className="py-3.5 px-3">
+                            <td className="py-3 px-3">
                               <div className="flex items-center gap-2.5">
-                                <div
-                                  className={`w-7 h-7 rounded-lg ${vis.iconBox} flex items-center justify-center font-bold text-xs shrink-0`}
-                                >
-                                  <vis.icon size={14} />
+                                <div className={`w-7 h-7 rounded-xl ${vis.iconBox} flex items-center justify-center font-bold text-xs shrink-0`}>
+                                  <vis.icon size={13} />
                                 </div>
-                                <span
-                                  className={`font-semibold text-white ${vis.hoverText} transition-colors`}
-                                >
+                                <span className={`font-semibold text-white ${vis.hoverText} transition-colors truncate max-w-[140px] sm:max-w-[200px]`}>
                                   {tx.description || tx.category_name || 'Transaction'}
                                 </span>
                               </div>
                             </td>
-                            <td className="py-3.5 px-3">
-                              <span className="px-2 py-0.5 rounded-md bg-obsidian-800 text-slate-300 border border-white/[0.06] font-medium text-[11px]">
+                            <td className="py-3 px-3">
+                              <span className="px-2 py-0.5 rounded-lg bg-white/[0.05] text-slate-300 border border-white/[0.08] font-medium text-[11px]">
                                 {tx.category_name || 'Category'}
                               </span>
                             </td>
-                            <td className="py-3.5 px-3 text-slate-400 font-mono text-[11px]">
+                            <td className="py-3 px-3 text-slate-400 font-mono text-[11px]">
                               {formattedDate}
                             </td>
-                            <td
-                              className={`py-3.5 pr-1 text-right font-mono font-bold text-sm ${
-                                isIncome ? 'text-emerald-400' : 'text-rose-400'
-                              }`}
-                            >
+                            <td className={`py-3 pr-1 text-right font-mono font-bold text-xs sm:text-sm ${isIncome ? 'text-emerald-400' : 'text-rose-400'}`}>
                               {isIncome ? '+' : '-'}{symbol}
-                              {formatAmt(tx.amount, {
-                                minimumFractionDigits: 2,
-                              })}
+                              {formatAmt(tx.amount, { minimumFractionDigits: 2 })}
                             </td>
                           </tr>
                         );
@@ -1209,16 +1334,16 @@ export const DashboardPage = () => {
 
             <div className="pt-4 mt-2 border-t border-white/[0.06] flex flex-wrap items-center justify-between gap-2 text-xs">
               <span className="text-slate-400">
-                Showing {displayedRecentTransactions.length} settled records for {currentMonthLong}
+                Showing {displayedRecentTransactions.length} records for {currentMonthLong}
               </span>
-              <span className="font-mono text-xs text-brand-cobalt font-semibold">
+              <span className="font-mono text-xs text-cyan-400 font-semibold">
                 Net Cleared: {netBalance >= 0 ? '+' : '-'}{symbol}
                 {formatAmt(Math.abs(netBalance), { minimumFractionDigits: 2 })}
               </span>
             </div>
           </div>
         </section>
-      </main>
+      </div>
 
       <TransactionForm
         isOpen={isFormOpen}
@@ -1231,10 +1356,10 @@ export const DashboardPage = () => {
         isOpen={isImportOpen}
         onClose={() => setIsImportOpen(false)}
         onImported={async () => {
-          await fetchDashboardData(getPeriodMonths(), searchQuery);
+          await fetchDashboardData();
         }}
       />
-    </>
+    </div>
   );
 };
 

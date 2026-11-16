@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.models.category import Category
 from app.models.stream import StreamBook, StreamEntry
 from app.models.transaction import Transaction
+from app.services.category import seed_default_categories
 from app.schemas.transaction import (
     FileImportSummary,
     TransactionCreate,
@@ -2001,3 +2002,55 @@ def get_import_template_pdf() -> bytes:
         )
     )
     return bytes(pdf_out)
+
+def seed_user_demo_transactions(db: Session, user_id: int, months: int = 6) -> int:
+    seed_default_categories(db)
+    book = get_or_create_default_user_book(db, user_id)
+    cats = db.query(Category).filter(or_(Category.is_system == True, Category.user_id == user_id)).all()
+    cat_map = {c.name.lower(): c for c in cats}
+
+    salary_cat = cat_map.get("salary") or next((c for c in cats if c.type == "income"), None)
+    freelance_cat = cat_map.get("freelance") or cat_map.get("investment") or salary_cat
+
+    food_cat = cat_map.get("food") or next((c for c in cats if c.type == "expense"), None)
+    transport_cat = cat_map.get("transport") or food_cat
+    shopping_cat = cat_map.get("shopping") or food_cat
+    bills_cat = cat_map.get("bills") or food_cat
+    other_cat = cat_map.get("other") or food_cat
+
+    now = datetime.now()
+    created_count = 0
+    for m in range(months - 1, -1, -1):
+        year = now.year
+        month = now.month - m
+        while month <= 0:
+            month += 12
+            year -= 1
+
+        txs_to_add = [
+            (salary_cat.id, "income", Decimal("138500.00"), "Monthly Salary Disbursement", datetime(year, month, 1, 9, 30)),
+            (freelance_cat.id, "income", Decimal("24500.00"), "Q-Consulting & Advisory Retainer", datetime(year, month, 15, 14, 0)),
+            (bills_cat.id, "expense", Decimal("14250.00"), "AWS Cloud Infrastructure & Edge CDN", datetime(year, month, 5, 11, 15)),
+            (shopping_cat.id, "expense", Decimal("3800.00"), "DevOps & Software Tool Licenses", datetime(year, month, 8, 16, 45)),
+            (other_cat.id, "expense", Decimal("11200.00"), "Growth Marketing & Ad Placements", datetime(year, month, 12, 10, 0)),
+            (food_cat.id, "expense", Decimal("7850.00"), "Team Dining & Culinary Provisions", datetime(year, month, 18, 19, 30)),
+            (bills_cat.id, "expense", Decimal("3600.00"), "Gigabit Fiber & Office Utilities", datetime(year, month, 22, 12, 0)),
+            (transport_cat.id, "expense", Decimal("4150.00"), "Corporate Mobility & Travel Logistics", datetime(year, month, 26, 17, 15)),
+        ]
+
+        for cat_id, tx_type, amount, desc, dt in txs_to_add:
+            db.add(
+                Transaction(
+                    user_id=user_id,
+                    book_id=book.id,
+                    category_id=cat_id,
+                    type=tx_type,
+                    amount=amount,
+                    description=desc,
+                    transaction_date=dt,
+                )
+            )
+            created_count += 1
+
+    db.commit()
+    return created_count

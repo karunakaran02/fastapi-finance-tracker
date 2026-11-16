@@ -147,3 +147,19 @@
     height: 18px;
   }
 }
+
+html[data-theme="light"] .preset-pill-btn {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+html[data-theme="light"] .preset-pill-btn:hover {
+  border-color: #0284c7;
+  color: #0284c7;
+  background-color: #f0f9ff;
+}
+html[data-theme="light"] .preset-pill-btn.active {
+  background-color: #f0f9ff;
+  border-color: #0284c7;
+  color: #0284c7;
+}

@@ -110,3 +110,22 @@
     padding: 0.65rem 0.75rem;
   }
 }
+
+html[data-theme="light"] .custom-select-trigger {
+  background-color: #ffffff;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+html[data-theme="light"] .custom-select-menu {
+  background-color: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1);
+}
+html[data-theme="light"] .custom-select-option:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+html[data-theme="light"] .custom-select-option.is-selected {
+  background-color: #f0f9ff;
+  color: #0284c7;
+}

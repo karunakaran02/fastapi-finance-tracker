@@ -78,3 +78,13 @@
   gap: 0.75rem;
 }
 
+
+html[data-theme="light"] .tx-coldstart-banner {
+  background: #f0f9ff !important;
+  color: #0284c7 !important;
+  border-color: #bae6fd !important;
+}
+html[data-theme="light"] .tx-clear-modal-content {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}

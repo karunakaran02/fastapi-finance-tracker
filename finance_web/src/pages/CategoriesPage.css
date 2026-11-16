@@ -97,3 +97,12 @@
     font-size: 0.8rem;
   }
 }
+
+html[data-theme="light"] .cat-item-row {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+html[data-theme="light"] .cat-item-row:hover {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
