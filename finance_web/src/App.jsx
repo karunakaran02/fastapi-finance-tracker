@@ -115,7 +115,7 @@ const ProtectedRoute = ({ children }) => {
       <div aria-hidden="true" className="glacier-ambient-2"></div>
       <div className="relative z-10 flex w-full h-full min-h-screen overflow-hidden backdrop-blur-[2px]">
         <Sidebar />
-        <div className="flex-1 flex flex-col min-w-0 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0 h-screen overflow-y-auto">
+        <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
           <SecondaryTopBar />
           {children}
         </div>

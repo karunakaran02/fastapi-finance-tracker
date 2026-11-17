@@ -797,12 +797,12 @@ html[data-theme="light"] .btn.btn-secondary:hover:not(:disabled) {
 }
 @media (max-width: 1023px) {
   .content-body {
-    padding: 1.5rem 1.25rem calc(4.75rem + env(safe-area-inset-bottom, 0px));
+    padding: 1.5rem 1.25rem max(1.5rem, env(safe-area-inset-bottom, 0px));
   }
 }
 @media (max-width: 768px) {
   .content-body {
-    padding: 1.15rem 0.85rem calc(4.75rem + env(safe-area-inset-bottom, 0px));
+    padding: 1.15rem 0.85rem max(1.15rem, env(safe-area-inset-bottom, 0px));
   }
   .card {
     padding: 1.1rem 0.95rem;
@@ -853,7 +853,7 @@ html[data-theme="light"] .btn.btn-secondary:hover:not(:disabled) {
     width: 100%;
   }
   .content-body {
-    padding: 0.85rem 0.65rem calc(4.75rem + env(safe-area-inset-bottom, 0px));
+    padding: 0.85rem 0.65rem max(1rem, env(safe-area-inset-bottom, 0px));
   }
   .card {
     padding: 0.95rem 0.75rem;
@@ -919,7 +919,7 @@ html[data-theme="light"] .btn.btn-secondary:hover:not(:disabled) {
 }
 @media (max-width: 360px) {
   .content-body {
-    padding: 0.75rem 0.45rem calc(4.75rem + env(safe-area-inset-bottom, 0px));
+    padding: 0.75rem 0.45rem max(0.85rem, env(safe-area-inset-bottom, 0px));
   }
   .card {
     padding: 0.85rem 0.6rem;
@@ -963,10 +963,6 @@ html[data-theme="light"] .btn.btn-secondary:hover:not(:disabled) {
 }
 .spring-transition {
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.morph-pill {
-  transition: transform 0.42s cubic-bezier(0.34, 1.45, 0.64, 1), width 0.35s cubic-bezier(0.34, 1.45, 0.64, 1);
-  will-change: transform, width;
 }
 .fin-card {
   background: rgba(18, 24, 38, 0.85);

@@ -95,18 +95,6 @@ export const Sidebar = () => {
     return 'AJ';
   };
 
-  const getNavIndicatorIndex = () => {
-    const p = location.pathname;
-    if (p === '/dashboard' || p === '/') return 0;
-    if (p.startsWith('/transactions')) return 1;
-    if (p.startsWith('/streams')) return 2;
-    if (p.startsWith('/reports')) return 3;
-    if (p.startsWith('/budgets')) return 4;
-    return -1;
-  };
-
-  const activeNavIdx = getNavIndicatorIndex();
-
   const navClass = ({ isActive }) =>
     isActive
       ? 'glacier-nav-active group relative flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-cyan-500/15 backdrop-blur-md shadow-sm border border-cyan-400/30 text-cyan-200 font-medium text-sm transition-all duration-200'
@@ -490,65 +478,6 @@ export const Sidebar = () => {
           </div>
         </div>
       </aside>
-
-      <nav
-        className="fixed bottom-0 inset-x-0 z-50 pb-safe bg-[#070C14]/95 backdrop-blur-2xl border-t border-white/[0.08] lg:hidden"
-        id="bottomNav"
-        data-purpose="mobile-bottom-nav"
-      >
-        <div className="relative grid grid-cols-5 items-center h-16 max-w-lg mx-auto" id="navContainer">
-          <div
-            className={`morph-pill absolute bottom-1.5 h-1 w-8 rounded-full pointer-events-none transition-all duration-300 ease-out ${
-              activeNavIdx >= 0 ? `pos-${activeNavIdx}` : ''
-            }`}
-          />
-          <NavLink
-            to="/dashboard"
-            className={({ isActive }) =>
-              `mobile-tab-link ${isActive ? 'active' : ''}`
-            }
-          >
-            <span className="material-symbols-outlined text-[20px]">grid_view</span>
-            <span>Overview</span>
-          </NavLink>
-          <NavLink
-            to="/transactions"
-            className={({ isActive }) =>
-              `mobile-tab-link ${isActive ? 'active' : ''}`
-            }
-          >
-            <span className="material-symbols-outlined text-[20px]">receipt_long</span>
-            <span>Ledger</span>
-          </NavLink>
-          <NavLink
-            to="/streams"
-            className={({ isActive }) =>
-              `mobile-tab-link ${isActive ? 'active' : ''}`
-            }
-          >
-            <span className="material-symbols-outlined text-[20px]">sync_alt</span>
-            <span>Streams</span>
-          </NavLink>
-          <NavLink
-            to="/reports"
-            className={({ isActive }) =>
-              `mobile-tab-link ${isActive ? 'active' : ''}`
-            }
-          >
-            <span className="material-symbols-outlined text-[20px]">query_stats</span>
-            <span>Analytics</span>
-          </NavLink>
-          <NavLink
-            to="/budgets"
-            className={({ isActive }) =>
-              `mobile-tab-link ${isActive ? 'active' : ''}`
-            }
-          >
-            <span className="material-symbols-outlined text-[20px]">monitoring</span>
-            <span>Budgets</span>
-          </NavLink>
-        </div>
-      </nav>
     </>
   );
 };
