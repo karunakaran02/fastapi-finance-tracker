@@ -47,7 +47,12 @@ const CurrencyPill = () => {
 const SecondaryTopBar = () => {
   const location = useLocation();
   const normalizedPath = location.pathname.replace(/\/+$/, '') || '/';
-  if (normalizedPath === '/dashboard' || normalizedPath === '/' || normalizedPath === '') {
+  if (
+    normalizedPath === '/dashboard' ||
+    normalizedPath.startsWith('/dashboard/') ||
+    normalizedPath === '/' ||
+    normalizedPath === ''
+  ) {
     return null;
   }
 
@@ -105,7 +110,7 @@ const ProtectedRoute = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen flex app-shell-container antialiased selection:bg-cyan-500 selection:text-slate-900 relative overflow-hidden bg-[#070C14]">
+    <div className="min-h-screen flex app-shell-container antialiased selection:bg-cyan-500 selection:text-slate-900 relative overflow-hidden">
       <div aria-hidden="true" className="glacier-ambient-1"></div>
       <div aria-hidden="true" className="glacier-ambient-2"></div>
       <div className="relative z-10 flex w-full h-full min-h-screen overflow-hidden backdrop-blur-[2px]">

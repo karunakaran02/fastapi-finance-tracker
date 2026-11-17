@@ -3,7 +3,7 @@ from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal
 import re
 from typing import Dict, List, Optional, Set, Tuple
-from sqlalchemy import desc, func, or_
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from app.models.category import Category
 from app.models.recurring import RecurringItem

@@ -8,8 +8,6 @@ export const getApiBase = () => {
   return '/api/v1';
 };
 
-const API_BASE = getApiBase();
-
 export const extractErrorMessage = (data, fallback = 'API Request failed') => {
   if (!data) return fallback;
   if (typeof data === 'string') return data;
@@ -273,46 +271,6 @@ class ApiClient {
 
   clearAllTransactions() {
     return this.delete('/transactions/clear-all');
-  }
-
-  async seedDemoData(months = 6) {
-    try {
-      return await this.post(`/transactions/seed-demo-data?months=${months}`);
-    } catch {
-      const categories = await this.getCategories().catch(() => []);
-      const salaryCat = categories.find((c) => c.type === 'income' && c.name.toLowerCase().includes('salary')) || categories.find((c) => c.type === 'income');
-      const freelanceCat = categories.find((c) => c.type === 'income' && (c.name.toLowerCase().includes('freelance') || c.name.toLowerCase().includes('invest'))) || salaryCat;
-      const billsCat = categories.find((c) => c.type === 'expense' && c.name.toLowerCase().includes('bill')) || categories.find((c) => c.type === 'expense');
-      const shoppingCat = categories.find((c) => c.type === 'expense' && c.name.toLowerCase().includes('shop')) || billsCat;
-      const foodCat = categories.find((c) => c.type === 'expense' && c.name.toLowerCase().includes('food')) || billsCat;
-      const transportCat = categories.find((c) => c.type === 'expense' && c.name.toLowerCase().includes('transport')) || billsCat;
-      const otherCat = categories.find((c) => c.type === 'expense' && c.name.toLowerCase().includes('other')) || billsCat;
-
-      const now = new Date();
-      let created = 0;
-      for (let m = months - 1; m >= 0; m--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - m, 1);
-        const y = d.getFullYear();
-        const mon = String(d.getMonth() + 1).padStart(2, '0');
-        const batch = [
-          { category_id: salaryCat?.id, type: 'income', amount: '138500.00', description: 'Monthly Salary Disbursement', transaction_date: `${y}-${mon}-01T09:30:00Z` },
-          { category_id: freelanceCat?.id, type: 'income', amount: '24500.00', description: 'Q-Consulting & Advisory Retainer', transaction_date: `${y}-${mon}-15T14:00:00Z` },
-          { category_id: billsCat?.id, type: 'expense', amount: '14250.00', description: 'AWS Cloud Infrastructure & Edge CDN', transaction_date: `${y}-${mon}-05T11:15:00Z` },
-          { category_id: shoppingCat?.id, type: 'expense', amount: '3800.00', description: 'DevOps & Software Tool Licenses', transaction_date: `${y}-${mon}-08T16:45:00Z` },
-          { category_id: otherCat?.id, type: 'expense', amount: '11200.00', description: 'Growth Marketing & Ad Placements', transaction_date: `${y}-${mon}-12T10:00:00Z` },
-          { category_id: foodCat?.id, type: 'expense', amount: '7850.00', description: 'Team Dining & Culinary Provisions', transaction_date: `${y}-${mon}-18T19:30:00Z` },
-          { category_id: billsCat?.id, type: 'expense', amount: '3600.00', description: 'Gigabit Fiber & Office Utilities', transaction_date: `${y}-${mon}-22T12:00:00Z` },
-          { category_id: transportCat?.id, type: 'expense', amount: '4150.00', description: 'Corporate Mobility & Travel Logistics', transaction_date: `${y}-${mon}-26T17:15:00Z` },
-        ];
-        for (const item of batch) {
-          if (item.category_id) {
-            await this.createTransaction(item).catch(() => {});
-            created++;
-          }
-        }
-      }
-      return { message: `Successfully generated ${created} realistic transaction(s) across the past ${months} month(s).` };
-    }
   }
 
   importTransactions(files) {

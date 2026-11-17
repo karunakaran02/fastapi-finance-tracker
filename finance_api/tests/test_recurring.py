@@ -86,6 +86,7 @@ def test_cash_runway_forecast(client, auth_headers):
         },
         headers=auth_headers,
     )
+    assert tx_resp.status_code == 201
     future_rent = (datetime.now(timezone.utc) + timedelta(days=3)).isoformat()
     rec_resp = client.post(
         "/api/v1/recurring",

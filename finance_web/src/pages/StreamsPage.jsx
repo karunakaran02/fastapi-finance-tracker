@@ -32,11 +32,28 @@ import {
 import api, { extractErrorMessage } from '../api/client';
 import { useCurrency } from '../context/CurrencyContext';
 import { useAuth } from '../context/AuthContext';
+import KpiCard from '../components/KpiCard';
 import { PRESET_BOOK_ICONS, inferIconFromTitle, getAppropriateBookIcon } from '../utils/bookIcons';
 import './StreamsPage.css';
 
 const PRESET_COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#06b6d4'];
 const QUICK_TAGS = ['Income', 'Sales', 'Advance', 'Salary', 'Maintenance', 'Supplies', 'Fuel', 'Labor & Wages', 'Other'];
+
+const getBookRimClass = (color, isPositive) => {
+  switch (color) {
+    case '#3b82f6':
+    case '#06b6d4':
+      return 'dashboard-kpi-balance';
+    case '#8b5cf6':
+      return 'dashboard-kpi-savings';
+    case '#f59e0b':
+      return 'dashboard-kpi-amber';
+    case '#ef4444':
+      return 'dashboard-kpi-expense';
+    default:
+      return isPositive ? 'dashboard-kpi-income' : 'dashboard-kpi-expense';
+  }
+};
 
 const getBookColorClass = (color) => {
   switch (color) {
@@ -482,80 +499,98 @@ export const StreamsPage = () => {
           </div>
 
           <div className="kpi-pillar-grid mb-8">
-
-            <div className="kpi-pillar-card">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-                  Total Active Books
-                </span>
-                <div className="w-7 h-7 rounded-lg bg-blue-500/15 text-blue-400 flex items-center justify-center">
-                  <BookOpen size={16} />
+            <KpiCard className="dashboard-kpi-balance">
+              <div className="flex flex-col justify-between h-full">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                      Total Active Books
+                    </span>
+                    <div className="w-8 h-8 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center shadow-xs">
+                      <BookOpen className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline space-x-1.5">
+                    <span className="text-2xl font-bold tracking-tight text-white font-mono">
+                      {hubStats.totalBooks}
+                    </span>
+                  </div>
+                  <div className="mt-2.5 flex items-center space-x-2 flex-wrap">
+                    <span className="text-xs text-slate-400">
+                      {hubStats.totalEntries} total ledger transactions recorded
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs kpi-footer-divider">
+                  <span className="text-slate-400 font-medium">Multi-book ledger</span>
+                  <span className="inline-flex items-center text-emerald-400 font-semibold text-[11px]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 shadow-[0_0_6px_#10b981]"></span>
+                    100% Isolated
+                  </span>
                 </div>
               </div>
-              <div className="my-3 flex flex-col">
-                <span className="text-3xl font-extrabold text-white font-mono tracking-tight">
-                  {hubStats.totalBooks}
-                </span>
-                <span className="text-xs text-slate-400 mt-1">
-                  {hubStats.totalEntries} total ledger transactions recorded
-                </span>
-              </div>
-              <div className="pt-2 border-t border-white/[0.06] text-xs text-slate-400 flex items-center justify-between">
-                <span>Multi-book ledger</span>
-                <span className="text-emerald-400 font-medium">100% Isolated</span>
-              </div>
-            </div>
+            </KpiCard>
 
-            <div className="kpi-pillar-card">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-                  Combined Cash In
-                </span>
-                <div className="w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
-                  <ArrowUpRight size={16} />
+            <KpiCard className="dashboard-kpi-income">
+              <div className="flex flex-col justify-between h-full">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                      Combined Cash In
+                    </span>
+                    <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-xs">
+                      <ArrowUpRight className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline space-x-1.5">
+                    <span className="text-2xl font-bold tracking-tight text-white font-mono">
+                      {formatAmount(hubStats.totalIn)}
+                    </span>
+                  </div>
+                  <div className="mt-2.5 flex items-center space-x-2 flex-wrap">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      All credited entries across books
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs kpi-footer-divider">
+                  <span className="text-slate-400 font-medium">Total inflows</span>
+                  <span className="text-emerald-400 font-semibold font-mono text-[11px]">Active Streams</span>
                 </div>
               </div>
-              <div className="my-3 flex flex-col">
-                <span className="text-3xl font-extrabold text-emerald-400 font-mono tracking-tight">
-                  {formatAmount(hubStats.totalIn)}
-                </span>
-                <span className="text-xs text-slate-400 mt-1">All credited entries across books</span>
-              </div>
-              <div className="pt-2 border-t border-white/[0.06] text-xs text-slate-400 flex items-center justify-between">
-                <span>Total inflows</span>
-                <span className="text-emerald-400 font-medium font-mono">Active Streams</span>
-              </div>
-            </div>
+            </KpiCard>
 
-            <div className="kpi-pillar-card">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-                  Combined Net Balance
-                </span>
-                <div className="w-7 h-7 rounded-lg bg-cyan-500/15 text-cyan-400 flex items-center justify-center">
-                  <Layers size={16} />
+            <KpiCard className={hubStats.totalBalance >= 0 ? 'dashboard-kpi-balance' : 'dashboard-kpi-expense'}>
+              <div className="flex flex-col justify-between h-full">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                      Combined Net Balance
+                    </span>
+                    <div className={`w-8 h-8 rounded-xl ${hubStats.totalBalance >= 0 ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400' : 'bg-rose-500/15 border-rose-500/30 text-rose-400'} border flex items-center justify-center shadow-xs`}>
+                      <Layers className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline space-x-1.5">
+                    <span className={`text-2xl font-bold tracking-tight font-mono ${hubStats.totalBalance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {formatAmount(hubStats.totalBalance)}
+                    </span>
+                  </div>
+                  <div className="mt-2.5 flex items-center space-x-2 flex-wrap">
+                    <span className="text-xs text-slate-400">
+                      Combined outflow: {formatAmount(hubStats.totalOut)}
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs kpi-footer-divider">
+                  <span className="inline-flex items-center text-slate-400 font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 shadow-[0_0_6px_#10b981]"></span>
+                    Solvent Position
+                  </span>
+                  <span className="font-mono text-slate-300 text-[11px]">Net Standing</span>
                 </div>
               </div>
-              <div className="my-3 flex flex-col">
-                <span
-                  className={`text-3xl font-extrabold font-mono tracking-tight ${
-                    hubStats.totalBalance >= 0 ? 'text-emerald-400' : 'text-rose-400'
-                  }`}
-                >
-                  {formatAmount(hubStats.totalBalance)}
-                </span>
-                <span className="text-xs text-slate-400 mt-1">
-                  Combined outflow: {formatAmount(hubStats.totalOut)}
-                </span>
-              </div>
-              <div className="pt-2 border-t border-white/[0.06] text-xs text-slate-400 flex items-center justify-between">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                  Solvent Position
-                </span>
-                <span className="font-mono text-slate-300">Net Standing</span>
-              </div>
-            </div>
+            </KpiCard>
           </div>
 
           <div>
@@ -594,73 +629,75 @@ export const StreamsPage = () => {
                   const net = parseFloat(b.net_balance || 0);
                   const isPositive = net >= 0;
                   return (
-                    <div
+                    <KpiCard
                       key={b.id}
+                      className={`stream-book-card ${getBookRimClass(b.color, isPositive)} cursor-pointer group`}
                       onClick={() => navigate(`/streams/${b.id}`)}
-                      className="group p-5 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 hover:bg-slate-850/90 transition-all cursor-pointer flex flex-col justify-between shadow-sm relative overflow-hidden"
                     >
-                      <div>
-                        <div className="flex items-start justify-between gap-3 mb-3">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div
-                              className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl flex-shrink-0 border ${getBookColorClass(b.color)}`}
+                      <div className="flex flex-col justify-between h-full">
+                        <div>
+                          <div className="flex items-start justify-between gap-3 mb-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div
+                                className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl flex-shrink-0 border ${getBookColorClass(b.color)}`}
+                              >
+                                <span className="material-symbols-outlined text-[24px]">
+                                  {getAppropriateBookIcon(b.title, b.icon)}
+                                </span>
+                              </div>
+                              <div className="min-w-0">
+                                <h3 className="text-base font-bold text-white truncate group-hover:text-emerald-400 transition-colors">
+                                  {b.title}
+                                </h3>
+                                <p className="text-xs text-slate-400 truncate mt-0.5">
+                                  {b.description || 'Isolated financial book ledger'}
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => handleOpenEditBook(b, e)}
+                              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/[0.08] transition-colors"
+                              title="Edit Book"
                             >
-                              <span className="material-symbols-outlined text-[24px]">
-                                {getAppropriateBookIcon(b.title, b.icon)}
-                              </span>
-                            </div>
-                            <div className="min-w-0">
-                              <h3 className="text-base font-bold text-white truncate group-hover:text-emerald-400 transition-colors">
-                                {b.title}
-                              </h3>
-                              <p className="text-xs text-slate-400 truncate mt-0.5">
-                                {b.description || 'Isolated financial book ledger'}
-                              </p>
-                            </div>
+                              <Edit2 size={14} />
+                            </button>
                           </div>
-                          <button
-                            type="button"
-                            onClick={(e) => handleOpenEditBook(b, e)}
-                            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/[0.08] transition-colors"
-                            title="Edit Book"
-                          >
-                            <Edit2 size={14} />
-                          </button>
+
+                          <div className="my-3">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono block mb-1">
+                              Current Net Balance
+                            </span>
+                            <span
+                              className={`text-2xl font-bold font-mono tracking-tight ${
+                                isPositive ? 'text-emerald-400' : 'text-rose-400'
+                              }`}
+                            >
+                              {formatAmount(net)}
+                            </span>
+                          </div>
                         </div>
 
-                        <div className="my-3">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono block mb-1">
-                            Current Net Balance
-                          </span>
-                          <span
-                            className={`text-2xl font-bold font-mono tracking-tight ${
-                              isPositive ? 'text-emerald-400' : 'text-rose-400'
-                            }`}
-                          >
-                            {formatAmount(net)}
-                          </span>
+                        <div>
+                          <div className="flex items-center justify-between pt-3 border-t border-white/[0.08] text-xs kpi-footer-divider">
+                            <span className="flex items-center gap-1 text-emerald-400 font-mono">
+                              <ArrowUpRight size={13} /> {formatAmount(b.total_income || 0)}
+                            </span>
+                            <span className="flex items-center gap-1 text-rose-400 font-mono">
+                              <ArrowDownLeft size={13} /> {formatAmount(b.total_expense || 0)}
+                            </span>
+                            <span className="text-slate-400 text-[11px]">
+                              {b.entries_count || 0} entries
+                            </span>
+                          </div>
+
+                          <div className="mt-3 flex items-center justify-between text-xs text-emerald-400 font-semibold group-hover:translate-x-0.5 transition-transform">
+                            <span>Open Book Ledger</span>
+                            <ChevronRight size={15} />
+                          </div>
                         </div>
                       </div>
-
-                      <div>
-                        <div className="flex items-center justify-between pt-3 border-t border-slate-800/80 text-xs">
-                          <span className="flex items-center gap-1 text-emerald-400 font-mono">
-                            <ArrowUpRight size={13} /> {formatAmount(b.total_income || 0)}
-                          </span>
-                          <span className="flex items-center gap-1 text-rose-400 font-mono">
-                            <ArrowDownLeft size={13} /> {formatAmount(b.total_expense || 0)}
-                          </span>
-                          <span className="text-slate-400 text-[11px]">
-                            {b.entries_count || 0} entries
-                          </span>
-                        </div>
-
-                        <div className="mt-3 flex items-center justify-between text-xs text-emerald-400 font-semibold group-hover:translate-x-0.5 transition-transform">
-                          <span>Open Book Ledger</span>
-                          <ChevronRight size={15} />
-                        </div>
-                      </div>
-                    </div>
+                    </KpiCard>
                   );
                 })}
               </div>
@@ -761,92 +798,109 @@ export const StreamsPage = () => {
             </div>
 
             <div className="kpi-pillar-grid">
+              <KpiCard className="dashboard-kpi-income">
+                <div className="flex flex-col justify-between h-full">
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                        Total Cash In
+                      </span>
+                      <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-xs">
+                        <ArrowUpRight className="w-4 h-4" />
+                      </div>
+                    </div>
+                    <div className="flex items-baseline space-x-1.5">
+                      <span className="text-2xl font-bold tracking-tight text-white font-mono">
+                        {formatAmount(entriesMeta.total_income)}
+                      </span>
+                    </div>
+                    <div className="mt-2.5 flex items-center space-x-2 flex-wrap">
+                      <span className="text-xs text-slate-400">
+                        All credited entries for {activeBook?.title}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs kpi-footer-divider">
+                    <span className="flex items-center gap-1 font-mono text-xs text-slate-400">
+                      <ArrowUpRight size={13} className="text-emerald-400" /> {inflowCount} Inflow batches
+                    </span>
+                    <span className="text-[10px] font-bold uppercase text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      100% Verified
+                    </span>
+                  </div>
+                </div>
+              </KpiCard>
 
-              <div className="kpi-pillar-card">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-                    Total Cash In
-                  </span>
-                  <div className="w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
-                    <ArrowUpRight size={17} />
+              <KpiCard className="dashboard-kpi-expense">
+                <div className="flex flex-col justify-between h-full">
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                        Total Cash Out
+                      </span>
+                      <div className="w-8 h-8 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center shadow-xs">
+                        <ArrowDownLeft className="w-4 h-4" />
+                      </div>
+                    </div>
+                    <div className="flex items-baseline space-x-1.5">
+                      <span className="text-2xl font-bold tracking-tight text-white font-mono">
+                        {formatAmount(entriesMeta.total_expense)}
+                      </span>
+                    </div>
+                    <div className="mt-2.5 flex items-center space-x-2 flex-wrap">
+                      <span className="text-xs text-slate-400">
+                        Debited expenses &amp; operational vouchers
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs kpi-footer-divider">
+                    <span className="flex items-center gap-1 font-mono text-xs text-slate-400">
+                      <ArrowDownLeft size={13} className="text-rose-400" /> {outflowCount} Debit vouchers
+                    </span>
+                    <span className="text-[10px] font-bold uppercase text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
+                      Operational Exp
+                    </span>
                   </div>
                 </div>
-                <div className="my-3 flex flex-col">
-                  <span className="text-3xl font-extrabold text-emerald-400 font-mono tracking-tight">
-                    {formatAmount(entriesMeta.total_income)}
-                  </span>
-                  <span className="text-xs text-slate-400 mt-1">
-                    All credited entries for {activeBook.title}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between pt-2 border-t border-white/[0.06] text-xs text-slate-400">
-                  <span className="flex items-center gap-1 font-mono text-xs">
-                    <ArrowUpRight size={13} className="text-emerald-400" /> {inflowCount} Inflow batches
-                  </span>
-                  <span className="text-[10px] font-bold uppercase text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                    100% Verified
-                  </span>
-                </div>
-              </div>
+              </KpiCard>
 
-              <div className="kpi-pillar-card">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-                    Total Cash Out
-                  </span>
-                  <div className="w-7 h-7 rounded-lg bg-rose-500/15 text-rose-400 flex items-center justify-center">
-                    <ArrowDownLeft size={17} />
+              <KpiCard className={entriesMeta.net_balance >= 0 ? 'dashboard-kpi-balance' : 'dashboard-kpi-expense'}>
+                <div className="flex flex-col justify-between h-full">
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                        Current Net Balance
+                      </span>
+                      <div className={`w-8 h-8 rounded-xl ${entriesMeta.net_balance >= 0 ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400' : 'bg-rose-500/15 border-rose-500/30 text-rose-400'} border flex items-center justify-center shadow-xs`}>
+                        <BookOpen className="w-4 h-4" />
+                      </div>
+                    </div>
+                    <div className="flex items-baseline space-x-1.5">
+                      <span
+                        className={`text-2xl font-bold font-mono tracking-tight ${
+                          entriesMeta.net_balance >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                        }`}
+                      >
+                        {formatAmount(entriesMeta.net_balance)}
+                      </span>
+                    </div>
+                    <div className="mt-2.5 flex items-center space-x-2 flex-wrap">
+                      <span className="text-xs text-slate-400">
+                        {entriesMeta.total} recorded entries • Realized balance
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs kpi-footer-divider">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#10b981]"></span>
+                      <span className="text-emerald-400 font-medium text-[11px]">Solvent Position</span>
+                    </div>
+                    <span className="font-mono text-xs text-slate-400">
+                      Net {entriesMeta.net_balance >= 0 ? `+${netMarginPercent}%` : `${netMarginPercent}%`}
+                    </span>
                   </div>
                 </div>
-                <div className="my-3 flex flex-col">
-                  <span className="text-3xl font-extrabold text-rose-400 font-mono tracking-tight">
-                    {formatAmount(entriesMeta.total_expense)}
-                  </span>
-                  <span className="text-xs text-slate-400 mt-1">
-                    Debited expenses &amp; operational vouchers
-                  </span>
-                </div>
-                <div className="flex items-center justify-between pt-2 border-t border-white/[0.06] text-xs text-slate-400">
-                  <span className="flex items-center gap-1 font-mono text-xs">
-                    <ArrowDownLeft size={13} className="text-rose-400" /> {outflowCount} Debit vouchers
-                  </span>
-                  <span className="text-[10px] font-bold uppercase text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
-                    Operational Exp
-                  </span>
-                </div>
-              </div>
-
-              <div className="kpi-pillar-card">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-                    Current Net Balance
-                  </span>
-                  <div className="w-7 h-7 rounded-lg bg-cyan-500/15 text-cyan-400 flex items-center justify-center">
-                    <BookOpen size={17} />
-                  </div>
-                </div>
-                <div className="my-3 flex flex-col">
-                  <span
-                    className={`text-3xl font-extrabold font-mono tracking-tight ${
-                      entriesMeta.net_balance >= 0 ? 'text-emerald-400' : 'text-rose-400'
-                    }`}
-                  >
-                    {formatAmount(entriesMeta.net_balance)}
-                  </span>
-                  <span className="text-xs text-slate-400 mt-1">
-                    {entriesMeta.total} recorded entries • Realized balance
-                  </span>
-                </div>
-                <div className="flex items-center justify-between pt-2 border-t border-white/[0.06] text-xs">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                    <span className="text-emerald-400 font-medium">Solvent Position</span>
-                  </div>
-                  <span className="font-mono text-xs text-slate-400">
-                    Net {entriesMeta.net_balance >= 0 ? `+${netMarginPercent}%` : `${netMarginPercent}%`}
-                  </span>
-                </div>
-              </div>
+              </KpiCard>
             </div>
 
             <div className="desktop-cta-grid">

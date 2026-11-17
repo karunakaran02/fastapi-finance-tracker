@@ -21,6 +21,7 @@ import {
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
+import KpiCard from '../components/KpiCard';
 import CustomSelect from '../components/CustomSelect';
 import './BudgetsPage.css';
 
@@ -299,51 +300,132 @@ export const BudgetsPage = () => {
       )}
 
       <div className="budgets-kpi-grid">
-        <div className="kpi-card">
-          <div className="kpi-header">
-            <span className="kpi-title">Active Thresholds</span>
-            <div className="kpi-icon-wrap text-indigo-400">
-              <Layers size={18} />
+        <KpiCard className="dashboard-kpi-indigo">
+          <div className="flex flex-col justify-between h-full">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Active Thresholds
+                </span>
+                <div className="w-8 h-8 rounded-xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-400 flex items-center justify-center shadow-xs">
+                  <Layers className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline space-x-1.5">
+                <span className="text-2xl font-bold tracking-tight text-white font-mono">
+                  {overview?.active_budgets || 0}
+                </span>
+              </div>
+              <div className="mt-2.5 flex items-center space-x-2 flex-wrap">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  out of {overview?.total_budgets || 0} configured
+                </span>
+              </div>
+            </div>
+            <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs kpi-footer-divider">
+              <span className="text-slate-400 font-medium">Monitoring</span>
+              <span className="inline-flex items-center text-emerald-400 font-semibold text-[11px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 shadow-[0_0_6px_#10b981]"></span>
+                Live Sync
+              </span>
             </div>
           </div>
-          <div className="kpi-value">{overview?.active_budgets || 0}</div>
-          <div className="kpi-subtext">out of {overview?.total_budgets || 0} total configured</div>
-        </div>
+        </KpiCard>
 
-        <div className="kpi-card">
-          <div className="kpi-header">
-            <span className="kpi-title">Budgeted Spending</span>
-            <div className="kpi-icon-wrap text-emerald-400">
-              <TrendingDown size={18} />
+        <KpiCard className="dashboard-kpi-income">
+          <div className="flex flex-col justify-between h-full">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Budgeted Spending
+                </span>
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-xs">
+                  <TrendingDown className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline space-x-1.5">
+                <span className="text-slate-400 text-lg font-light">{symbol}</span>
+                <span className="text-2xl font-bold tracking-tight text-white font-mono">
+                  {formatAmt(overview?.total_budgeted_expense, { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div className="mt-2.5 flex items-center space-x-2 flex-wrap">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  Sum of active expense caps
+                </span>
+              </div>
+            </div>
+            <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs kpi-footer-divider">
+              <span className="text-slate-400 font-medium">Target Cap</span>
+              <span className="text-emerald-400 font-semibold text-[11px]">Active Allocations</span>
             </div>
           </div>
-          <div className="kpi-value">{symbol}{formatAmt(overview?.total_budgeted_expense, { minimumFractionDigits: 2 })}</div>
-          <div className="kpi-subtext">Sum of active expense caps</div>
-        </div>
+        </KpiCard>
 
-        <div className="kpi-card">
-          <div className="kpi-header">
-            <span className="kpi-title">Actual Spend</span>
-            <div className="kpi-icon-wrap text-amber-400">
-              <TrendingUp size={18} />
+        <KpiCard className="dashboard-kpi-amber">
+          <div className="flex flex-col justify-between h-full">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Actual Spend
+                </span>
+                <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shadow-xs">
+                  <TrendingUp className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline space-x-1.5">
+                <span className="text-slate-400 text-lg font-light">{symbol}</span>
+                <span className="text-2xl font-bold tracking-tight text-white font-mono">
+                  {formatAmt(overview?.total_spent_in_budgeted, { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div className="mt-2.5 flex items-center space-x-2 flex-wrap">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  Recorded current period spend
+                </span>
+              </div>
+            </div>
+            <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs kpi-footer-divider">
+              <span className="text-slate-400 font-medium">Consumption</span>
+              <span className="text-amber-400 font-semibold text-[11px]">
+                {Number(overview?.total_budgeted_expense) > 0
+                  ? `${Math.round((Number(overview?.total_spent_in_budgeted || 0) / Number(overview.total_budgeted_expense)) * 100)}% utilized`
+                  : 'Tracked Spend'}
+              </span>
             </div>
           </div>
-          <div className="kpi-value">{symbol}{formatAmt(overview?.total_spent_in_budgeted, { minimumFractionDigits: 2 })}</div>
-          <div className="kpi-subtext">Recorded current period spend</div>
-        </div>
+        </KpiCard>
 
-        <div className="kpi-card">
-          <div className="kpi-header">
-            <span className="kpi-title">Breached / At Risk</span>
-            <div className="kpi-icon-wrap text-rose-400">
-              <ShieldAlert size={18} />
+        <KpiCard className="dashboard-kpi-expense">
+          <div className="flex flex-col justify-between h-full">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Breached / At Risk
+                </span>
+                <div className="w-8 h-8 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center shadow-xs">
+                  <ShieldAlert className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline space-x-1.5">
+                <span className="text-2xl font-bold tracking-tight text-rose-400 font-mono">
+                  {overview?.exceeded_budgets || 0}
+                </span>
+              </div>
+              <div className="mt-2.5 flex items-center space-x-2 flex-wrap">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                  {overview?.warning_budgets || 0} approaching threshold (&gt;80%)
+                </span>
+              </div>
+            </div>
+            <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs kpi-footer-divider">
+              <span className="text-slate-400 font-medium">Audit Status</span>
+              <span className={`font-semibold text-[11px] ${Number(overview?.exceeded_budgets || 0) === 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {Number(overview?.exceeded_budgets || 0) === 0 ? 'Zero Breaches' : `${overview.exceeded_budgets} Over Budget`}
+              </span>
             </div>
           </div>
-          <div className="kpi-value text-rose-400">{overview?.exceeded_budgets || 0}</div>
-          <div className="kpi-subtext">
-            {overview?.warning_budgets || 0} approaching threshold (&gt;80%)
-          </div>
-        </div>
+        </KpiCard>
       </div>
 
       <div className="mb-8">

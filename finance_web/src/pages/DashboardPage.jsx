@@ -12,8 +12,9 @@ import {
 import api from '../api/client';
 import TransactionForm from '../components/TransactionForm';
 import ImportTransactionsModal from '../components/ImportTransactionsModal';
+import KpiCard from '../components/KpiCard';
 import { MobileMenuButton } from '../components/Sidebar';
-import { ThemeToggleButton } from '../context/ThemeContext';
+import { ThemeToggleButton, useTheme } from '../context/ThemeContext';
 import { useCurrency } from '../context/CurrencyContext';
 import './DashboardPage.css';
 
@@ -149,6 +150,7 @@ export const DashboardPage = () => {
   const navigate = useNavigate();
   const searchInputRef = useRef(null);
   const { symbol, activeCurrency, currency, setCurrency, currencies } = useCurrency();
+  const { theme } = useTheme();
   const formatAmt = (val, opts = {}) => Number(val || 0).toLocaleString(activeCurrency.locale, opts);
 
   const [dashboardData, setDashboardData] = useState(null);
@@ -161,8 +163,6 @@ export const DashboardPage = () => {
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [periodTab, setPeriodTab] = useState('1m');
   const [searchQuery, setSearchQuery] = useState('');
-  const [seeding, setSeeding] = useState(false);
-  const [seedNotice, setSeedNotice] = useState('');
 
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
@@ -185,21 +185,6 @@ export const DashboardPage = () => {
       setLoading(false);
     }
   }, [periodTab]);
-
-  const handleSeedDemoData = async () => {
-    setSeeding(true);
-    setError('');
-    setSeedNotice('');
-    try {
-      const res = await api.seedDemoData(6);
-      setSeedNotice(res?.message || 'Successfully generated 6 months of test transactions.');
-      await fetchDashboardData();
-    } catch (err) {
-      setError(err.message || 'Failed to generate test data.');
-    } finally {
-      setSeeding(false);
-    }
-  };
 
   useEffect(() => {
     fetchDashboardData();
@@ -454,25 +439,6 @@ export const DashboardPage = () => {
               </svg>
               <span className="hidden sm:inline">Export</span>
             </button>
-
-            <button
-              type="button"
-              onClick={handleSeedDemoData}
-              disabled={seeding}
-              className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-xs font-medium text-slate-200 shadow-glacier-sm transition-all disabled:opacity-50"
-              title="Generate 6 Months of Test Data"
-            >
-              <svg
-                className={`w-3.5 h-3.5 text-cyan-400 ${seeding ? 'animate-spin' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-              </svg>
-              <span className="hidden sm:inline">{seeding ? 'Seeding...' : 'Seed Data'}</span>
-            </button>
           </div>
 
           <div className="flex items-center space-x-1 pl-1">
@@ -513,13 +479,6 @@ export const DashboardPage = () => {
       </header>
 
       <div className="p-4 sm:p-8 space-y-6 max-w-7xl mx-auto w-full">
-        {seedNotice && (
-          <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center justify-between">
-            <span>{seedNotice}</span>
-            <button type="button" onClick={() => setSeedNotice('')} className="text-emerald-300 hover:text-white font-bold ml-2">✕</button>
-          </div>
-        )}
-
         {error && (
           <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs">
             {error}
@@ -530,214 +489,222 @@ export const DashboardPage = () => {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5"
           data-purpose="kpi-metrics-grid"
         >
-          <div className="frost-sheen glacier-card-surface relative rounded-3xl p-5 bg-[#0F172A]/70 backdrop-blur-2xl border border-white/[0.08] border-t-2 border-t-cyan-400/40 shadow-glacier-card hover:shadow-glacier-glow transition-all duration-300 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  Total Income
-                </span>
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-xs">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M7 17l9.2-9.2M17 17V8H8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    ></path>
-                  </svg>
-                </div>
-              </div>
-              <div className="flex items-baseline space-x-1.5">
-                <span className="text-slate-400 text-lg font-light">{symbol}</span>
-                <span className="text-2xl font-bold tracking-tight text-white font-mono">
-                  {incParts.intFormatted}
-                </span>
-                <span className="text-slate-400 text-sm font-medium">.{incParts.decPart}</span>
-              </div>
-              <div className="mt-2.5 flex items-center space-x-2 flex-wrap">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  ↑ {inflowSharePct}% of cashflow
-                </span>
-                <span className="text-[11px] text-slate-400">
-                  This Month: {symbol}{formatAmt(monthlyIncome)}
-                </span>
-              </div>
-            </div>
-            <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs">
-              <span className="text-slate-400 font-medium">
-                Retained: {symbol}{formatAmt(retainedIncome)}
-              </span>
-              <span className="inline-flex items-center text-emerald-400 font-semibold text-[11px]">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 shadow-[0_0_6px_#10b981]"></span>
-                {retainedPct}% retained
-              </span>
-            </div>
-          </div>
-
-          <div className="frost-sheen glacier-card-surface relative rounded-3xl p-5 bg-[#0F172A]/70 backdrop-blur-2xl border border-white/[0.08] border-t-2 border-t-rose-400/40 shadow-glacier-card hover:shadow-glacier-glow transition-all duration-300 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  Total Expenses
-                </span>
-                <div className="w-8 h-8 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center shadow-xs">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M17 7L7.8 16.2M7.8 7v9.2h9.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    ></path>
-                  </svg>
-                </div>
-              </div>
-              <div className="flex items-baseline space-x-1.5">
-                <span className="text-slate-400 text-lg font-light">{symbol}</span>
-                <span className="text-2xl font-bold tracking-tight text-white font-mono">
-                  {expParts.intFormatted}
-                </span>
-                <span className="text-slate-400 text-sm font-medium">.{expParts.decPart}</span>
-              </div>
-              <div className="mt-2.5 flex items-center space-x-2 flex-wrap">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                  {outflowSharePct}% of cashflow
-                </span>
-                <span className="text-[11px] text-slate-400">Burn: {burnRate}%</span>
-              </div>
-            </div>
-            <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs">
-              <span className="text-slate-400 font-medium">
-                Income Limit: {symbol}{formatAmt(totalIncome)}
-              </span>
-              <span className="text-slate-400 font-semibold text-[11px]">
-                {capUtilized}% utilized
-              </span>
-            </div>
-          </div>
-
-          <div className="frost-sheen glacier-card-surface relative rounded-3xl p-5 bg-[#0F172A]/70 backdrop-blur-2xl border border-white/[0.08] border-t-2 border-t-cyan-400/40 shadow-glacier-card hover:shadow-glacier-glow transition-all duration-300 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  Net Balance
-                </span>
-                <div className="w-8 h-8 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center shadow-xs">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <rect height="14" rx="3" width="20" x="2" y="5"></rect>
-                    <line x1="2" x2="22" y1="10" y2="10"></line>
-                  </svg>
-                </div>
-              </div>
-              <div className="flex items-baseline space-x-1.5">
-                <span className="text-slate-400 text-lg font-light">{netParts.sign}{symbol}</span>
-                <span className="text-2xl font-bold tracking-tight text-white font-mono">
-                  {netParts.intFormatted}
-                </span>
-                <span className="text-slate-400 text-sm font-medium">.{netParts.decPart}</span>
-              </div>
-              <div className="mt-2.5 flex items-center space-x-2">
-                <span className="text-[11px] text-slate-400">Monthly Net:</span>
-                <span className="text-[11px] font-semibold text-emerald-400 font-mono">
-                  +{symbol}{formatAmt(monthlySavings)}
-                </span>
-              </div>
-            </div>
-            <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs">
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 mr-1.5 shadow-[0_0_6px_#22d3ee]"></span>
-                {balanceStatus}
-              </span>
-              <span className="text-slate-400 font-semibold text-[11px]">
-                {cashflowRatio}% ratio
-              </span>
-            </div>
-          </div>
-
-          <div className="frost-sheen glacier-card-surface relative rounded-3xl p-5 bg-[#0F172A]/70 backdrop-blur-2xl border border-white/[0.08] border-t-2 border-t-purple-400/40 shadow-glacier-card hover:shadow-glacier-glow transition-all duration-300 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  Savings Rate
-                </span>
-                <div className="w-8 h-8 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-400 flex items-center justify-center shadow-xs">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    ></path>
-                  </svg>
-                </div>
-              </div>
-              <div className="flex items-center justify-between pt-1">
-                <div>
-                  <div className="flex items-baseline space-x-1">
-                    <span className="text-3xl font-bold tracking-tight text-white font-mono">
-                      {savingsRate}
-                    </span>
-                    <span className="text-xl font-bold text-slate-400">%</span>
+          <KpiCard className="dashboard-kpi-income">
+            <div className="flex flex-col justify-between h-full">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Total Income
+                  </span>
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-xs">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M7 17l9.2-9.2M17 17V8H8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      ></path>
+                    </svg>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    Target Rate: {targetSavingsRate}%
-                  </p>
                 </div>
-                <div className="relative w-14 h-14 flex items-center justify-center">
-                  <svg className="w-14 h-14 transform -rotate-90" viewBox="0 0 36 36">
-                    <circle
-                      className="glacier-ring-track stroke-slate-800"
-                      cx="18"
-                      cy="18"
-                      fill="none"
-                      r="14"
-                      strokeWidth="3.5"
-                    ></circle>
-                    <circle
-                      className="stroke-cyan-400 gauge-progress"
-                      cx="18"
-                      cy="18"
-                      fill="none"
-                      r="14"
-                      strokeDasharray={arcCircumference}
-                      strokeDashoffset={arcDashOffset}
-                      strokeLinecap="round"
-                      strokeWidth="3.5"
-                    ></circle>
-                  </svg>
-                  <span className="absolute text-[11px] font-bold text-white font-mono">
-                    {roundedSavingsRate}%
+                <div className="flex items-baseline space-x-1.5">
+                  <span className="text-slate-400 text-lg font-light">{symbol}</span>
+                  <span className="text-2xl font-bold tracking-tight text-white font-mono">
+                    {incParts.intFormatted}
+                  </span>
+                  <span className="text-slate-400 text-sm font-medium">.{incParts.decPart}</span>
+                </div>
+                <div className="mt-2.5 flex items-center space-x-2 flex-wrap">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    ↑ {inflowSharePct}% of cashflow
+                  </span>
+                  <span className="text-[11px] text-slate-400">
+                    This Month: {symbol}{formatAmt(monthlyIncome)}
                   </span>
                 </div>
               </div>
+              <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs kpi-footer-divider">
+                <span className="text-slate-400 font-medium">
+                  Retained: {symbol}{formatAmt(retainedIncome)}
+                </span>
+                <span className="inline-flex items-center text-emerald-400 font-semibold text-[11px]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 shadow-[0_0_6px_#10b981]"></span>
+                  {retainedPct}% retained
+                </span>
+              </div>
             </div>
-            <div className="mt-4 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs">
-              <span className="text-slate-400 font-medium">Benchmark Tier</span>
-              <span className="text-emerald-400 font-bold text-[11px]">
-                ★ {benchmarkTier}
-              </span>
+          </KpiCard>
+
+          <KpiCard className="dashboard-kpi-expense">
+            <div className="flex flex-col justify-between h-full">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Total Expenses
+                  </span>
+                  <div className="w-8 h-8 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center shadow-xs">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M17 7L7.8 16.2M7.8 7v9.2h9.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      ></path>
+                    </svg>
+                  </div>
+                </div>
+                <div className="flex items-baseline space-x-1.5">
+                  <span className="text-slate-400 text-lg font-light">{symbol}</span>
+                  <span className="text-2xl font-bold tracking-tight text-white font-mono">
+                    {expParts.intFormatted}
+                  </span>
+                  <span className="text-slate-400 text-sm font-medium">.{expParts.decPart}</span>
+                </div>
+                <div className="mt-2.5 flex items-center space-x-2 flex-wrap">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                    {outflowSharePct}% of cashflow
+                  </span>
+                  <span className="text-[11px] text-slate-400">Burn: {burnRate}%</span>
+                </div>
+              </div>
+              <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs kpi-footer-divider">
+                <span className="text-slate-400 font-medium">
+                  Income Limit: {symbol}{formatAmt(totalIncome)}
+                </span>
+                <span className="text-slate-400 font-semibold text-[11px]">
+                  {capUtilized}% utilized
+                </span>
+              </div>
             </div>
-          </div>
+          </KpiCard>
+
+          <KpiCard className="dashboard-kpi-balance">
+            <div className="flex flex-col justify-between h-full">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Net Balance
+                  </span>
+                  <div className="w-8 h-8 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center shadow-xs">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <rect height="14" rx="3" width="20" x="2" y="5"></rect>
+                      <line x1="2" x2="22" y1="10" y2="10"></line>
+                    </svg>
+                  </div>
+                </div>
+                <div className="flex items-baseline space-x-1.5">
+                  <span className="text-slate-400 text-lg font-light">{netParts.sign}{symbol}</span>
+                  <span className="text-2xl font-bold tracking-tight text-white font-mono">
+                    {netParts.intFormatted}
+                  </span>
+                  <span className="text-slate-400 text-sm font-medium">.{netParts.decPart}</span>
+                </div>
+                <div className="mt-2.5 flex items-center space-x-2">
+                  <span className="text-[11px] text-slate-400">Monthly Net:</span>
+                  <span className="text-[11px] font-semibold text-emerald-400 font-mono">
+                    +{symbol}{formatAmt(monthlySavings)}
+                  </span>
+                </div>
+              </div>
+              <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs kpi-footer-divider">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 mr-1.5 shadow-[0_0_6px_#22d3ee]"></span>
+                  {balanceStatus}
+                </span>
+                <span className="text-slate-400 font-semibold text-[11px]">
+                  {cashflowRatio}% ratio
+                </span>
+              </div>
+            </div>
+          </KpiCard>
+
+          <KpiCard className="dashboard-kpi-savings">
+            <div className="flex flex-col justify-between h-full">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Savings Rate
+                  </span>
+                  <div className="w-8 h-8 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-400 flex items-center justify-center shadow-xs">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      ></path>
+                    </svg>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between pt-1">
+                  <div>
+                    <div className="flex items-baseline space-x-1">
+                      <span className="text-3xl font-bold tracking-tight text-white font-mono">
+                        {savingsRate}
+                      </span>
+                      <span className="text-xl font-bold text-slate-400">%</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Target Rate: {targetSavingsRate}%
+                    </p>
+                  </div>
+                  <div className="relative w-14 h-14 flex items-center justify-center">
+                    <svg className="w-14 h-14 transform -rotate-90" viewBox="0 0 36 36">
+                      <circle
+                        className="glacier-ring-track stroke-slate-800"
+                        cx="18"
+                        cy="18"
+                        fill="none"
+                        r="14"
+                        strokeWidth="3.5"
+                      ></circle>
+                      <circle
+                        className="stroke-cyan-400 gauge-progress"
+                        cx="18"
+                        cy="18"
+                        fill="none"
+                        r="14"
+                        strokeDasharray={arcCircumference}
+                        strokeDashoffset={arcDashOffset}
+                        strokeLinecap="round"
+                        strokeWidth="3.5"
+                      ></circle>
+                    </svg>
+                    <span className="absolute text-[11px] font-bold text-white font-mono">
+                      {roundedSavingsRate}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs kpi-footer-divider">
+                <span className="text-slate-400 font-medium">Benchmark Tier</span>
+                <span className="text-emerald-400 font-bold text-[11px]">
+                  ★ {benchmarkTier}
+                </span>
+              </div>
+            </div>
+          </KpiCard>
         </section>
 
         {forecastData && (
@@ -765,7 +732,7 @@ export const DashboardPage = () => {
                 <div className="flex items-center space-x-2">
                   <h3 className="text-sm font-bold text-white">30-Day Cash Runway Forecast</h3>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                    {forecastData.runway_status === 'infinite_growth' ? 'Positive Growth' : `${forecastData.runway_days}d Runway`}
+                    {forecastData.runway_status === 'infinite_growth' || forecastData.runway_days == null ? 'Positive Growth' : `${forecastData.runway_days}d Runway`}
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5">
@@ -785,7 +752,7 @@ export const DashboardPage = () => {
               <div className="hidden lg:flex flex-col text-right">
                 <span className="text-[11px] text-slate-400 font-medium">Est. Resilience</span>
                 <span className="text-xs font-bold text-cyan-300">
-                  {forecastData.runway_days > 365 ? '18+ Months Runway' : `${forecastData.runway_days} Days Runway`}
+                  {forecastData.runway_days != null ? (forecastData.runway_days > 365 ? '18+ Months Runway' : `${forecastData.runway_days} Days Runway`) : 'Infinite Runway'}
                 </span>
               </div>
               <button
@@ -1202,20 +1169,7 @@ export const DashboardPage = () => {
                       <>
                         <span>No financial activity recorded yet (</span>
                         <strong className="text-emerald-400">0%</strong>
-                        <span>). Populate 6 months of realistic cashflow to unlock analytics and runway forecasting.</span>
-                        <span className="block mt-3">
-                          <button
-                            type="button"
-                            onClick={handleSeedDemoData}
-                            disabled={seeding}
-                            className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-glow-cyan transition-all disabled:opacity-50"
-                          >
-                            <svg className={`w-3.5 h-3.5 text-white ${seeding ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                            </svg>
-                            <span>{seeding ? 'Generating 6-Month Test Data...' : 'Generate 6-Month Test Data'}</span>
-                          </button>
-                        </span>
+                        <span>). Record your income and expenses to unlock analytics and runway forecasting.</span>
                       </>
                     ) : (
                       <>
@@ -1260,14 +1214,6 @@ export const DashboardPage = () => {
                       <tr>
                         <td colSpan={5} className="py-8 text-center text-slate-500">
                           <div>No ledger entries recorded yet.</div>
-                          <button
-                            type="button"
-                            onClick={handleSeedDemoData}
-                            disabled={seeding}
-                            className="mt-2.5 inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-semibold text-cyan-400 hover:text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 transition-colors"
-                          >
-                            <span>{seeding ? 'Generating...' : 'Seed 6 Months of Test Data →'}</span>
-                          </button>
                         </td>
                       </tr>
                     ) : (

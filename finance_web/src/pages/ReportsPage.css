@@ -2,8 +2,23 @@
   width: 175px;
 }
 
+.glacier-card-surface {
+  background-color: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top-color: rgba(6, 182, 212, 0.25);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+  border-radius: 1.5rem;
+}
+
+.glacier-ring-track {
+  stroke: rgba(255, 255, 255, 0.05);
+}
+
 .reports-kpi-grid,
-.card.reports-section-card {
+.card.reports-section-card,
+.glacier-card-surface.reports-section-card {
   margin-bottom: 1.75rem;
 }
 
@@ -65,6 +80,65 @@ html[data-theme="light"] .table td.reports-net-pos {
 }
 html[data-theme="light"] .table td.reports-rate {
   color: #7c3aed !important;
+}
+
+html[data-theme="light"] .glacier-card-surface {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04) !important;
+}
+
+html[data-theme="light"] .glacier-card-surface .text-white {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .glacier-card-surface .text-slate-300 {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .glacier-card-surface .text-slate-400 {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .glacier-card-surface .border-white\/\[0\.08\],
+html[data-theme="light"] .glacier-card-surface .border-white\/\[0\.07\],
+html[data-theme="light"] .glacier-card-surface .border-white\/\[0\.06\],
+html[data-theme="light"] .glacier-card-surface .border-white\/\[0\.05\] {
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .glacier-card-surface .bg-white\/\[0\.04\],
+html[data-theme="light"] .glacier-card-surface .bg-white\/\[0\.05\],
+html[data-theme="light"] .glacier-card-surface .bg-white\/\[0\.08\] {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .glacier-card-surface .bg-cyan-950\/70 {
+  background-color: #f0f9ff !important;
+  border-color: #bae6fd !important;
+  color: #0284c7 !important;
+}
+
+html[data-theme="light"] .glacier-ring-track {
+  stroke: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .glacier-card-surface .table-container {
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .glacier-card-surface .table th {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  border-bottom-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .glacier-card-surface .table td {
+  border-bottom-color: #f1f5f9 !important;
+  color: #1e293b !important;
 }
 
 @media (max-width: 640px) {

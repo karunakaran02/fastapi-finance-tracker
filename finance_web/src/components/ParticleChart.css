@@ -1,0 +1,242 @@
+.particle-chart-root {
+  position: relative;
+  width: 100%;
+  user-select: none;
+  box-sizing: border-box;
+  font-family: var(--font-sans, ui-sans-serif), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.particle-chart-surface {
+  background: var(--pc-surface, rgba(255, 255, 255, 0.035));
+  border-radius: var(--pc-radius, 20px);
+  padding: 20px 20px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+html[data-theme="light"] .particle-chart-surface {
+  background: var(--pc-surface, rgba(0, 0, 0, 0.028));
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.particle-chart-inner {
+  position: relative;
+  width: 100%;
+}
+
+.particle-chart-header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.particle-chart-header.has-between {
+  justify-content: space-between;
+}
+
+.particle-chart-summary {
+  min-width: 0;
+}
+
+.particle-chart-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.particle-chart-big-number {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  font-family: 'JetBrains Mono', monospace, sans-serif;
+  color: var(--pc-text, #EDEDEF);
+}
+
+html[data-theme="light"] .particle-chart-big-number {
+  color: var(--pc-text, #18181B);
+}
+
+.particle-chart-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.particle-chart-badge.positive {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.particle-chart-badge.negative {
+  color: #f43f5e;
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+}
+
+.particle-chart-summary-label {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--pc-muted, #8C8C95);
+}
+
+html[data-theme="light"] .particle-chart-summary-label {
+  color: var(--pc-muted, #71717A);
+}
+
+.particle-chart-tabs {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  width: max-content;
+  max-width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 3px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+html[data-theme="light"] .particle-chart-tabs {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.particle-chart-tab-indicator {
+  position: absolute;
+  top: 3px;
+  height: 28px;
+  border-radius: 7px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+  z-index: 1;
+}
+
+html[data-theme="light"] .particle-chart-tab-indicator {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.particle-chart-tab-sweep {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 242, 254, 0.2);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+
+html[data-theme="light"] .particle-chart-tab-sweep {
+  background: rgba(0, 163, 196, 0.18);
+}
+
+.particle-chart-tab-btn {
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+  height: 28px;
+  padding: 0 14px;
+  margin: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--pc-muted, #8C8C95);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 220ms ease;
+  outline-offset: 2;
+}
+
+.particle-chart-tab-btn.active {
+  color: var(--pc-text, #EDEDEF);
+  font-weight: 600;
+}
+
+html[data-theme="light"] .particle-chart-tab-btn {
+  color: var(--pc-muted, #71717A);
+}
+
+html[data-theme="light"] .particle-chart-tab-btn.active {
+  color: var(--pc-text, #18181B);
+}
+
+.particle-chart-plot {
+  position: relative;
+  touch-action: pan-y;
+  cursor: crosshair;
+}
+
+.particle-chart-canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+.particle-chart-bar-value {
+  position: absolute;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  transition: color 200ms ease, opacity 200ms ease;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.particle-chart-baseline {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  margin-top: 2px;
+}
+
+html[data-theme="light"] .particle-chart-baseline {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.particle-chart-labels {
+  display: flex;
+  margin-top: 10px;
+}
+
+.particle-chart-label-cell {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 200ms ease;
+  color: var(--pc-muted, #8C8C95);
+}
+
+.particle-chart-label-cell.active {
+  color: var(--pc-text, #EDEDEF);
+}
+
+html[data-theme="light"] .particle-chart-label-cell {
+  color: var(--pc-muted, #71717A);
+}
+
+html[data-theme="light"] .particle-chart-label-cell.active {
+  color: var(--pc-text, #18181B);
+}

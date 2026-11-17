@@ -1,4 +1,5 @@
 from decimal import Decimal
+from datetime import datetime, timezone
 
 def get_category_id(client, headers, name: str) -> int:
     resp = client.get("/api/v1/categories", headers=headers)
@@ -10,6 +11,9 @@ def get_category_id(client, headers, name: str) -> int:
 
 def test_create_and_read_budget(client, auth_headers):
     food_id = get_category_id(client, auth_headers, "Food")
+    now = datetime.now(timezone.utc)
+    cur_date1 = datetime(now.year, now.month, 10, 12, 0, tzinfo=timezone.utc).isoformat()
+    cur_date2 = datetime(now.year, now.month, 12, 19, 0, tzinfo=timezone.utc).isoformat()
 
     payload = {
         "name": "Food & Dining Cap",
@@ -36,7 +40,7 @@ def test_create_and_read_budget(client, auth_headers):
             "type": "expense",
             "amount": "450.00",
             "description": "Weekly grocery shopping",
-            "transaction_date": "2026-10-10T12:00:00Z",
+            "transaction_date": cur_date1,
         },
         headers=auth_headers,
     )
@@ -59,7 +63,7 @@ def test_create_and_read_budget(client, auth_headers):
             "type": "expense",
             "amount": "100.00",
             "description": "Restaurant dinner",
-            "transaction_date": "2026-10-12T19:00:00Z",
+            "transaction_date": cur_date2,
         },
         headers=auth_headers,
     )

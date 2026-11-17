@@ -2,10 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { TrendingUp, Lock, Mail, User, ArrowRight, Eye, EyeOff, Clock, AlertCircle, ShieldCheck, RotateCcw, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme, ThemeToggleButton } from '../context/ThemeContext';
 import { extractErrorMessage } from '../api/client';
+import Galaxy from '../components/Galaxy';
 import './AuthPages.css';
 
 const EMAIL_REGEX = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/;
+const LIGHT_THEME_STAR_COLORS = ['#2563eb', '#3b82f6', '#06b6d4'];
+const DARK_THEME_STAR_COLORS = [];
+
+const AuthGalaxyBackground = React.memo(({ theme }) => (
+  <div className="auth-galaxy-bg">
+    <Galaxy
+      density={0.8}
+      layers={2}
+      starColors={theme === 'light' ? LIGHT_THEME_STAR_COLORS : DARK_THEME_STAR_COLORS}
+      lightMode={theme === 'light'}
+    />
+  </div>
+));
 
 export const RegisterPage = () => {
   const [step, setStep] = useState('form');
@@ -23,6 +38,7 @@ export const RegisterPage = () => {
   const [countdown, setCountdown] = useState(0);
   const [coldStartNotice, setColdStartNotice] = useState(false);
   const { register, sendVerificationCode } = useAuth();
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -190,6 +206,12 @@ export const RegisterPage = () => {
 
   return (
     <div className="auth-page-wrapper">
+      <AuthGalaxyBackground theme={theme} />
+
+      <div className="auth-top-actions">
+        <ThemeToggleButton />
+      </div>
+
       <div className="card auth-card">
         {step === 'form' ? (
           <>

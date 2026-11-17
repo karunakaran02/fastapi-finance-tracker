@@ -12,7 +12,6 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import {
-  Calendar,
   Clock,
   Plus,
   RefreshCw,
@@ -24,13 +23,12 @@ import {
   CheckCircle2,
   Sparkles,
   Zap,
-  ArrowUpRight,
-  ArrowDownRight,
   X,
   ShieldCheck,
 } from 'lucide-react';
 import api from '../api/client';
 import { useCurrency } from '../context/CurrencyContext';
+import KpiCard from '../components/KpiCard';
 import './RecurringPage.css';
 
 ChartJS.register(
@@ -359,91 +357,137 @@ export const RecurringPage = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="recurring-card p-5 rounded-2xl flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-outline">
-              Monthly Recurring Burn
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center border border-rose-500/20">
-              <TrendingDown size={16} />
+        <KpiCard className="dashboard-kpi-expense">
+          <div className="flex flex-col justify-between h-full">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Monthly Recurring Burn
+                </span>
+                <div className="w-8 h-8 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center shadow-xs">
+                  <TrendingDown className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline space-x-1.5">
+                <span className="text-slate-400 text-lg font-light">{symbol}</span>
+                <span className="text-2xl font-bold tracking-tight text-white font-mono">
+                  {Number(forecast?.monthly_recurring_burn || 0).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+              <div className="mt-2.5 flex items-center space-x-2 flex-wrap">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                  Fixed repeating monthly expenses
+                </span>
+              </div>
+            </div>
+            <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs kpi-footer-divider">
+              <span className="text-slate-400 font-medium">Predictable Outflow</span>
+              <span className="text-rose-400 font-semibold font-mono text-[11px]">Deterministic Burn</span>
             </div>
           </div>
-          <div>
-            <div className="text-2xl font-bold font-mono text-on-surface">
-              {symbol}
-              {Number(forecast?.monthly_recurring_burn || 0).toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </div>
-            <p className="text-[11px] text-outline mt-1">Fixed repeating monthly expenses</p>
-          </div>
-        </div>
+        </KpiCard>
 
-        <div className="recurring-card p-5 rounded-2xl flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-outline">
-              Monthly Recurring Inflow
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
-              <TrendingUp size={16} />
+        <KpiCard className="dashboard-kpi-income">
+          <div className="flex flex-col justify-between h-full">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Monthly Recurring Inflow
+                </span>
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-xs">
+                  <TrendingUp className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline space-x-1.5">
+                <span className="text-slate-400 text-lg font-light">{symbol}</span>
+                <span className="text-2xl font-bold tracking-tight text-white font-mono">
+                  {Number(forecast?.monthly_recurring_income || 0).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+              <div className="mt-2.5 flex items-center space-x-2 flex-wrap">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  Predictable salary &amp; retainers
+                </span>
+              </div>
+            </div>
+            <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs kpi-footer-divider">
+              <span className="text-slate-400 font-medium">Guaranteed Cash In</span>
+              <span className="text-emerald-400 font-semibold font-mono text-[11px]">Regular Inflow</span>
             </div>
           </div>
-          <div>
-            <div className="text-2xl font-bold font-mono text-on-surface">
-              {symbol}
-              {Number(forecast?.monthly_recurring_income || 0).toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </div>
-            <p className="text-[11px] text-outline mt-1">Predictable salary &amp; retainers</p>
-          </div>
-        </div>
+        </KpiCard>
 
-        <div className="recurring-card p-5 rounded-2xl flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-outline">
-              Upcoming (Next 7 Days)
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/20">
-              <Clock size={16} />
+        <KpiCard className="dashboard-kpi-amber">
+          <div className="flex flex-col justify-between h-full">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Upcoming (Next 7 Days)
+                </span>
+                <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shadow-xs">
+                  <Clock className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline space-x-1.5">
+                <span className="text-slate-400 text-lg font-light">{symbol}</span>
+                <span className="text-2xl font-bold tracking-tight text-white font-mono">
+                  {Number(forecast?.upcoming_7_days_total || 0).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+              <div className="mt-2.5 flex items-center space-x-2 flex-wrap">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  {forecast?.upcoming_7_days_count || 0} bills due in next 7 days
+                </span>
+              </div>
+            </div>
+            <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs kpi-footer-divider">
+              <span className="text-slate-400 font-medium">Short-Term Commitments</span>
+              <span className="text-amber-400 font-semibold font-mono text-[11px]">Due This Week</span>
             </div>
           </div>
-          <div>
-            <div className="text-2xl font-bold font-mono text-on-surface">
-              {symbol}
-              {Number(forecast?.upcoming_7_days_total || 0).toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </div>
-            <p className="text-[11px] text-outline mt-1">
-              {forecast?.upcoming_7_days_count || 0} bills due in next 7 days
-            </p>
-          </div>
-        </div>
+        </KpiCard>
 
-        <div className="recurring-card p-5 rounded-2xl flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-outline">
-              Projected End Balance
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center border border-cyan-500/20">
-              <Zap size={16} />
+        <KpiCard className="dashboard-kpi-balance">
+          <div className="flex flex-col justify-between h-full">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Projected End Balance
+                </span>
+                <div className="w-8 h-8 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center shadow-xs">
+                  <Zap className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline space-x-1.5">
+                <span className="text-slate-400 text-lg font-light">{symbol}</span>
+                <span className="text-2xl font-bold tracking-tight text-white font-mono">
+                  {Number(forecast?.projected_end_balance || 0).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              </div>
+              <div className="mt-2.5">
+                {runwayStatusBadge(forecast?.runway_status, forecast?.runway_days)}
+              </div>
+            </div>
+            <div className="mt-5 pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs kpi-footer-divider">
+              <span className="text-slate-400 font-medium">Runway Status</span>
+              <span className="text-cyan-400 font-semibold font-mono text-[11px]">
+                {forecast?.runway_days != null ? `${forecast.runway_days} Days Runway` : 'Infinite Runway'}
+              </span>
             </div>
           </div>
-          <div>
-            <div className="text-2xl font-bold font-mono text-on-surface">
-              {symbol}
-              {Number(forecast?.projected_end_balance || 0).toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </div>
-            <div className="mt-2">{runwayStatusBadge(forecast?.runway_status, forecast?.runway_days)}</div>
-          </div>
-        </div>
+        </KpiCard>
       </div>
 
       {suggestions && suggestions.length > 0 && (

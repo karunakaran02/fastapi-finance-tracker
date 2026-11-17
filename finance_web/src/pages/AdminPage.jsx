@@ -179,8 +179,8 @@ export const AdminPage = () => {
           </div>
         </div>
 
-        <div className="table-container">
-          <table className="table">
+        <div className="table-container admin-desktop-table">
+          <table className="table admin-users-table">
             <thead>
               <tr>
                 <th>User</th>
@@ -281,6 +281,104 @@ export const AdminPage = () => {
               })}
             </tbody>
           </table>
+        </div>
+
+        <div className="admin-mobile-cards">
+          {filteredUsers.length === 0 ? (
+            <div className="p-6 text-center text-xs text-slate-400">
+              No matching user accounts found.
+            </div>
+          ) : (
+            filteredUsers.map((u) => {
+              const isSelf = u.id === currentUser?.id;
+              const isBusy = actionLoadingId === u.id;
+              return (
+                <div key={`m-${u.id}`} className="admin-user-card">
+                  <div className="admin-user-card-top">
+                    <div>
+                      <div className="admin-user-name-row">
+                        <span>{u.full_name || 'Unnamed User'}</span>
+                        {isSelf && <span className="admin-self-tag">You</span>}
+                      </div>
+                      <div className="admin-user-email">{u.email}</div>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                      <span className={`badge admin-role-badge ${u.is_admin ? 'is-admin' : 'is-user'}`}>
+                        {u.is_admin ? 'Admin' : 'User'}
+                      </span>
+                      <span className={`badge ${u.is_active ? 'badge-income' : 'badge-expense'}`}>
+                        {u.is_active ? 'Active' : 'Suspended'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="admin-user-card-meta">
+                    <div className="admin-meta-item">
+                      <span className="admin-meta-label">Transactions</span>
+                      <span className="admin-meta-value">{u.transaction_count}</span>
+                    </div>
+                    <div className="admin-meta-item">
+                      <span className="admin-meta-label">Income</span>
+                      <span className="admin-meta-value text-emerald-400">
+                        {symbol}{formatAmt(u.total_income)}
+                      </span>
+                    </div>
+                    <div className="admin-meta-item">
+                      <span className="admin-meta-label">Expenses</span>
+                      <span className="admin-meta-value text-rose-400">
+                        {symbol}{formatAmt(u.total_expenses)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="admin-user-card-actions">
+                    <button
+                      onClick={() => handleToggleAdmin(u)}
+                      disabled={isSelf || isBusy}
+                      className="btn btn-secondary btn-sm admin-action-btn"
+                      title={
+                        isSelf
+                          ? 'Cannot change your own role'
+                          : u.is_admin
+                          ? 'Revoke Admin'
+                          : 'Make Admin'
+                      }
+                    >
+                      {u.is_admin ? <ShieldOff size={13} /> : <ShieldCheck size={13} />}
+                      <span>{u.is_admin ? 'Revoke Admin' : 'Make Admin'}</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleToggleActive(u)}
+                      disabled={isSelf || isBusy}
+                      className={`btn btn-secondary btn-sm admin-action-btn ${
+                        u.is_active ? 'suspend' : 'activate'
+                      }`}
+                      title={
+                        isSelf
+                          ? 'Cannot suspend your own account'
+                          : u.is_active
+                          ? 'Suspend User'
+                          : 'Activate User'
+                      }
+                    >
+                      {u.is_active ? <UserX size={13} /> : <UserCheck size={13} />}
+                      <span>{u.is_active ? 'Suspend' : 'Activate'}</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleDeleteUser(u)}
+                      disabled={isSelf || isBusy}
+                      className="btn btn-secondary btn-sm admin-action-btn delete"
+                      title={isSelf ? 'Cannot delete your own account' : 'Delete User'}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
     </div>

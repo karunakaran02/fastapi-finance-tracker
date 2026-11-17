@@ -68,3 +68,4 @@ services:
 
 volumes:
   postgres_data:
+    name: finance_postgres_data
